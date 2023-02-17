@@ -55,7 +55,7 @@ function Facet {
 			$ModelPath, $TargetPath = $Path;
 		}
 		
-		$facet = New-Object Proviso.Core.Models.Facet($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
+		$facet = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
 		
 		# TODO: the following is DAMNED close to what I want/need:
 		# 		it ... assigns values ONLY if they're present ... 

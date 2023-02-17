@@ -5,11 +5,16 @@ filter Import-Types {
 		[string]$ScriptRoot = $PSScriptRoot
 	);
 	
+	# NOTE: Import order can/does impact BUILD operations
 	$classFiles = @(
 		"$ScriptRoot\clr\Proviso.Core\Formatter.cs"
 		"$ScriptRoot\clr\Proviso.Core\Orthography.cs"
-		"$ScriptRoot\clr\Proviso.Core\BuildContext.cs"
+		"$ScriptRoot\clr\Proviso.Core\CompilationMonitor.cs"
 		"$ScriptRoot\clr\Proviso.Core\ProvisoCatalog.cs"
+		"$ScriptRoot\clr\Proviso.Core\Definitions\RunbookDefinition.cs"
+		"$ScriptRoot\clr\Proviso.Core\Definitions\SurfaceDefinition.cs"
+		"$ScriptRoot\clr\Proviso.Core\Definitions\AspectDefinition.cs"
+		"$ScriptRoot\clr\Proviso.Core\Definitions\FacetDefinition.cs"
 		"$ScriptRoot\clr\Proviso.Core\Models\Runbook.cs"
 		"$ScriptRoot\clr\Proviso.Core\Models\Surface.cs"
 		"$ScriptRoot\clr\Proviso.Core\Models\Aspect.cs"

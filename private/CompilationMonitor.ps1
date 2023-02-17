@@ -1,6 +1,6 @@
 ﻿Set-StrictMode -Version 1.0;
 
-$global:PvBuildContext = [Proviso.Core.BuildContext]::Instance;
+$global:PvCompilationMonitor = [Proviso.Core.CompilationMonitor]::Instance;
 
 function Enter-Runbook {
 	[CmdletBinding()]
@@ -8,7 +8,7 @@ function Enter-Runbook {
 		[string]$Name
 	);
 	
-	$PvBuildContext.Runbook = $Name;
+	$PvCompilationMonitor.Runbook = $Name;
 	
 	Write-Debug "Entered Runbook: $Name";
 }
@@ -19,7 +19,7 @@ function Enter-Surface {
 		[string]$Name
 	);
 	
-	$PvBuildContext.Surface = $Name;
+	$PvCompilationMonitor.Surface = $Name;
 	
 	Write-Debug "	Entered Surface: $Name";
 }
@@ -31,7 +31,7 @@ function Enter-Aspect {
 	);
 	
 #	Confirm-Orthography "Aspect";
-	$PvBuildContext.Aspect = $Name;
+	$PvCompilationMonitor.Aspect = $Name;
 	
 	Write-Debug "	Entered Aspect: $Name";
 }
@@ -43,7 +43,7 @@ function Enter-Facet {
 	);
 	
 #	Confirm-Orthography "Facet";
-	$PvBuildContext.Facet = $Name;
+	$PvCompilationMonitor.Facet = $Name;
 	
 	Write-Debug "		Entered Facet: $Name"; 
 }
@@ -54,7 +54,7 @@ function Enter-Property {
 		[string]$Name
 	);
 	
-	$PvBuildContext.Property = $Name;
+	$PvCompilationMonitor.Property = $Name;
 	
 	Write-Debug "			Entered Property: $Name";
 }
@@ -65,7 +65,7 @@ function Exit-Runbook {
 		[string]$Name
 	);
 	
-	$PVBuildContext.Runbook = $null;
+	$PvCompilationMonitor.Runbook = $null;
 	
 	Write-Debug "Exited Runbook: $Name";
 }
@@ -76,7 +76,7 @@ function Exit-Surface {
 		[string]$Name
 	);
 	
-	$PVBuildContext.Surface = $null;
+	$PvCompilationMonitor.Surface = $null;
 	
 	Write-Debug "	Exited Surface: $Name";
 }
@@ -87,7 +87,7 @@ function Exit-Aspect {
 		[string]$Name
 	);
 	
-	$PVBuildContext.Aspect = $null;
+	$PvCompilationMonitor.Aspect = $null;
 	
 	Write-Debug "	Exited Aspect: $Name";
 }
@@ -98,7 +98,7 @@ function Exit-Facet {
 		[string]$Name
 	);
 	
-	$PvBuildContext.Facet = $null;
+	$PvCompilationMonitor.Facet = $null;
 	
 	Write-Debug "		Exited Facet: $Name";
 }
@@ -109,7 +109,7 @@ function Exit-Property {
 		[string]$Name
 	);
 	
-	$PvBuildContext.Property = $null;
+	$PvCompilationMonitor.Property = $null;
 	
 	Write-Debug "			Exited Property: $Name";
 }

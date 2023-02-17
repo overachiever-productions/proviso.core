@@ -1,6 +1,6 @@
 ﻿namespace Proviso.Core
 {
-    public class BuildContext
+    public class CompilationMonitor
     {
         public string Runbook { get; set; }
         public string Surface { get; set; }
@@ -8,9 +8,9 @@
         public string Facet { get; set; }
         public string Property { get; set; }
 
-        public static BuildContext Instance => new BuildContext();
+        public static CompilationMonitor Instance => new CompilationMonitor();
 
-        private BuildContext()
+        private CompilationMonitor()
         {
             this.Runbook = null;
             this.Surface = null;
