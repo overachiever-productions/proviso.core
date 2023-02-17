@@ -1,0 +1,16 @@
+﻿<ProjectState>
+  <Version>1.0</Version>
+  <FileID>f73d741a-68d2-4c72-aa36-e5d6a2e37dea</FileID>
+  <OpenFolders>
+    <Folder>public</Folder>
+    <Folder>tests</Folder>
+    <Folder>private</Folder>
+    <Folder>public\blocks</Folder>
+  </OpenFolders>
+  <OpenFiles>
+    <File>proviso.core.psm1</File>
+    <File>public\blocks\Facet.ps1</File>
+    <File>private\BuildContext.ps1</File>
+    <File>public\blocks\Surface.ps1</File>
+  </OpenFiles>
+</ProjectState>
