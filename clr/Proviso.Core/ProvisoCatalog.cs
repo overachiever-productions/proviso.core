@@ -14,7 +14,7 @@ namespace Proviso.Core
 
         private ProvisoCatalog() { }
 
-        public void AddFacet(FacetDefinition added)
+        public void AddFacetDefinition(FacetDefinition added)
         {
             // add if it doesn't exist. 
             //  if it does exist, check for different parent... 

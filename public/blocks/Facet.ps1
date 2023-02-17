@@ -7,18 +7,49 @@
 	$global:DebugPreference = "Continue";
 	$global:VerbosePreference = "Continue";
 
-	Runbook "Network Stuff" {
-		Surface "Firewall Rules" {
-			Aspect {
-				Facet "My First Facet" {
-					Property "Test Property" {
-					}
-				}
-			}
+
+	Facet "Host Ports" {
+		Property "ICMP" {
+		}
+		Property "RDP" {
 		}
 	}
 
-	Read-Facet "My First Facet" -Verbose;
+	Surface "Firewall Rules" {
+		Facet "SQL Server Ports" {
+			Property "SQL Server" {
+			}
+			Property "SQL Server - DAC" {
+			}
+			Property "SQL Server - Mirroring" { 
+			}
+		}
+
+		Import -Facet "Host Ports";
+	}
+
+	Read-Facet "SQL Server Ports";
+	Read-Facet "Host Ports";
+
+	# Get this to work 'better' - i.e., the error I'm getting now is FUGLY: 
+	Read-Facet "This face does not exist";
+
+	Runbook "Firewall Stuff" { 
+		Setup {} 
+		Assertions {}
+
+		Operations {
+			Run [-Facet] "Intellisense Name Here would be Great" -something? 
+			Run "Another Facet Name here" -Impact "overwritten from source"
+
+			Run "etc..." -ExecutionOrder 1 -Comment "not sure why not up top... but... this is an option."
+
+		}
+
+		Cleanup { }
+	}
+
+
 
 #>
 
@@ -29,6 +60,7 @@ function Facet {
 		[string]$Name,
 		[Parameter(Mandatory, Position = 1)]
 		[ScriptBlock]$ScriptBlock,
+		[string]$Id = $null,    # will be a GUID if not explicitly defined. But can be a 'rule number' or something  ... and can be a 'token' in -DisplayFormats. 
 		[string]$ModelPath = $null,
 		[string]$TargetPath = $null,
 		[string]$Path = $null,
@@ -45,7 +77,7 @@ function Facet {
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		
-		Enter-Facet $Name -Verbose:$xVerbose -Debug:$xDebug;
+		Enter-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	process {
@@ -55,7 +87,7 @@ function Facet {
 			$ModelPath, $TargetPath = $Path;
 		}
 		
-		$facet = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
+		$facetDefinition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
 		
 		# TODO: the following is DAMNED close to what I want/need:
 		# 		it ... assigns values ONLY if they're present ... 
@@ -78,23 +110,23 @@ function Facet {
 		# 						B) move orthography OUT of C# and into a set of 'helper' funcs (maybe in common.ps1 or maybe still in orthography.ps1)
 		# 							and just tackled things there. 
 		# 					Point being, orthography WILL still be handled. But it'll be transparent from the perspective of my 'blocks'.
-#		$facet.Surface = $global:PvBuildContext.Surface;
-#		$facet.Runbook = $global:PvBuildContext.Runbook;
+		#		$facetDefinition.Surface = $global:PvBuildContext.Surface;
+		#		$facetDefinition.Runbook = $global:PvBuildContext.Runbook;
 		
 		if ($Impact -ne "None") {
-			$facet.Impact = $Impact; # TODO: either set parse this here and convert to Enum, or ... pass into a .SetImpact(string impact) C# method that parses + assigns.
+			$facetDefinition.Impact = $Impact; # TODO: either set parse this here and convert to Enum, or ... pass into a .SetImpact(string impact) C# method that parses + assigns.
 		}
 		
 		if ($Expect) {
-			$facet.SetExpectFromParameter($Expect);
+			$facetDefinition.SetExpectFromParameter($Expect);
 		}
 		
 		if ($Extract) {
-			$facet.SetExtractFromParameter($Extract);
+			$facetDefinition.SetExtractFromParameter($Extract);
 		}
 		
 		if ($ThrowOnConfig) {
-			$facet.SetThrowOnConfig($ThrowOnConfig);
+			$facetDefinition.SetThrowOnConfig($ThrowOnConfig);
 		}
 		
 		& $ScriptBlock;
@@ -104,7 +136,7 @@ function Facet {
 		
 		Write-Verbose "Adding FACET [$Name] to Catalog. My SURFACE IS: [$($global:PvBuildContext.Surface)]"
 		
-		$global:PvCatalog.AddFacet($facet);
-		Exit-Facet $Name -Verbose:$xVerbose -Debug:$xDebug;
+		$global:PvCatalog.AddFacetDefinition($facetDefinition);
+		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

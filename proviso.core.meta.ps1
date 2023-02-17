@@ -8,8 +8,7 @@ filter Import-Types {
 	# NOTE: Import order can/does impact BUILD operations
 	$classFiles = @(
 		"$ScriptRoot\clr\Proviso.Core\Formatter.cs"
-		"$ScriptRoot\clr\Proviso.Core\Orthography.cs"
-		"$ScriptRoot\clr\Proviso.Core\CompilationMonitor.cs"
+		"$ScriptRoot\clr\Proviso.Core\Lexicon.cs"
 		"$ScriptRoot\clr\Proviso.Core\ProvisoCatalog.cs"
 		"$ScriptRoot\clr\Proviso.Core\Definitions\RunbookDefinition.cs"
 		"$ScriptRoot\clr\Proviso.Core\Definitions\SurfaceDefinition.cs"

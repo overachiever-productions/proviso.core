@@ -1,6 +1,6 @@
 ﻿namespace Proviso.Core
 {
-    public class CompilationMonitor
+    public class Lexicon
     {
         public string Runbook { get; set; }
         public string Surface { get; set; }
@@ -8,9 +8,9 @@
         public string Facet { get; set; }
         public string Property { get; set; }
 
-        public static CompilationMonitor Instance => new CompilationMonitor();
+        public static Lexicon Instance => new Lexicon();
 
-        private CompilationMonitor()
+        private Lexicon()
         {
             this.Runbook = null;
             this.Surface = null;

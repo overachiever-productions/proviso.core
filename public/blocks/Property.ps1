@@ -24,7 +24,7 @@ function Property {
 	begin {
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
-		Enter-Property $Name -Verbose:$xVerbose -Debug:$xDebug;
+		Enter-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	process {
@@ -40,6 +40,6 @@ function Property {
 	};
 	
 	end {
-		Exit-Property $Name -Verbose:$xVerbose -Debug:$xDebug;
+		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }
