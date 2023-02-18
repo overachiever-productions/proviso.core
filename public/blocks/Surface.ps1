@@ -38,7 +38,7 @@ function Surface {
 	
 	end {
 		
-		Write-Verbose "Adding Surface: [$Name] to Catalog.";
+		Write-Debug "		Adding Surface: [$Name] to Catalog.";
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

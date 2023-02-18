@@ -2,6 +2,7 @@
 
 <#
 	Runbook
+		[Setup]
 		[Assertions]
 			[Assert]
 		Operations
@@ -9,7 +10,6 @@
 			Run
 			Run
 		[Cleanup]
-		
 
 	Surface
 		[Setup]
@@ -19,12 +19,12 @@
 			[Import] -Pattern|Facet
 			Facet | Pattern 
 				[Iterate] (for Pattern)
-				[Add]	(Pattern)  - Install?
-				[Remove] (Pattern) - Uninstall?
+					[Add]	(Pattern)  - Install?
+					[Remove] (Pattern) - Uninstall?
 				Property | Cohort 
 					Enumerate
-					Add
-					Remove
+						Add
+						Remove
 					Property (of Cohort - and... recurses)
 					[Inclusion] (of Property | Cohort)
 					Expect
@@ -46,25 +46,15 @@ function Enter-Block {
 		[string]$Name
 	);
 	
-	# STACK serialization: 	$stack = ((Get-PSCallStack).Command -join ",") -replace "Confirm-Orthography,";
-	
-	$tabs = "";
-	switch ($Type) {
-		{ $_ -in @("Facet", "Pattern") } {
-			$tabs = "`t`t";
-			
-		}
-		{ $_ -in @("Iterate", "Add", "Remove", "Property", "Cohort") } {
-			$tabs = "`t`t`t";
-			
-		}
-		{ $_ -in @("Enumerate", "Inclusion", "Expect", "Extract", "Compare", "Configure") } {
-			$tabs = "`t`t`t`t";
-			
-		}
+	# $stack = (Get-PSCallStack).Command -join ",";
+	try {
+		$PvLexicon.EnterBlock($Type, $Name);
 	}
-	
-	Write-Debug "$($tabs)Entered $($Type): $Name";
+	catch {
+		throw "Proviso Exception: $($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+	}
+
+	Write-Debug "$("`t" * $PvLexicon.CurrentDepth)Entered $($Type): $Name";
 }
 
 function Exit-Block {
@@ -76,4 +66,12 @@ function Exit-Block {
 		[string]$Name
 	);
 	
+	Write-Debug "$("`t" * $PvLexicon.CurrentDepth) Exiting $($Type): $Name";
+	
+	try {
+		$PvLexicon.ExitBlock($Type, $Name);
+	}
+	catch {
+		throw "Proviso Exception: $($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+	}
 }

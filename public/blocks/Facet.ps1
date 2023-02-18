@@ -8,6 +8,11 @@
 	$global:VerbosePreference = "Continue";
 
 
+	Surface "Bigly" {
+		Facet "Child" {}
+	}
+
+
 	Facet "Host Ports" {
 		Property "ICMP" {
 		}
@@ -134,7 +139,7 @@ function Facet {
 	
 	end {
 		
-		Write-Verbose "Adding FACET [$Name] to Catalog. My SURFACE IS: [$($global:PvBuildContext.Surface)]"
+		Write-Debug "			Adding FACET [$Name] to Catalog. My SURFACE IS: [$($global:PvLexicon.GetCurrentBlockNameByType("Surface"))]"
 		
 		$global:PvCatalog.AddFacetDefinition($facetDefinition);
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
