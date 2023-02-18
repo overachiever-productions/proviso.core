@@ -38,6 +38,11 @@ namespace Proviso.Core
             return this.GetCurrentBlockNameByType("Surface");
         }
 
+        public string GetCurrentAspect()
+        {
+            return this.GetCurrentBlockNameByType("Aspect");
+        }
+
         public string GetCurrentFacet()
         {
             return this.GetCurrentBlockNameByType("Facet");

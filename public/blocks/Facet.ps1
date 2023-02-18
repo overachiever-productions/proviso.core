@@ -65,7 +65,7 @@ function Facet {
 		[string]$Name,
 		[Parameter(Mandatory, Position = 1)]
 		[ScriptBlock]$ScriptBlock,
-		[string]$Id = $null,    # will be a GUID if not explicitly defined. But can be a 'rule number' or something  ... and can be a 'token' in -DisplayFormats. 
+		[string]$Id = $null,
 		[string]$ModelPath = $null,
 		[string]$TargetPath = $null,
 		[string]$Path = $null,
@@ -92,34 +92,13 @@ function Facet {
 			$ModelPath, $TargetPath = $Path;
 		}
 		
-		$facetDefinition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
+		$facetDefinition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, $ModelPath, $TargetPath, $bypass, $Ignore);
 		
-		# TODO: the following is DAMNED close to what I want/need:
-		# 		it ... assigns values ONLY if they're present ... 
-		# 		the RUB is ... that it doesn't assign OBJECTs ... it assigns strings ... 
-		# 			so, maybe I need to build a helper func (or set of helper funcs) that can bind these details and ... will do lookups if/as needded?
-		# 		OR... 
-		# 			maybe the BuildContext can/does/will keep not only "Semantics" or "which func-name" we're currently in. But will also keep the ACTUAL object in question?
-		# 			yeah. that starts to get pretty cool... 
-		# 				and... NO: not going to be able to have the ACTUAL parent objects in play at this time. 
-		# 				the HANDS-DOWN best I can do is have their NAMES (strings). Cuz of how things transpire. 
-		# 				so, what I'm going to have to do is: 
-		# 						1. bind names to the facets at THIS point (compile time)
-		# 						2. I'll have the actual OBJECTS in the catalog. AFTER compilation is done. 
-		# 						3. During 'discovery' phase, I can create new objects or whatever makes sense and BIND the actual objects
-		# 							into a true 'graph' of what's needed. 
-		# 				Otherwise, I CAN, at this point (i.e., compile time) work on orthography. 
-		# 				And, I think I'm either going to: 
-		# 						A) 100% nest orthography calls into BuildContext calls/operations (and throw from in there)
-		# 						or 
-		# 						B) move orthography OUT of C# and into a set of 'helper' funcs (maybe in common.ps1 or maybe still in orthography.ps1)
-		# 							and just tackled things there. 
-		# 					Point being, orthography WILL still be handled. But it'll be transparent from the perspective of my 'blocks'.
-		#		$facetDefinition.Surface = $global:PvBuildContext.Surface;
-		#		$facetDefinition.Runbook = $global:PvBuildContext.Runbook;
+		$facetDefinition.SurfaceName = $global:PvLexicon.GetCurrentSurface();
+		$facetDefinition.AspectName = $global:PvLexicon.GetCurrentAspect();
 		
 		if ($Impact -ne "None") {
-			$facetDefinition.Impact = $Impact; # TODO: either set parse this here and convert to Enum, or ... pass into a .SetImpact(string impact) C# method that parses + assigns.
+			$facetDefinition.Impact = [Proviso.Core.Impact]$Impact;
 		}
 		
 		if ($Expect) {
@@ -138,9 +117,6 @@ function Facet {
 	};
 	
 	end {
-		
-		Write-Debug "			Adding FACET [$Name] to Catalog. My SURFACE IS: [$($global:PvLexicon.GetCurrentBlockNameByType("Surface"))]"
-		
 		$global:PvCatalog.AddFacetDefinition($facetDefinition);
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};

@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Folder Include="Definitions\" />
+    <Folder Include="Enums\" />
     <Folder Include="Processing\" />
   </ItemGroup>
 

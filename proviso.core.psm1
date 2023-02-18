@@ -4,7 +4,7 @@
 . "$PSScriptRoot\proviso.core.meta.ps1"
 
 # Import Private Funcs: 
-foreach ($file in (@(Get-ChildItem -Path (Join-Path -Path $PSScriptRoot -ChildPath 'private/*.ps1') -Recurse -ErrorAction Stop))) {
+foreach ($file in (@(Get-ChildItem -Path (Join-Path -Path $PSScriptRoot -ChildPath 'internal/*.ps1') -Recurse -ErrorAction Stop))) {
 	try {
 		. $file.FullName;
 	}

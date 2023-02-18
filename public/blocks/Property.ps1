@@ -34,12 +34,33 @@ function Property {
 			$ModelPath, $TargetPath = $Path;
 		}
 		
+		$propertyDefinition = New-Object Proviso.Core.Definitions.PropertyDefinition($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
 		
+		$propertyDefinition.FacetName = $global:PvLexicon.GetCurrentFacet();
+
+		if ($Impact -ne "None") {
+			$propertyDefinition.Impact = [Proviso.Core.Impact]$Impact;
+		}
+		
+		if ($Expect) {
+			$propertyDefinition.SetExpectFromParameter($Expect);
+		}
+		
+		if ($Extract) {
+			$propertyDefinition.SetExtractFromParameter($Extract);
+		}
+		
+		if ($ThrowOnConfig) {
+			$propertyDefinition.SetThrowOnConfig($ThrowOnConfig);
+		}
 		
 		& $ScriptBlock;
 	};
 	
 	end {
+		# TODO: With these... think I'll add them by ... Facet. or... something similar.
+		$global:PvCatalog.AddPropertyDefinition($propertyDefinition);  
+		
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }
