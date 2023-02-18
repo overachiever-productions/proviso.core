@@ -5,13 +5,20 @@ function Enumerate {
 	param (
 		[Parameter(Mandatory, Position = 0)]
 		[string]$Name = $null,
-		[Parameter(Mandatory, Position = 1)]
+		[Parameter(Position = 1)]
 		[ScriptBlock]$ScriptBlock,
 		[string]$OrderBy = $null
 	);
 	
 	begin {
+		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
+		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		
+		if (Is-Empty $Name) {
+			$Name = $global:PvLexicon.GetCurrentCohort(); 
+		}
+		
+		Enter-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	process {
@@ -20,6 +27,6 @@ function Enumerate {
 	};
 	
 	end {
-		
+		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

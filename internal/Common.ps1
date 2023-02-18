@@ -36,6 +36,15 @@ filter Has-Value {
 	return (-not ([string]::IsNullOrEmpty($Value)));
 }
 
+filter Is-Empty {
+	param (
+		[Parameter(Position = 0)]
+		[string]$Value
+	);
+	
+	return [string]::IsNullOrWhiteSpace($Value);
+}
+
 function Is-ByPassed {
 	[CmdletBinding()]
 	param (

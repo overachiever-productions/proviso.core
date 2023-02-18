@@ -37,6 +37,7 @@ function Property {
 		$propertyDefinition = New-Object Proviso.Core.Definitions.PropertyDefinition($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
 		
 		$propertyDefinition.FacetName = $global:PvLexicon.GetCurrentFacet();
+		$propertyDefinition.CohortName = $global:PvLexicon.GetCurrentCohort();
 
 		if ($Impact -ne "None") {
 			$propertyDefinition.Impact = [Proviso.Core.Impact]$Impact;
@@ -58,7 +59,6 @@ function Property {
 	};
 	
 	end {
-		# TODO: With these... think I'll add them by ... Facet. or... something similar.
 		$global:PvCatalog.AddPropertyDefinition($propertyDefinition);  
 		
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;

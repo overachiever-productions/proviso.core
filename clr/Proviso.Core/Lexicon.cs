@@ -48,6 +48,11 @@ namespace Proviso.Core
             return this.GetCurrentBlockNameByType("Facet");
         }
 
+        public string GetCurrentCohort()
+        {
+            return this.GetCurrentBlockNameByType("Cohort");
+        }
+
         public string GetCurrentBlockName()
         {
             if(this._namesStack.Count > 0)
@@ -80,6 +85,9 @@ namespace Proviso.Core
 
                 return;
             }
+
+            // TODO: is it ... _possible_ to check AllowedChildren? I've DEFINED which children are allowed in the grammar... 
+            //  but i'm never using it... 
 
             Taxonomy parent = this._stack.Peek();
             if(!taxonomy.AllowedParents.Contains(parent.NodeName)) 

@@ -54,7 +54,14 @@ namespace Proviso.Core
                     NodeName = "Enumerator",
                     Rootable = true,
                     AllowedChildren = new List<string> { "Add", "Remove" }
-                }, 
+                },
+                new Taxonomy
+                {
+                    NodeName = "Enumerate",
+                    Rootable = true,
+                    AllowedParents = new List<string> { "Cohort" },
+                    AllowedChildren = new List<string> { "Add", "Remove" }
+                },
                 new Taxonomy
                 {
                     NodeName = "Assertions", 

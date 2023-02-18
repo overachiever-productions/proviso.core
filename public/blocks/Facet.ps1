@@ -28,6 +28,10 @@
 			}
 			Property "SQL Server - Mirroring" { 
 			}
+			Cohort "Test Cohort" {
+				Enumerate {
+				}
+			}
 		}
 
 		Import -Facet "Host Ports";

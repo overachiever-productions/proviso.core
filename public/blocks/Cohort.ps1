@@ -17,25 +17,49 @@ function Cohort {
 		[string]$Ignore = $null,
 		[object]$Expect,
 		[object]$Extract,
-		[switch]$Naive = $true,
-		[switch]$Explicit = $false
+		[switch]$UsesAdd = $false,
+		[switch]$UsesAddRemove = $false
 	);
 	
 	begin {
-		
+		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
+		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
+		Enter-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	process {
-		$bypass = Is-ByPassed $MyInvocation.MyCommand.Name -Name $Name -Skip:$Skip -Ignore $Ignore -Verbose:$Verbose -Debug:$Debug;
+		$bypass = Is-ByPassed $MyInvocation.MyCommand.Name -Name $Name -Skip:$Skip -Ignore $Ignore -Verbose:$xVerbose -Debug:$xDebug;
 		
-		if (Should-SetPaths $MyInvocation.MyCommand.Name -Name $Name -ModelPath $ModelPath -TargetPath $TargetPath -Path $Path -Verbose:$Verbose -Debug:$Debug) {
+		if (Should-SetPaths $MyInvocation.MyCommand.Name -Name $Name -ModelPath $ModelPath -TargetPath $TargetPath -Path $Path -Verbose:$xVerbose -Debug:$xDebug) {
 			$ModelPath, $TargetPath = $Path;
+		}
+		
+		$cohortDefinition = New-Object Proviso.Core.Definitions.CohortDefinition($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
+		
+		$cohortDefinition.FacetName = $global:PvLexicon.GetCurrentFacet();
+		
+		if ($Impact -ne "None") {
+			$cohortDefinition.Impact = [Proviso.Core.Impact]$Impact;
+		}
+		
+		if ($Expect) {
+			$cohortDefinition.SetExpectFromParameter($Expect);
+		}
+		
+		if ($Extract) {
+			$cohortDefinition.SetExtractFromParameter($Extract);
+		}
+		
+		if ($ThrowOnConfig) {
+			$cohortDefinition.SetThrowOnConfig($ThrowOnConfig);
 		}
 		
 		& $ScriptBlock;
 	};
 	
 	end {
+		$global:PvCatalog.AddCohortDefinition($cohortDefinition);
 		
+		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

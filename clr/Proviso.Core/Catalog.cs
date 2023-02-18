@@ -28,6 +28,11 @@ namespace Proviso.Core
 
         }
 
+        public void AddCohortDefinition(CohortDefinition added)
+        {
+
+        }
+
         public FacetDefinition GetFacetByName(string name)
         {
             return this._totallyCrappyFacetDictionaryImplementation[name];
