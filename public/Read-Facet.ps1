@@ -52,7 +52,7 @@ function Read-Facet {
 	process {
 		Write-Verbose "PROCESS: $Name"
 
-		$facet = $global:PVCatalog.GetFacetByName($Name);
+		$facet = $global:PvCatalog.GetFacetByName($Name);
 		if ($null -eq $facet) {
 			throw "Error. No Facet or Pattern with the name [$Name] was found.";
 		}		

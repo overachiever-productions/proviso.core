@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proviso.Core", "Proviso.Core.csproj", "{7D3B49A6-3657-4EA3-94D4-C061AFD8522E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Proviso.Core", "Proviso.Core.csproj", "{7D3B49A6-3657-4EA3-94D4-C061AFD8522E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proviso.Core.Tests", "..\Proviso.Core.Tests\Proviso.Core.Tests.csproj", "{C1C8E008-783F-4D3E-805C-FD8AB61F6747}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{7D3B49A6-3657-4EA3-94D4-C061AFD8522E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D3B49A6-3657-4EA3-94D4-C061AFD8522E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D3B49A6-3657-4EA3-94D4-C061AFD8522E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1C8E008-783F-4D3E-805C-FD8AB61F6747}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1C8E008-783F-4D3E-805C-FD8AB61F6747}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1C8E008-783F-4D3E-805C-FD8AB61F6747}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1C8E008-783F-4D3E-805C-FD8AB61F6747}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

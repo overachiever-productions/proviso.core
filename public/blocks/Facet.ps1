@@ -4,23 +4,78 @@
 
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 
+	Get-Command 
+
 	$global:DebugPreference = "Continue";
 	$global:VerbosePreference = "Continue";
 
-	Runbook "Network Stuff" {
-		Surface "Firewall Rules" {
-			Aspect {
-				Facet "My First Facet" {
-					Property "Test Property" {
-					}
-				}
-			}
+#	Surface "Bigly" {
+#		Facet "Child" {}
+#	}
+
+	Facet "Host Ports" {
+		Property "ICMP" {
+		}
+		Property "RDP" {
 		}
 	}
 
-	Read-Facet "My First Facet" -Verbose;
+	Surface "Firewall Rules" {
+		Facet "SQL Server Ports" {
+			Property "SQL Server" {
+			}
+			Property "SQL Server - DAC" {
+			}
+			Property "SQL Server - Mirroring" { 
+			}
+			Cohort "Test Cohort" {
+				Enumerate {
+				}
+			}
+		}
+
+		Import -Facet "Host Ports";
+	}
+
+	Read-Facet "SQL Server Ports";
+	Read-Facet "Host Ports";
+
+	# Get this to work 'better' - i.e., the error I'm getting now is FUGLY: 
+	Read-Facet "This face does not exist";
+
+	Runbook "Firewall Stuff" { 
+		Setup {} 
+		Assertions {}
+
+		Operations {
+			Run [-Facet] "Intellisense Name Here would be Great" -something? 
+			Run "Another Facet Name here" -Impact "overwritten from source"
+
+			Run "etc..." -ExecutionOrder 1 -Comment "not sure why not up top... but... this is an option."
+
+		}
+
+		Cleanup { }
+	}
 
 #>
+
+# REFACTOR: I can 'collapse' Surface, Aspect, Facet, etc... down to a single set of classes/bases by ... 
+# 		keeping existing signatures... (params/etc. )
+# 		extract $MyInvocation.MyCommand as a 'name'/type 
+# 		calling into a literal, say, Block {} function (e.g., function CoreBlock { params() shared-logic-here )
+# 	that'll reduce a huge amount of DRY
+# 		the only real concern would be ... $definition.XyzName attributes - but I think i can 'switch' on those... 
+# 		er, well... and the $defintion = new-object xyz code... 
+# 			still... using 'funcs' as private helpers is a good way to reduce DRY.
+# 
+# 		ALSO: probably makes sense to call my 'shared blocks' (i.e., I'll have 'coreblock' for all shared things, Enumerate/Enumerator, and Iterate/Iterator blocks)
+# 				something like <type>Base.ps1
+# 					and keep them in the PUBLIC folder. 
+# 					and, simply just EXCLUDE anything like *Base.p1 from being 'emitted' or exported as a PUBLIC func... 
+# 				then again, i could put these 'base' blocks 'down' in the /internal/ folder too.. 
+# 					the CONCERN is what putting these 'base' blocks in /internal/ would do to TESTING.
+# 		SEE notes below... in start of Process {} block
 
 function Facet {
 	[CmdletBinding()]
@@ -29,6 +84,7 @@ function Facet {
 		[string]$Name,
 		[Parameter(Mandatory, Position = 1)]
 		[ScriptBlock]$ScriptBlock,
+		[string]$Id = $null,
 		[string]$ModelPath = $null,
 		[string]$TargetPath = $null,
 		[string]$Path = $null,
@@ -45,66 +101,57 @@ function Facet {
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		
-		Enter-Facet $Name -Verbose:$xVerbose -Debug:$xDebug;
+		Enter-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	process {
+		# REFACTOR: remove $bypass & path logic from .ctor of ALL .definition objects. 
+		# 		then, put logic to test + set below the $definition = new-object xxx  call... 
+		# 		THEN, i can put everything in the 'process' command into a helper func that ... does bypass, path assignment, impact, expect, extract, throw on config... 
 		$bypass = Is-ByPassed $MyInvocation.MyCommand.Name -Name $Name -Skip:$Skip -Ignore $Ignore -Verbose:$xVerbose -Debug:$xDebug;
 		
 		if (Should-SetPaths $MyInvocation.MyCommand.Name -Name $Name -ModelPath $ModelPath -TargetPath $TargetPath -Path $Path -Verbose:$xVerbose -Debug:$xDebug) {
 			$ModelPath, $TargetPath = $Path;
 		}
 		
-		$facet = New-Object Proviso.Core.Models.Facet($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
+		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, $ModelPath, $TargetPath, $bypass, $Ignore);
 		
-		# TODO: the following is DAMNED close to what I want/need:
-		# 		it ... assigns values ONLY if they're present ... 
-		# 		the RUB is ... that it doesn't assign OBJECTs ... it assigns strings ... 
-		# 			so, maybe I need to build a helper func (or set of helper funcs) that can bind these details and ... will do lookups if/as needded?
-		# 		OR... 
-		# 			maybe the BuildContext can/does/will keep not only "Semantics" or "which func-name" we're currently in. But will also keep the ACTUAL object in question?
-		# 			yeah. that starts to get pretty cool... 
-		# 				and... NO: not going to be able to have the ACTUAL parent objects in play at this time. 
-		# 				the HANDS-DOWN best I can do is have their NAMES (strings). Cuz of how things transpire. 
-		# 				so, what I'm going to have to do is: 
-		# 						1. bind names to the facets at THIS point (compile time)
-		# 						2. I'll have the actual OBJECTS in the catalog. AFTER compilation is done. 
-		# 						3. During 'discovery' phase, I can create new objects or whatever makes sense and BIND the actual objects
-		# 							into a true 'graph' of what's needed. 
-		# 				Otherwise, I CAN, at this point (i.e., compile time) work on orthography. 
-		# 				And, I think I'm either going to: 
-		# 						A) 100% nest orthography calls into BuildContext calls/operations (and throw from in there)
-		# 						or 
-		# 						B) move orthography OUT of C# and into a set of 'helper' funcs (maybe in common.ps1 or maybe still in orthography.ps1)
-		# 							and just tackled things there. 
-		# 					Point being, orthography WILL still be handled. But it'll be transparent from the perspective of my 'blocks'.
-#		$facet.Surface = $global:PvBuildContext.Surface;
-#		$facet.Runbook = $global:PvBuildContext.Runbook;
+		$definition.SurfaceName = $global:PvLexicon.GetCurrentSurface();
+		$definition.AspectName = $global:PvLexicon.GetCurrentAspect();
 		
 		if ($Impact -ne "None") {
-			$facet.Impact = $Impact; # TODO: either set parse this here and convert to Enum, or ... pass into a .SetImpact(string impact) C# method that parses + assigns.
+			$definition.Impact = [Proviso.Core.Impact]$Impact;
 		}
 		
 		if ($Expect) {
-			$facet.SetExpectFromParameter($Expect);
+			$definition.SetExpectFromParameter($Expect);
 		}
 		
 		if ($Extract) {
-			$facet.SetExtractFromParameter($Extract);
+			$definition.SetExtractFromParameter($Extract);
 		}
 		
 		if ($ThrowOnConfig) {
-			$facet.SetThrowOnConfig($ThrowOnConfig);
+			$definition.SetThrowOnConfig($ThrowOnConfig);
 		}
 		
 		& $ScriptBlock;
 	};
 	
 	end {
+		try {
+			[bool]$replaced = $global:PvCatalog.SetFacetDefinition($definition, (Allow-DefinitionReplacement));
+			
+			if ($replaced) {
+				Write-Verbose "Facet named [$Name] was replaced.";
+			}
+			
+			
+		}
+		catch {
+			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+		}
 		
-		Write-Verbose "Adding FACET [$Name] to Catalog. My SURFACE IS: [$($global:PvBuildContext.Surface)]"
-		
-		$global:PvCatalog.AddFacet($facet);
-		Exit-Facet $Name -Verbose:$xVerbose -Debug:$xDebug;
+		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

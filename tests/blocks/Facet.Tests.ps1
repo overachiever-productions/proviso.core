@@ -5,24 +5,26 @@ BeforeAll {
 	$uut = $PSCommandPath.Replace(".Tests.ps1", ".ps1").Replace("\tests\", "\public\");
 	$root = ($PSCommandPath.Split("\tests"))[0];
 	
+	. "$root\tests\_dependencies.ps1";
 	. $uut;
-	. "$root\private\Orthography.ps1";
-	. "$root\private\HelperMethods.ps1";
 }
 
-# TODO: calls into Orthography and Catalog are ... almost integration tests... 
 Describe "$UnitName Tests" -Tag "UnitTests" {
 	Context "Dependency Checks" {
 		BeforeEach {
-			Mock -CommandName Confirm-Orthography -MockWith {
+			Mock -CommandName Enter-Block -MockWith {
 				return $null;
 			};
+			
+			Mock -CommandName Exit-Block -MockWith {
+				return $null;
+			}
 		}
 		
-		It "Calls Confirm-Orthography" {
-			Facet "Test Facet";
+		It "Calls Enter-Block" {
+			Facet "Test Facet" { };
 			
-			Assert-MockCalled -CommandName Confirm-Orthography -Times 1 -ParameterFilter { $CurrentFunc -eq "Facet" };
+			Assert-MockCalled -CommandName Enter-Block -Times 1 -ParameterFilter { $Type -eq "Facet" };
 		}
 	}
 }

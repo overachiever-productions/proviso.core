@@ -24,7 +24,7 @@ function Property {
 	begin {
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
-		Enter-Property $Name -Verbose:$xVerbose -Debug:$xDebug;
+		Enter-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	process {
@@ -34,12 +34,42 @@ function Property {
 			$ModelPath, $TargetPath = $Path;
 		}
 		
+		$definition = New-Object Proviso.Core.Definitions.PropertyDefinition($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
 		
+		$definition.FacetName = $global:PvLexicon.GetCurrentFacet();
+		$definition.CohortName = $global:PvLexicon.GetCurrentCohort();
+
+		if ($Impact -ne "None") {
+			$definition.Impact = [Proviso.Core.Impact]$Impact;
+		}
+		
+		if ($Expect) {
+			$definition.SetExpectFromParameter($Expect);
+		}
+		
+		if ($Extract) {
+			$definition.SetExtractFromParameter($Extract);
+		}
+		
+		if ($ThrowOnConfig) {
+			$definition.SetThrowOnConfig($ThrowOnConfig);
+		}
 		
 		& $ScriptBlock;
 	};
 	
 	end {
-		Exit-Property $Name -Verbose:$xVerbose -Debug:$xDebug;
+		try {
+			[bool]$replaced = $global:PvCatalog.SetPropertyDefinition($definition, (Allow-DefinitionReplacement));
+			
+			if ($replaced) {
+				Write-Verbose "Property named [$Name] (within Facet [$($global:PvLexicon.GetCurrentFacet())]) was replaced.";
+			}
+		}
+		catch {
+			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+		}
+		
+		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

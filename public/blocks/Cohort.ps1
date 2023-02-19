@@ -17,25 +17,58 @@ function Cohort {
 		[string]$Ignore = $null,
 		[object]$Expect,
 		[object]$Extract,
-		[switch]$Naive = $true,
-		[switch]$Explicit = $false
+		[switch]$UsesAdd = $false,
+		[switch]$UsesAddRemove = $false
 	);
 	
 	begin {
-		
+		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
+		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
+		Enter-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	process {
-		$bypass = Is-ByPassed $MyInvocation.MyCommand.Name -Name $Name -Skip:$Skip -Ignore $Ignore -Verbose:$Verbose -Debug:$Debug;
+		$bypass = Is-ByPassed $MyInvocation.MyCommand.Name -Name $Name -Skip:$Skip -Ignore $Ignore -Verbose:$xVerbose -Debug:$xDebug;
 		
-		if (Should-SetPaths $MyInvocation.MyCommand.Name -Name $Name -ModelPath $ModelPath -TargetPath $TargetPath -Path $Path -Verbose:$Verbose -Debug:$Debug) {
+		if (Should-SetPaths $MyInvocation.MyCommand.Name -Name $Name -ModelPath $ModelPath -TargetPath $TargetPath -Path $Path -Verbose:$xVerbose -Debug:$xDebug) {
 			$ModelPath, $TargetPath = $Path;
+		}
+		
+		$definition = New-Object Proviso.Core.Definitions.CohortDefinition($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
+		
+		$definition.FacetName = $global:PvLexicon.GetCurrentFacet();
+		
+		if ($Impact -ne "None") {
+			$definition.Impact = [Proviso.Core.Impact]$Impact;
+		}
+		
+		if ($Expect) {
+			$definition.SetExpectFromParameter($Expect);
+		}
+		
+		if ($Extract) {
+			$definition.SetExtractFromParameter($Extract);
+		}
+		
+		if ($ThrowOnConfig) {
+			$definition.SetThrowOnConfig($ThrowOnConfig);
 		}
 		
 		& $ScriptBlock;
 	};
 	
 	end {
+		try {
+			[bool]$replaced = $global:PvCatalog.SetCohortDefinition($definition, (Allow-DefinitionReplacement));
+			
+			if ($replaced) {
+				Write-Verbose "Cohort named [$Name] (within Facet [$($global:PvLexicon.GetCurrentFacet())]) was replaced.";
+			}
+		}
+		catch {
+			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+		}
 		
+		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }
