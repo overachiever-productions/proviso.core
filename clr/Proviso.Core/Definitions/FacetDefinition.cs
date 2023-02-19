@@ -1,8 +1,9 @@
 ﻿using System;
+using Proviso.Core.Interfaces;
 
 namespace Proviso.Core.Definitions
 {
-    public class FacetDefinition : DefinitionBase
+    public class FacetDefinition : DefinitionBase, IValidated
     {
         public string SurfaceName { get; set; }
         public string AspectName { get; set; }
@@ -13,6 +14,14 @@ namespace Proviso.Core.Definitions
             : base(name, modelPath, targetPath, skip, skipReason)
         {
             this.Id = id;
+        }
+
+        public void Validate(object validationContext)
+        {
+            if (string.IsNullOrWhiteSpace(this.Name))
+                throw new Exception("Proviso Validation Error. [Facet] -Name can NOT be null/empty.");
+
+            // TODO: if there's an Aspect, there MUST also be a Surface. (But the inverse is not true/required.)
         }
     }
 }

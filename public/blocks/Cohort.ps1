@@ -59,7 +59,11 @@ function Cohort {
 	
 	end {
 		try {
-			$global:PvCatalog.AddCohortDefinition($definition);
+			[bool]$replaced = $global:PvCatalog.SetCohortDefinition($definition, (Allow-DefinitionReplacement));
+			
+			if ($replaced) {
+				Write-Verbose "Cohort named [$Name] (within Facet [$($global:PvLexicon.GetCurrentFacet())]) was replaced.";
+			}
 		}
 		catch {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";

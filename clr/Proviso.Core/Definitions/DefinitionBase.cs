@@ -1,9 +1,11 @@
-﻿using Proviso.Core.Interfaces;
+﻿using System;
+using Proviso.Core.Interfaces;
 
 namespace Proviso.Core.Definitions
 {
     public class DefinitionBase : IDefinable
     {
+        public DateTime Created { get; private set; }
         public string Name { get; private set; }
         public string ModelPath { get; private set; }
         public string TargetPath { get; private set; }
@@ -13,6 +15,8 @@ namespace Proviso.Core.Definitions
 
         public DefinitionBase(string name, string modelPath, string targetPath, bool skip, string skipReason)
         {
+            this.Created = DateTime.UtcNow;
+
             this.Name = name;
             this.ModelPath = modelPath;
             this.TargetPath = targetPath;

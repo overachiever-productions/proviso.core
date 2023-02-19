@@ -26,7 +26,20 @@ namespace Proviso.Core.Definitions
         public void Validate(object validationContext)
         {
             if (string.IsNullOrWhiteSpace(this.Name))
-                throw new Exception("Proviso Validation Error. Enumerator Name can NOT be null/empty.");
+                throw new Exception("Proviso Validation Error. [Enumerator] -Name can NOT be null/empty.");
+
+            if (IsGlobal)
+            {
+                // TODO: Implement AND set up some rudimentar unit tests..
+                //  e.g., globals can't have facet/cohort names
+            }
+            else
+            {
+                // TODO: Implement AND set up some rudimentar unit tests..
+                //  on the other hand... anonymous ... must have cohort AND facet names
+            }
+
+
         }
     }
 }

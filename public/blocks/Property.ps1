@@ -60,7 +60,11 @@ function Property {
 	
 	end {
 		try {
-			$global:PvCatalog.AddPropertyDefinition($definition);
+			[bool]$replaced = $global:PvCatalog.SetPropertyDefinition($definition, (Allow-DefinitionReplacement));
+			
+			if ($replaced) {
+				Write-Verbose "Property named [$Name] (within Facet [$($global:PvLexicon.GetCurrentFacet())]) was replaced.";
+			}
 		}
 		catch {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";

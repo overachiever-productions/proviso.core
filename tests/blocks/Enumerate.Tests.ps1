@@ -21,7 +21,7 @@ Describe "$UnitName Tests" -Tag "UnitTests" {
 	Context "Behavior Tests" {
 		It "Allows Empty Script Blocks" {
 			# Justification: CAN be empty/placeholder at COMPILE time; if still empty at Discovery, will throw.
-			Facet "Test" {
+			Facet "Test 1" {
 				Cohort "First Test Cohort" {
 					Enumerate {
 					}
@@ -31,7 +31,7 @@ Describe "$UnitName Tests" -Tag "UnitTests" {
 		
 		It "Allows Empty -Name Property" {
 			# Justification: Enumerate's can be anonymous (i.e., only in scope of their parent cohort).
-			Facet "Test" {
+			Facet "Test 2" {
 				Cohort "Second Test Cohort" {
 					Enumerate { # there's no name for this enumerate
 					}
@@ -40,7 +40,7 @@ Describe "$UnitName Tests" -Tag "UnitTests" {
 		}
 		
 		It "Uses Cohort's -Name when -Name Empty" {
-			Facet "Test2" {
+			Facet "Test 3" {
 				Cohort "Another Test Cohort" {
 					Enumerate {
 						# no name - so, should inherit from Cohort... 
@@ -55,7 +55,7 @@ Describe "$UnitName Tests" -Tag "UnitTests" {
 		}
 		
 		It "Can Have an Explicit -Name Defined" {
-			Facet "Test2" {
+			Facet "Test 4" {
 				Cohort "Yet Another Test Cohort" {
 					Enumerate "Explicitly Named" {
 					}
@@ -64,7 +64,7 @@ Describe "$UnitName Tests" -Tag "UnitTests" {
 		}
 		
 		It "Can Have Explicit -Name which is Same as Cohort" {
-			Facet "Test2" {
+			Facet "Test 5" {
 				Cohort "Members of SysAdmin" {
 					Enumerate "Members of SysAdmin" {
 					}
@@ -73,7 +73,7 @@ Describe "$UnitName Tests" -Tag "UnitTests" {
 		}
 		
 		It "Is Global when Explicit -Name is Defined" {
-			Facet "Test2" {
+			Facet "Test 6" {
 				Cohort "SysAdmins" {
 					Enumerate "Enumerate Members of SysAdmin" {
 					}

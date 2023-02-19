@@ -7,26 +7,79 @@ namespace Proviso.Core
 {
     public class Catalog
     {
-        // implement as this: https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1.find?view=net-7.0 
+        private List<FacetDefinition> _facets = new List<FacetDefinition>();
+        private List<CohortDefinition> _cohorts = new List<CohortDefinition>();
+        private List<PropertyDefinition> _properties = new List<PropertyDefinition>();
         private List<EnumeratorDefinition> _enumerators = new List<EnumeratorDefinition>();
+        
 
         public static Catalog Instance => new Catalog();
 
         private Catalog() { }
 
-        public void AddFacetDefinition(FacetDefinition added)
+
+        // REFACTOR: all of these Set<T>Definition calls can/should be replaced by some sort of SetDefinition<T>(t, bool allowReplace)
+        //      kind of internal/private helper. i.e., have to leave the interfaces/public methods the same... but should implement the copy-paste-tweak guts as a generic... 
+        public bool SetFacetDefinition(FacetDefinition added, bool allowReplace)
         {
-            // TODO: can NOT add any kind of *Definition without it being VALIDATED first. 
+            added.Validate(null);
+
+            var exists = this._facets.Find(x => x.Name == added.Name);
+            if (exists != null)
+            {
+                if (allowReplace)
+                {
+                    exists = added;
+                    return true;
+                }
+
+                throw new Exception($"[Facet] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique [Facet] names and/or allow global replacement override.");
+            }
+
+            this._facets.Add(added);
+            return false;
+
         }
 
-        public void AddPropertyDefinition(PropertyDefinition added)
+        public bool SetPropertyDefinition(PropertyDefinition added, bool allowReplace)
         {
-            // TODO: can NOT add any kind of *Definition without it being VALIDATED first. 
+            added.Validate(null);
+
+            var exists = this._properties.Find(x => x.Name == added.Name);
+            if (exists != null)
+            {
+                if (allowReplace)
+                {
+                    exists = added;
+                    return true;
+                }
+
+                throw new Exception($"[Property] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique [Property] names and/or allow global replacement override.");
+            }
+
+            this._properties.Add(added);
+            return false;
         }
 
-        public void AddCohortDefinition(CohortDefinition added)
+        public bool SetCohortDefinition(CohortDefinition added, bool allowReplace)
         {
-            // TODO: can NOT add any kind of *Definition without it being VALIDATED first. 
+            added.Validate(null);
+
+            var exists = this._cohorts.Find(x => x.Name == added.Name);
+            if (exists != null)
+            {
+                if (allowReplace)
+                {
+                    exists = added;
+                    return true;
+                }
+
+                throw new Exception($"[Cohort] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique [Cohort] names and/or allow global replacement override.");
+            }
+
+            this._cohorts.Add(added);
+            return false;
+
         }
 
         public bool SetEnumeratorDefinition(EnumeratorDefinition added, bool allowReplace)
@@ -43,7 +96,7 @@ namespace Proviso.Core
                 }
 
                 string e = exists.IsGlobal ? "Enumerator" : "Enumerate";
-                throw new Exception($"Block [{e}] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique {e} names and/or allow global replacement override.");
+                throw new Exception($"[{e}] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique {e} names and/or allow global replacement override.");
             }
             
             this._enumerators.Add(added);
@@ -51,6 +104,18 @@ namespace Proviso.Core
         }
 
         public FacetDefinition GetFacetByName(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public FacetDefinition GetFacetById(string id)
+        {
+            // TODO: I'm not even sure this method/approach is needed.
+            //  if it's NOT... then a) remove and b) change GetFacetByName to GetFacet(string name)
+            throw new NotImplementedException();
+        }
+
+        public CohortDefinition GetCohort(string name)
         {
             throw new NotImplementedException();
         }

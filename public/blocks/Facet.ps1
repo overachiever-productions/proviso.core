@@ -140,7 +140,13 @@ function Facet {
 	
 	end {
 		try {
-			$global:PvCatalog.AddFacetDefinition($definition);
+			[bool]$replaced = $global:PvCatalog.SetFacetDefinition($definition, (Allow-DefinitionReplacement));
+			
+			if ($replaced) {
+				Write-Verbose "Facet named [$Name] was replaced.";
+			}
+			
+			
 		}
 		catch {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
