@@ -36,8 +36,14 @@ function Surface {
 	};
 	
 	end {
+#		try {
+#			$global:PvCatalog.AddSurfaceDefinition($definition);
+#		}
+#		catch {
+#			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+#		}
 		
-		Write-Debug "		Adding Surface: [$Name] to Catalog.";
+		
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

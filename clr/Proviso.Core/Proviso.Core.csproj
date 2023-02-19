@@ -12,4 +12,8 @@
     <Folder Include="Processing\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.Management.Automation" Version="7.2.9" />
+  </ItemGroup>
+
 </Project>

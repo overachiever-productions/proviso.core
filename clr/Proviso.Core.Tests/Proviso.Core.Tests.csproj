@@ -16,4 +16,8 @@
     <ProjectReference Include="..\Proviso.Core\Proviso.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="fakes\" />
+  </ItemGroup>
+
 </Project>

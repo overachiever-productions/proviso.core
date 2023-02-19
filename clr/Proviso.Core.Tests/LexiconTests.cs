@@ -190,6 +190,34 @@ public class LexiconTests
 
         sut.ExitBlock("Surface", surfaceName);
         StringAssert.AreEqualIgnoringCase("", sut.GetCurrentBlockName());
+    }
 
+    [Test]
+    public void Cohort_Tracks_Parent_Facet()
+    {
+        var sut = Lexicon.Instance;
+
+        var facetName = "My Facet";
+        var cohortName = "Test Cohort";
+
+        sut.EnterBlock("Facet", facetName);
+        sut.EnterBlock("Cohort", cohortName);
+
+        StringAssert.AreEqualIgnoringCase(facetName, sut.GetCurrentFacet());
+    }
+
+    [Test]
+    public void Enumerate_Tracks_Parent_Cohort()
+    {
+        var sut = Lexicon.Instance;
+
+        var facetName = "My Facet";
+        var cohortName = "Test Cohort";
+
+        sut.EnterBlock("Facet", facetName);
+        sut.EnterBlock("Cohort", cohortName);
+        sut.EnterBlock("Enumerate", "");
+
+        StringAssert.AreEqualIgnoringCase(cohortName, sut.GetCurrentCohort());
     }
 }

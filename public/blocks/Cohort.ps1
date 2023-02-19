@@ -34,31 +34,36 @@ function Cohort {
 			$ModelPath, $TargetPath = $Path;
 		}
 		
-		$cohortDefinition = New-Object Proviso.Core.Definitions.CohortDefinition($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
+		$definition = New-Object Proviso.Core.Definitions.CohortDefinition($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
 		
-		$cohortDefinition.FacetName = $global:PvLexicon.GetCurrentFacet();
+		$definition.FacetName = $global:PvLexicon.GetCurrentFacet();
 		
 		if ($Impact -ne "None") {
-			$cohortDefinition.Impact = [Proviso.Core.Impact]$Impact;
+			$definition.Impact = [Proviso.Core.Impact]$Impact;
 		}
 		
 		if ($Expect) {
-			$cohortDefinition.SetExpectFromParameter($Expect);
+			$definition.SetExpectFromParameter($Expect);
 		}
 		
 		if ($Extract) {
-			$cohortDefinition.SetExtractFromParameter($Extract);
+			$definition.SetExtractFromParameter($Extract);
 		}
 		
 		if ($ThrowOnConfig) {
-			$cohortDefinition.SetThrowOnConfig($ThrowOnConfig);
+			$definition.SetThrowOnConfig($ThrowOnConfig);
 		}
 		
 		& $ScriptBlock;
 	};
 	
 	end {
-		$global:PvCatalog.AddCohortDefinition($cohortDefinition);
+		try {
+			$global:PvCatalog.AddCohortDefinition($definition);
+		}
+		catch {
+			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+		}
 		
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};

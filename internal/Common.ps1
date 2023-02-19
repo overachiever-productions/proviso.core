@@ -90,3 +90,13 @@ function Should-SetPaths {
 	
 	return $false;
 }
+
+filter Allow-DefinitionReplacement {
+	# TODO: set some sort of global preference or whatever. 
+	# 	and, it has to be set to some sort of explicit option like { Yes | No | Time-Based }
+	
+	# otherwise, use compilation vs 'now' times:
+	# TODO: implement time-checks... 
+	
+	return $false;
+}

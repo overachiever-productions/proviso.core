@@ -34,32 +34,37 @@ function Property {
 			$ModelPath, $TargetPath = $Path;
 		}
 		
-		$propertyDefinition = New-Object Proviso.Core.Definitions.PropertyDefinition($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
+		$definition = New-Object Proviso.Core.Definitions.PropertyDefinition($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
 		
-		$propertyDefinition.FacetName = $global:PvLexicon.GetCurrentFacet();
-		$propertyDefinition.CohortName = $global:PvLexicon.GetCurrentCohort();
+		$definition.FacetName = $global:PvLexicon.GetCurrentFacet();
+		$definition.CohortName = $global:PvLexicon.GetCurrentCohort();
 
 		if ($Impact -ne "None") {
-			$propertyDefinition.Impact = [Proviso.Core.Impact]$Impact;
+			$definition.Impact = [Proviso.Core.Impact]$Impact;
 		}
 		
 		if ($Expect) {
-			$propertyDefinition.SetExpectFromParameter($Expect);
+			$definition.SetExpectFromParameter($Expect);
 		}
 		
 		if ($Extract) {
-			$propertyDefinition.SetExtractFromParameter($Extract);
+			$definition.SetExtractFromParameter($Extract);
 		}
 		
 		if ($ThrowOnConfig) {
-			$propertyDefinition.SetThrowOnConfig($ThrowOnConfig);
+			$definition.SetThrowOnConfig($ThrowOnConfig);
 		}
 		
 		& $ScriptBlock;
 	};
 	
 	end {
-		$global:PvCatalog.AddPropertyDefinition($propertyDefinition);  
+		try {
+			$global:PvCatalog.AddPropertyDefinition($definition);
+		}
+		catch {
+			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+		}
 		
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};

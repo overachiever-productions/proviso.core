@@ -32,6 +32,6 @@ function Aspect {
 	};
 	
 	end {
-		Exit-Aspect $Name -Verbose:$xVerbose -Debug:$xDebug;
+		
 	};
 }
