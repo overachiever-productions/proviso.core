@@ -21,8 +21,7 @@ function Surface {
 	begin {
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
-		
-		Enter-Surface $Name -Verbose:$xVerbose -Debug:$xDebug;
+		Enter-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	process {
@@ -37,8 +36,14 @@ function Surface {
 	};
 	
 	end {
+#		try {
+#			$global:PvCatalog.AddSurfaceDefinition($definition);
+#		}
+#		catch {
+#			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+#		}
 		
-		Write-Verbose "Adding Surface: [$Name] to Catalog.";
-		Exit-Surface $Name -Verbose:$xVerbose -Debug:$xDebug;
+		
+		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

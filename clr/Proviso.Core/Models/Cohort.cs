@@ -1,6 +1,6 @@
 ﻿namespace Proviso.Core.Models
 {
-    public class Facet
+    public class Cohort
     {
 
     }

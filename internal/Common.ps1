@@ -36,6 +36,15 @@ filter Has-Value {
 	return (-not ([string]::IsNullOrEmpty($Value)));
 }
 
+filter Is-Empty {
+	param (
+		[Parameter(Position = 0)]
+		[string]$Value
+	);
+	
+	return [string]::IsNullOrWhiteSpace($Value);
+}
+
 function Is-ByPassed {
 	[CmdletBinding()]
 	param (
@@ -78,6 +87,16 @@ function Should-SetPaths {
 		
 		return $true;
 	}
+	
+	return $false;
+}
+
+filter Allow-DefinitionReplacement {
+	# TODO: set some sort of global preference or whatever. 
+	# 	and, it has to be set to some sort of explicit option like { Yes | No | Time-Based }
+	
+	# otherwise, use compilation vs 'now' times:
+	# TODO: implement time-checks... 
 	
 	return $false;
 }
