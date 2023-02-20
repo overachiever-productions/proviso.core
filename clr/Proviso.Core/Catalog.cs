@@ -103,9 +103,19 @@ namespace Proviso.Core
             return false;
         }
 
-        public FacetDefinition GetFacetByName(string name)
+        public RunbookDefinition GetRunbook(string name)
         {
             throw new NotImplementedException();
+        }
+
+        public SurfaceDefinition GetSurface(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public FacetDefinition GetFacetByName(string name)
+        {
+            return this._facets.Find(x => x.Name == name);
         }
 
         public FacetDefinition GetFacetById(string id)
@@ -122,12 +132,7 @@ namespace Proviso.Core
 
         public EnumeratorDefinition GetEnumerator(string name)
         {
-            // REFACTOR: if ... the output of .Find is ... null, then... i should just be able to return this.enums.Find()
-            var exists = this._enumerators.Find(x => x.Name == name);
-            if (exists == null) 
-                return null;
-
-            return exists;
+            return this._enumerators.Find(x => x.Name == name);
         }
     }
 }
