@@ -18,8 +18,6 @@ function Execute-Pipeline {
 	);
 	
 	begin {
-		# not sure I want to put any logic in here... given how the PowerShell pipeline works...
-		
 		[Proviso.Core.Catalog]$Catalog = $global:PvCatalog;
 	};
 	
@@ -27,7 +25,9 @@ function Execute-Pipeline {
 		# ====================================================================================================
 		# 1. Setup. 
 		# ====================================================================================================
-		[datetime]$processingStart = [datetime]::Now;
+		[datetime]$pipelineStart = [datetime]::Now;
+		Write-Debug "	Pipeline Processing Starting.";
+		
 		[Proviso.Core.Definitions.FacetDefinition[]]$facetDefinitions = @();
 		[Proviso.Core.Definitions.SurfaceDefinition[]]$surfaceDefinitions = @();
 		
@@ -78,12 +78,14 @@ function Execute-Pipeline {
 		}
 		
 		[Proviso.Core.Processing.ProcessingManifest]$manifest = New-Object Proviso.Core.Processing.ProcessingManifest([Proviso.Core.OperationType]$OperationType, [Proviso.Core.Verb]$Verb);
-		$manifest.ProcessingStart = $processingStart;
+		$manifest.PipelineStart = $pipelineStart;
 		$manifest.HostName = "$((Get-CimInstance Win32_ComputerSystem -Verbose:$false).Domain)\$([System.Net.Dns]::GetHostName())";
 		
 		# ====================================================================================================
 		# 2. Discovery 
 		# ====================================================================================================
+		$manifest.DiscoveryStart = [datetime]::Now;
+		
 		# Additional Expansion:
 		foreach ($surface in $surfaceDefinitions) {
 			Write-Host "		Processing Pipeline: Expanding Runbook Surface: [$($surface.Name)].";
@@ -101,25 +103,31 @@ function Execute-Pipeline {
 			
 			Write-Debug "		Processing Pipeline: Starting Discovery.";
 			$manifest.ExecuteDiscovery($Catalog);
-			Write-Debug "		Processing Pipeline: Discovery Complete!";
 		}
 		catch {
 			Write-Debug "		Processing Pipeline: Exception During Discovery: $($_.Exception.Message) -Stack: $($_.ScriptStackTrace)"; throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
 			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
+		finally {
+			$manifest.DiscoveryEnd = [datetime]::Now;
+			Write-Debug "		Processing Pipeline: Discovery Complete.";
+		}
 		
 		# ====================================================================================================
 		# 3. Processing
 		# ====================================================================================================
-# TODO: set ProcessingStarted = NOW... 
-#  i.e., previous/extant "processingStarted" should be discovery info/etc. 
+		
 		try {
 			if ($manifest.HasRunbookSetup) {
+				Write-Debug "		Processing Pipeline: Starting Runbook.Setup() codeblock.";
 				# do the runbook setup
+				Write-Debug "		  Processing Pipeline: Runbook.Setup() codeblock complete.";
 			}
 			
 			if ($manifest.HasRunbookAssertions) {
+				Write-Debug "		Processing Pipeline: Starting Runbook.Assertions() codeblock.";
 				# do the assertions
+				Write-Debug "		  Processing Pipeline: Runbook.Assertions() complete.";
 			}
 			
 			foreach ($surface in $manifest.Surfaces) {
@@ -170,12 +178,16 @@ function Execute-Pipeline {
 				}
 				
 				if ($surface.Cleanup) {
+					
+					
 					# run cleanup + handle errors/results.
 				}
 			}
 			
 			if ($manifest.HasRunbookCleanup) {
-				# to runbook cleanup.
+				Write-Debug "		Processing Pipeline: Starting Runbook.Cleanup() codeblock.";
+				# do runbook cleanup.
+				Write-Debug "		  Processing Pipeline: Runbook.Cleanup() codeblock complete.";
 			}
 		}
 		catch {
@@ -191,6 +203,7 @@ function Execute-Pipeline {
 	};
 	
 	end {
-		
+		$manifest.PipelineEnd = [datetime]::Now;
+		Write-Debug "	Pipeline Processing Complete.";
 	};
 }

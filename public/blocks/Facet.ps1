@@ -114,7 +114,7 @@ function Facet {
 			$ModelPath, $TargetPath = $Path;
 		}
 		
-		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, $ModelPath, $TargetPath, $bypass, $Ignore);
+		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, $ModelPath, $TargetPath, $bypass, $Ignore, [Proviso.Core.FacetType]"Scalar");
 		
 		$definition.SurfaceName = $global:PvLexicon.GetCurrentSurface();
 		$definition.AspectName = $global:PvLexicon.GetCurrentAspect();
