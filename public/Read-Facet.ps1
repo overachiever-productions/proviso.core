@@ -70,7 +70,6 @@ function Read-Facet {
 		# NOTE: No -Config or -Models for this operation:
 		$result = Execute-Pipeline -Verb "Read" -OperationType "Facet" -Name $Name -Model $null -Target $Target;
 		
-		
 	};
 	
 	end {
