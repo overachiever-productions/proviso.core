@@ -6,7 +6,7 @@ function Surface {
 		[Parameter(Mandatory, Position = 0)]
 		[string]$Name,
 		[Parameter(Mandatory, Position = 1)]
-		[ScriptBlock]$ScriptBlock,
+		[ScriptBlock]$SurfaceBlock,
 		[string]$ModelPath = $null,
 		[string]$TargetPath = $null,
 		[string]$Path,
@@ -32,7 +32,7 @@ function Surface {
 		}
 		
 		
-		& $ScriptBlock;
+		& $SurfaceBlock;
 	};
 	
 	end {

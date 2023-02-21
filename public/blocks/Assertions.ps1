@@ -14,17 +14,10 @@ function Assertions {
 	};
 	
 	process {
-		# note: may NOT need this block at all... 
-		# 		only reason I can think it might need to exist would be to set a simple 'parent' type or something... 
+		# NOTE: this block IS essential. The begin/end blocks 'keep track' of where we are via the taxonomy. 
+		# 		other than that, this is JUST a wrapper - that, in turn, runs its $AssertionsBlock (so that Asserts can be loaded into a surface or runbook).
 		
-		
-		# if parent is ... Runbook, then ... add... 'remember' parent... 
-		# 		and... (then, down in asserts)... add each found/defined assert to Runbook.Assertions (i.e., array)
-		
-		# otherwise, do the same for Surface Assertions... 
-		
-		
-		#& $ScriptBlock;
+		& $AssertionsBlock;
 	};
 	
 	end {

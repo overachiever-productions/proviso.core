@@ -12,14 +12,15 @@
 		Assertions {}
 
 		Operations {
-			Run [-Facet] "Intellisense Name Here would be Great" -something? 
-			Run "Another Facet Name here" -Impact "overwritten from source"
-
-			Run "etc..." -ExecutionOrder 1 -Comment "not sure why not up top... but... this is an option."
+			#Implement [-Facet] "Intellisense Name Here would be Great" -something? 
+			Implement -FacetName "Facet to Process";
+			Implement "My Facet Name"; # I could add -ExecutionOrder, but seems odd... 
+			#Implement -Facet "facet is just a switch/syntactic sugar" -Impact/Overwrite/whatever goes here... 
 		}
 
 		Cleanup { }
 	}
+
 
 #>
 
@@ -30,7 +31,7 @@ function Runbook {
 		[Parameter(Mandatory, Position = 0)]
 		[string]$Name,
 		[Parameter(Mandatory, Position = 1)]
-		[ScriptBlock]$ScriptBlock
+		[ScriptBlock]$RunbookBlock
 		
 		# TODO: other params as per ... https://www.notion.so/overachiever/APIs-9c34b68d4f68476aaa15476d27c06596?pvs=4#ca18489538424ca3a5ebd6a9728b7e39
 	);
@@ -44,7 +45,7 @@ function Runbook {
 	
 	process {
 		
-		& $ScriptBlock;
+		& $RunbookBlock;
 	};
 	
 	end {

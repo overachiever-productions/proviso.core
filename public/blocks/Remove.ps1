@@ -6,7 +6,8 @@ function Remove {
 		[string]$Name = $null,
 		# TODO: still not sure this is even remotely close to right:
 		[ValidateSet("ConfirmLow", "ConfirmMedium", "ConfirmHigh")]
-		[string]$ConfirmationLevel
+		[string]$ConfirmationLevel,
+		[ScriptBlock]$RemoveBlock
 	);
 	
 	begin {

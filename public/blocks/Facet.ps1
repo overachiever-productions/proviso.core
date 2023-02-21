@@ -78,7 +78,7 @@ function Facet {
 		[Parameter(Mandatory, Position = 0)]
 		[string]$Name,
 		[Parameter(Mandatory, Position = 1)]
-		[ScriptBlock]$ScriptBlock,
+		[ScriptBlock]$FacetBlock,
 		[string]$Id = $null,
 		[string]$ModelPath = $null,
 		[string]$TargetPath = $null,
@@ -130,7 +130,7 @@ function Facet {
 			$definition.SetThrowOnConfig($ThrowOnConfig);
 		}
 		
-		& $ScriptBlock;
+		& $FacetBlock;
 	};
 	
 	end {

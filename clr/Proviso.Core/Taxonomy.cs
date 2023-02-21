@@ -43,6 +43,11 @@ namespace Proviso.Core
                 },
                 new Taxonomy
                 {
+                    NodeName = "Implement", 
+                    AllowedParents = new List<string> { "Operations" }
+                },
+                new Taxonomy
+                {
                     NodeName = "Surface",
                     Rootable = true,
                     Tracked = true,

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace Proviso.Core
@@ -69,15 +70,37 @@ namespace Proviso.Core
             return null;
         }
 
-        public string GetPreviousBlockType()
+        public string GetCurrentBlockType()
         {
             if (this._stack.Count > 0)
             {
-                var previous = this._stack.Peek();
-                return previous.NodeName;
+                var current = this._stack.Peek();  // i.e., CURRENT is what's on the TOP of the stack.
+                return current.NodeName;
             }
 
-            return null;
+            return "";
+        }
+
+        public string GetParentBlockType()
+        {
+            if (this._stack.Count > 1)
+            {
+                var parent = this._stack.Skip(1).First();
+                return parent.NodeName;
+            }
+
+            return "";
+        }
+
+        public string GetGrandParentBlockType()
+        {
+            if (this._stack.Count > 2)
+            {
+                var grandparent = this._stack.Skip(2).First();
+                return grandparent.NodeName;
+            }
+
+            return "";
         }
 
         public void EnterBlock(string blockType, string blockName)

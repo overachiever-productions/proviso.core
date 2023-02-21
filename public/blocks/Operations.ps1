@@ -15,7 +15,8 @@ function Operations {
 	
 	process {
 		
-		#& $ScriptBlock;
+		
+		& $OperationsBlock;
 	};
 	
 	end {

@@ -74,6 +74,10 @@ function Exit-Block {
 	}
 }
 
-filter Get-PreviousBlockType {
-	return $PvLexicon.GetPreviousBlockType();
+filter Get-CurrentBlockType {
+	return $PvLexicon.GetCurrentBlockType();
+}
+
+filter Get-ParentBlockType {
+	return $PvLexicon.GetParentBlockType();
 }

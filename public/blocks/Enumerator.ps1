@@ -7,7 +7,7 @@ function Enumerator {
 		[ValidateNotNullOrEmpty()]
 		[string]$Name,
 		[Parameter(Mandatory, Position = 1)]
-		[ScriptBlock]$ScriptBlock,
+		[ScriptBlock]$EnumeratorBlock,
 		
 		# TODO: this might not even make sense. It's implemented as a STRING for now.
 		[string]$OrderBy = $null
@@ -27,7 +27,7 @@ function Enumerator {
 			$definition.OrderBy = $OrderBy;
 		}
 		
-		$definition.Enumerate = $ScriptBlock;
+		$definition.Enumerate = $EnumeratorBlock;
 	};
 	
 	end {

@@ -3,6 +3,7 @@ using Proviso.Core;
 
 namespace Proviso.Core.Definitions
 {
+    // REFACTOR: need a better (more descriptive) name.
     public interface ISubBlockDefinition
     {
         RunbookOrSurface RunbookOrSurface { get; }

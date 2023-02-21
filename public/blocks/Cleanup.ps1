@@ -14,10 +14,26 @@ function Cleanup {
 	};
 	
 	process {
+		$parentBlockType = Get-ParentBlockType;
 		
+		if ("Runbook" -eq $parentBlockType) {
+			$cleanup = New-Object Proviso.Core.Definitions.RunbookCleanupDefinition($CleanupBlock);
+		}
+		else {
+			$cleanup = New-Object Proviso.Core.Definitions.SurfaceCleanupDefinition($CleanupBlock);
+		}
 		
+		try {
+			[bool]$replaced = $global:PvCatalog.SetSubBlockDefinition($cleanup, (Allow-DefinitionReplacement));
+			
+			if ($replaced) {
+				Write-Verbose "$($parentBlockType).Cleanup was replaced.";
+			}
+		}
+		catch {
+			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		}
 		
-		#& $ScriptBlock;
 	};
 	
 	end {

@@ -17,6 +17,8 @@ filter Import-Types {
 		"$ScriptRoot\clr\Proviso.Core\Lexicon.cs"
 		"$ScriptRoot\clr\Proviso.Core\Catalog.cs"
 		
+		"$ScriptRoot\clr\Proviso.Core\Definitions\SubBlockDefinition.cs"
+		
 		"$ScriptRoot\clr\Proviso.Core\Definitions\DefinitionBase.cs"
 		"$ScriptRoot\clr\Proviso.Core\Definitions\RunbookDefinition.cs"
 		"$ScriptRoot\clr\Proviso.Core\Definitions\SurfaceDefinition.cs"
