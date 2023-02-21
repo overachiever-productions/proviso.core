@@ -19,7 +19,7 @@ function Assert {
 	};
 	
 	process {
-		
+		Write-Host "I'm a little assert, short and stout... "
 	};
 	
 	end {

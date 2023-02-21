@@ -1,9 +1,9 @@
 ﻿Set-StrictMode -Version 1.0;
 
-function Assertions {
+function Operations {
 	[CmdletBinding()]
 	param (
-		[ScriptBlock]$AssertionsBlock
+		[ScriptBlock]$OperationsBlock
 	);
 	
 	begin {
@@ -14,15 +14,6 @@ function Assertions {
 	};
 	
 	process {
-		# note: may NOT need this block at all... 
-		# 		only reason I can think it might need to exist would be to set a simple 'parent' type or something... 
-		
-		
-		# if parent is ... Runbook, then ... add... 'remember' parent... 
-		# 		and... (then, down in asserts)... add each found/defined assert to Runbook.Assertions (i.e., array)
-		
-		# otherwise, do the same for Surface Assertions... 
-		
 		
 		#& $ScriptBlock;
 	};

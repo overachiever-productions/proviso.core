@@ -17,9 +17,18 @@ namespace Proviso.Core
 
         private Catalog() { }
 
-
         // REFACTOR: all of these Set<T>Definition calls can/should be replaced by some sort of SetDefinition<T>(t, bool allowReplace)
         //      kind of internal/private helper. i.e., have to leave the interfaces/public methods the same... but should implement the copy-paste-tweak guts as a generic... 
+        public bool SetSubBlockDefinition(ISubBlockDefinition added, bool allowReplace)
+        {
+            return false;
+        }
+
+        public bool SetCleanupDefintion(ISubBlockDefinition added, bool allowReplace)
+        {
+            throw new NotImplementedException();
+        }
+        
         public bool SetFacetDefinition(FacetDefinition added, bool allowReplace)
         {
             added.Validate(null);

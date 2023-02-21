@@ -69,6 +69,17 @@ namespace Proviso.Core
             return null;
         }
 
+        public string GetPreviousBlockType()
+        {
+            if (this._stack.Count > 0)
+            {
+                var previous = this._stack.Peek();
+                return previous.NodeName;
+            }
+
+            return null;
+        }
+
         public void EnterBlock(string blockType, string blockName)
         {
             Taxonomy taxonomy = this._grammar.Find(t => t.NodeName == blockType);
@@ -86,6 +97,12 @@ namespace Proviso.Core
                 return;
             }
 
+            if (taxonomy.RequiresName && string.IsNullOrWhiteSpace(blockName))
+                throw new Exception($"A -Name is required for block-type: [{blockType}].");
+
+            if (!taxonomy.NameAllowed && !string.IsNullOrWhiteSpace(blockName))
+                throw new Exception($"[{blockType}] may NOT have a -Name (current -Name is [{blockName}]).");
+
             // TODO: is it ... _possible_ to check AllowedChildren? I've DEFINED which children are allowed in the grammar... 
             //  but i'm never using it... 
 
@@ -98,6 +115,7 @@ namespace Proviso.Core
 
         // TODO: Either REQUIRE blockName to be the same as what was handed in via Enter (as an additional validation/test)
         //          OR, remove it from being an argument. One or the other. 
+        //      EXCEPT: Setup/Assertions/Cleanup (for both Runbooks AND Surfaces) do NOT have names (and can't have names).
         public void ExitBlock(string blockType, string blockName)
         {
             Taxonomy taxonomy = this._grammar.Find(t => t.NodeName == blockType);

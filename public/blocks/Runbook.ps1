@@ -1,5 +1,29 @@
 ﻿Set-StrictMode -Version 1.0;
 
+<#
+
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+
+	$global:DebugPreference = "Continue";
+	$global:VerbosePreference = "Continue";
+
+	Runbook "Firewall Stuff" { 
+		Setup {} 
+		Assertions {}
+
+		Operations {
+			Run [-Facet] "Intellisense Name Here would be Great" -something? 
+			Run "Another Facet Name here" -Impact "overwritten from source"
+
+			Run "etc..." -ExecutionOrder 1 -Comment "not sure why not up top... but... this is an option."
+		}
+
+		Cleanup { }
+	}
+
+#>
+
+
 function Runbook {
 	[CmdletBinding()]
 	param (

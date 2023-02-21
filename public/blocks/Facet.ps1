@@ -4,8 +4,6 @@
 
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 
-	Get-Command 
-
 	$global:DebugPreference = "Continue";
 	$global:VerbosePreference = "Continue";
 
@@ -13,35 +11,32 @@
 #		Facet "Child" {}
 #	}
 
-	Facet "Host Ports" {
-		Property "ICMP" {
-		}
-		Property "RDP" {
-		}
-	}
-
-	Surface "Firewall Rules" {
-		Facet "SQL Server Ports" {
-			Property "SQL Server" {
-			}
-			Property "SQL Server - DAC" {
-			}
-			Property "SQL Server - Mirroring" { 
-			}
-			Cohort "Test Cohort" {
-				Enumerate {
-				}
-			}
-		}
-
-		Import -Facet "Host Ports";
-	}
-
-	Read-Facet "SQL Server Ports";
-	Read-Facet "Host Ports";
-
-	# Get this to work 'better' - i.e., the error I'm getting now is FUGLY: 
-	Read-Facet "This face does not exist";
+#	Facet "Host Ports" {
+#		Property "ICMP" {
+#		}
+#		Property "RDP" {
+#		}
+#	}
+#
+#	Surface "Firewall Rules" {
+#		Facet "SQL Server Ports" {
+#			Property "SQL Server" {
+#			}
+#			Property "SQL Server - DAC" {
+#			}
+#			Property "SQL Server - Mirroring" { 
+#			}
+#			Cohort "Test Cohort" {
+#				Enumerate {
+#				}
+#			}
+#		}
+#
+#		Import -Facet "Host Ports";
+#	}
+#
+#	Read-Facet "SQL Server Ports";
+#	Read-Facet "Host Ports";
 
 	Runbook "Firewall Stuff" { 
 		Setup {} 

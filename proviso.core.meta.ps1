@@ -7,10 +7,7 @@ filter Import-Types {
 	
 	# NOTE: Import order can/does impact BUILD operations
 	$classFiles = @(
-		"$ScriptRoot\clr\Proviso.Core\Enums\FacetType.cs"
-		"$ScriptRoot\clr\Proviso.Core\Enums\Impact.cs"
-		"$ScriptRoot\clr\Proviso.Core\Enums\OperationType.cs"
-		"$ScriptRoot\clr\Proviso.Core\Enums\Verb.cs"
+		"$ScriptRoot\clr\Proviso.Core\Enums\Enums.cs"
 		
 		"$ScriptRoot\clr\Proviso.Core\Interfaces\IDefinable.cs"
 		"$ScriptRoot\clr\Proviso.Core\Interfaces\IValidated.cs"

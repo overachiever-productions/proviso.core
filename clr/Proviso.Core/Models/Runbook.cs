@@ -2,6 +2,9 @@
 {
     public class Runbook
     {
+        public Runbook()
+        {
 
+        }
     }
 }

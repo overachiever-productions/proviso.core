@@ -42,8 +42,7 @@ function Enter-Block {
 	param (
 		[Parameter(Mandatory)]
 		[string]$Type,
-		[Parameter(Mandatory)]
-		[string]$Name
+		[string]$Name = $null
 	);
 	
 	# $stack = (Get-PSCallStack).Command -join ",";
@@ -62,8 +61,7 @@ function Exit-Block {
 	param (
 		[Parameter(Mandatory)]
 		[string]$Type,
-		[Parameter(Mandatory)]
-		[string]$Name
+		[string]$Name = $null
 	);
 	
 	Write-Debug "$("`t" * $PvLexicon.CurrentDepth) Exiting $($Type): $Name";
@@ -74,4 +72,8 @@ function Exit-Block {
 	catch {
 		throw "Proviso Exception: $($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
 	}
+}
+
+filter Get-PreviousBlockType {
+	return $PvLexicon.GetPreviousBlockType();
 }

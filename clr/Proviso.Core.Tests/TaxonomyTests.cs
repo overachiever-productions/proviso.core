@@ -37,4 +37,64 @@ public class TaxonomyTests
         sut.EnterBlock("Facet", "A Facet");
     }
 
+    [Test]
+    public void Runbook_with_Named_Setup_Throws()
+    {
+        var sut = Lexicon.Instance;
+        sut.EnterBlock("Runbook", "Firewall Settings");
+
+        Assert.That(
+            () => sut.EnterBlock("Setup", "Should throw"),
+            Throws.TypeOf<Exception>()
+        );
+    }
+
+    [Test]
+    public void Runbook_with_Named_AssertionsBlock_Throws()
+    {
+        var sut = Lexicon.Instance;
+        sut.EnterBlock("Runbook", "Firewall Settings");
+
+        Assert.That(
+            () => sut.EnterBlock("Assertions", "Should throw"),
+            Throws.TypeOf<Exception>()
+        );
+    }
+
+    [Test]
+    public void Surface_with_Named_Setup_Throws()
+    {
+        var sut = Lexicon.Instance;
+        sut.EnterBlock("Surface", "Tiddlywinks");
+
+        Assert.That(
+            () => sut.EnterBlock("Setup", "Should throw"),
+            Throws.TypeOf<Exception>()
+        );
+    }
+
+    [Test]
+    public void Surface_with_Named_AssertionsBlock_Throws()
+    {
+        var sut = Lexicon.Instance;
+        sut.EnterBlock("Surface", "Tiddlywinks");
+
+        Assert.That(
+            () => sut.EnterBlock("Assertions", "Should throw"),
+            Throws.TypeOf<Exception>()
+        );
+    }
+
+    [Test]
+    public void Runbook_Can_Have_Setup()
+    {
+        var sut = Lexicon.Instance;
+
+        sut.EnterBlock("Runbook", "Firewall Settings");
+        sut.EnterBlock("Setup", "");
+
+        StringAssert.AreEqualIgnoringCase("Firewall Settings", sut.GetCurrentRunbook());
+        Assert.AreEqual(2, sut.CurrentDepth);
+    }
+
 }

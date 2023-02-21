@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.CodeDom;
+using System.Collections.Generic;
 
 namespace Proviso.Core
 {
@@ -7,12 +8,16 @@ namespace Proviso.Core
         public string NodeName { get; set; }
         public bool Rootable { get; set; }
         public bool Tracked { get; set; }
+        public bool RequiresName { get; set; }
+        public bool NameAllowed { get; set; }
         public List<string> AllowedParents { get; set; }
         public List<string> AllowedChildren { get; set; }
 
         public Taxonomy()
         {
             this.Rootable = false;
+            this.RequiresName = true;
+            this.NameAllowed = true;
             this.AllowedParents = new List<string>();
             this.AllowedChildren = new List<string>();
         }
@@ -30,10 +35,41 @@ namespace Proviso.Core
                 },
                 new Taxonomy
                 {
+                    NodeName = "Operations",
+                    RequiresName = false,
+                    NameAllowed = false,
+                    AllowedParents = new List<string> { "Runbook" },
+                    AllowedChildren = new List<string> { "Run" }
+                },
+                new Taxonomy
+                {
                     NodeName = "Surface",
                     Rootable = true,
                     Tracked = true,
                     AllowedChildren = new List<string> { "Setup", "Assertions", "Aspect", "Cleanup" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Setup",
+                    RequiresName = false,
+                    NameAllowed = false,
+                    AllowedParents = new List<string> { "Runbook", "Surface" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Cleanup",
+                    RequiresName = false,
+                    NameAllowed = false,
+                    AllowedParents = new List<string> { "Runbook", "Surface" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Assertions",
+                    RequiresName = false,
+                    NameAllowed = false,
+                    AllowedParents = new List<string> { "Runbook", "Surface" }, 
+                    // TODO: figure out how to address wildcards like this:
+                    AllowedChildren = new List<string> { "Assert*" }
                 },
                 new Taxonomy
                 {
@@ -58,36 +94,16 @@ namespace Proviso.Core
                 new Taxonomy
                 {
                     NodeName = "Enumerate",
+                    RequiresName = false,
+                    NameAllowed = true,  
                     Rootable = true,
                     AllowedParents = new List<string> { "Cohort" },
                     AllowedChildren = new List<string> { "Add", "Remove" }
                 },
                 new Taxonomy
                 {
-                    NodeName = "Assertions", 
-                    AllowedParents = new List<string> { "Runbook", "Surface" }, 
-                    // TODO: figure out how to address wildcards like this:
-                    AllowedChildren = new List<string> { "Assert*" }
-                }, 
-                new Taxonomy
-                {
-                    NodeName = "Setup", 
-                    AllowedParents = new List<string> { "Runbook", "Surface" }
-                }, 
-                new Taxonomy
-                {
-                    NodeName = "Cleanup", 
-                    AllowedParents = new List<string> { "Runbook", "Surface" }
-                },
-                new Taxonomy
-                {
-                    NodeName = "Operations", 
-                    AllowedParents = new List<string> { "Runbook" },
-                    AllowedChildren = new List<string> { "Run" }
-                }, 
-                new Taxonomy
-                {
                     NodeName = "Aspect", 
+                    NameAllowed = true,
                     AllowedParents = new List<string> { "Surface" }, 
                     AllowedChildren = new List<string> { "Import", "Facet", "Pattern" }
                 }, 

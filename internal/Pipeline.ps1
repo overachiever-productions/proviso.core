@@ -18,6 +18,7 @@ function Execute-Pipeline {
 	);
 	
 	begin {
+		Write-Verbose "Starting Processing Pipeline.";
 		[Proviso.Core.Catalog]$Catalog = $global:PvCatalog;
 	};
 	
@@ -25,8 +26,9 @@ function Execute-Pipeline {
 		# ====================================================================================================
 		# 1. Setup. 
 		# ====================================================================================================
+		#region "Setup"
 		[datetime]$pipelineStart = [datetime]::Now;
-		Write-Debug "	Pipeline Processing Starting.";
+		Write-Debug "	Pipeline Processing Starting. -Verb [$Verb] -OperationType [$OperationType] -Name [$Name] ";
 		
 		[Proviso.Core.Definitions.FacetDefinition[]]$facetDefinitions = @();
 		[Proviso.Core.Definitions.SurfaceDefinition[]]$surfaceDefinitions = @();
@@ -77,13 +79,16 @@ function Execute-Pipeline {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 		
-		[Proviso.Core.Processing.ProcessingManifest]$manifest = New-Object Proviso.Core.Processing.ProcessingManifest([Proviso.Core.OperationType]$OperationType, [Proviso.Core.Verb]$Verb);
+		[Proviso.Core.Processing.ProcessingManifest]$manifest = New-Object Proviso.Core.Processing.ProcessingManifest([Proviso.Core.OperationType]$OperationType, [Proviso.Core.Verb]$Verb, $Name);
 		$manifest.PipelineStart = $pipelineStart;
 		$manifest.HostName = "$((Get-CimInstance Win32_ComputerSystem -Verbose:$false).Domain)\$([System.Net.Dns]::GetHostName())";
+		#endregion
 		
 		# ====================================================================================================
 		# 2. Discovery 
 		# ====================================================================================================
+		#region "Discovery"
+		Write-Verbose "Processing Pipeline: Executing Discovery...";
 		$manifest.DiscoveryStart = [datetime]::Now;
 		
 		# Additional Expansion:
@@ -110,23 +115,27 @@ function Execute-Pipeline {
 		}
 		finally {
 			$manifest.DiscoveryEnd = [datetime]::Now;
-			Write-Debug "		Processing Pipeline: Discovery Complete.";
+			Write-Debug "		  Processing Pipeline: Discovery Complete.";
 		}
+		#endregion
 		
 		# ====================================================================================================
 		# 3. Processing
 		# ====================================================================================================
-		
+		#region "Processing"
+		Write-Verbose "Processing Pipeline: Executing Processing Phase...";
+		$manifest.ProcessingStart = [datetime]::Now;
+		Write-Debug "		Processing Pipeline: Starting Processing Phase.";
 		try {
-			if ($manifest.HasRunbookSetup) {
+			if ($manifest.HasRunbookSetup()) {
 				Write-Debug "		Processing Pipeline: Starting Runbook.Setup() codeblock.";
-				# do the runbook setup
+				# execute the runbook setup
 				Write-Debug "		  Processing Pipeline: Runbook.Setup() codeblock complete.";
 			}
 			
-			if ($manifest.HasRunbookAssertions) {
+			if ($manifest.HasRunbookAssertions()) {
 				Write-Debug "		Processing Pipeline: Starting Runbook.Assertions() codeblock.";
-				# do the assertions
+				# execute the assertions
 				Write-Debug "		  Processing Pipeline: Runbook.Assertions() complete.";
 			}
 			
@@ -178,32 +187,38 @@ function Execute-Pipeline {
 				}
 				
 				if ($surface.Cleanup) {
-					
-					
 					# run cleanup + handle errors/results.
 				}
 			}
 			
-			if ($manifest.HasRunbookCleanup) {
+			if ($manifest.HasRunbookCleanup()) {
 				Write-Debug "		Processing Pipeline: Starting Runbook.Cleanup() codeblock.";
-				# do runbook cleanup.
+				# execute runbook cleanup.
 				Write-Debug "		  Processing Pipeline: Runbook.Cleanup() codeblock complete.";
 			}
 		}
 		catch {
 			throw "Ruh roh! Processing Exception."
 		}
+		finally {
+			$manifest.ProcessingEnd = [datetime]::Now;
+			Write-Debug "		  Processing Pipeline: Processing Phase Complete.";
+		}
+		#endregion
 		
 		# ====================================================================================================
 		# 4. Post-Processing
 		# ====================================================================================================
+		#region "Post-Processing"
+		Write-Verbose "Processing Pipeline: Finalizing Outputs...";
 		
 		# switch on verb type and ... return $manifest.[Verb]Result as necessary.
-		
+		#endregion
 	};
 	
 	end {
 		$manifest.PipelineEnd = [datetime]::Now;
 		Write-Debug "	Pipeline Processing Complete.";
+		Write-Verbose "Processing Pipeline Complete.";
 	};
 }
