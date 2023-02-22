@@ -220,4 +220,55 @@ public class LexiconTests
 
         StringAssert.AreEqualIgnoringCase(cohortName, sut.GetCurrentCohort());
     }
+
+    [Test]
+    public void GetParent_Returns_Null_When_No_Parent()
+    {
+        var sut = Lexicon.Instance;
+
+        var facetName = "My Facet";
+        sut.EnterBlock("Facet", facetName);
+
+        var blockType = sut.GetParentBlockType();
+        StringAssert.AreEqualIgnoringCase("", blockType);
+    }
+
+    [Test]
+    public void GetParent_Returns_Parent_When_Present()
+    {
+        var sut = Lexicon.Instance;
+
+        var facetName = "My Facet";
+        var cohortName = "Test Cohort";
+
+        sut.EnterBlock("Facet", facetName);
+        sut.EnterBlock("Cohort", cohortName);
+
+        var blockType = sut.GetParentBlockType();
+        StringAssert.AreEqualIgnoringCase("Facet", blockType);
+    }
+
+    [Test]
+    public void GetParent_Does_Not_Cause_Leaks()
+    {
+        // arguably NOT needed ... but just want to verify that _stack.Skip(1).First() doesn't ... pop (i.e., only does .peek.peek)
+        var sut = Lexicon.Instance;
+
+        var facetName = "My Facet";
+        var cohortName = "Test Cohort";
+        sut.EnterBlock("Facet", facetName);
+        sut.EnterBlock("Cohort", cohortName);
+
+        var blockType = sut.GetParentBlockType();
+        StringAssert.AreEqualIgnoringCase("Facet", blockType);
+
+        sut.EnterBlock("Property", "My Property");
+        sut.ExitBlock("Property", "My Property");
+
+        sut.EnterBlock("Property", "Property 2");
+
+        var currentPropertyName = sut.GetCurrentBlockNameByType("Property");
+
+        StringAssert.AreEqualIgnoringCase("Property 2", currentPropertyName);
+    }
 }

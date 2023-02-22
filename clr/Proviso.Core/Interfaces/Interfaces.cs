@@ -16,4 +16,9 @@ namespace Proviso.Core.Interfaces
         void SetExtractFromParameter(object expect);
         void SetThrowOnConfig(string message);
     }
+
+    public interface IValidated
+    {
+        void Validate(object validationContext);
+    }
 }

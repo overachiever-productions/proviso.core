@@ -7,7 +7,7 @@ function Enumerate {
 		[string]$Name = $null,
 		[Parameter(Position = 1, ParameterSetName = 'Named')]
 		[parameter(Mandatory, Position = 0, ParameterSetName = 'Anonymous')]
-		[ScriptBlock]$ScriptBlock,
+		[ScriptBlock]$EnumerateBlock,
 		
 		# TODO: this might not even make sense. It's implemented as a STRING for now.
 		[string]$OrderBy = $null
@@ -36,7 +36,7 @@ function Enumerate {
 			$definition.OrderBy = $OrderBy;
 		}
 		
-		$definition.Enumerate = $ScriptBlock;
+		$definition.Enumerate = $EnumerateBlock;
 	};
 	
 	end {

@@ -3,7 +3,8 @@
 function Add {
 	[CmdletBinding()]
 	param (
-		[string]$Name = $null
+		[string]$Name = $null,
+		[ScriptBlock]$AddBlock
 	);
 	
 	begin {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace Proviso.Core
@@ -61,12 +62,65 @@ namespace Proviso.Core
             return "";
         }
 
+        public string GetParentBlockName()
+        {
+            if (this._namesStack.Count > 1)
+            {
+                return this._namesStack.Skip(1).First();
+            }
+
+            return "";
+        }
+
         public string GetCurrentBlockNameByType(string type)
         {
             if (this._currentBlocks.ContainsKey(type))
                 return this._currentBlocks[type];
 
             return null;
+        }
+
+        public string GetCurrentBlockType()
+        {
+            if (this._stack.Count > 0)
+            {
+                var current = this._stack.Peek();  // i.e., CURRENT is what's on the TOP of the stack.
+                return current.NodeName;
+            }
+
+            return "";
+        }
+
+        public string GetParentBlockType()
+        {
+            if (this._stack.Count > 1)
+            {
+                var parent = this._stack.Skip(1).First();
+                return parent.NodeName;
+            }
+
+            return "";
+        }
+
+        public string GetGrandParentBlockType()
+        {
+            if (this._stack.Count > 2)
+            {
+                var grandparent = this._stack.Skip(2).First();
+                return grandparent.NodeName;
+            }
+
+            return "";
+        }
+
+        public string GetGrandParentBlockName()
+        {
+            if (this._namesStack.Count > 2)
+            {
+                return this._namesStack.Skip(2).First();
+            }
+
+            return "";
         }
 
         public void EnterBlock(string blockType, string blockName)
@@ -86,18 +140,26 @@ namespace Proviso.Core
                 return;
             }
 
-            // TODO: is it ... _possible_ to check AllowedChildren? I've DEFINED which children are allowed in the grammar... 
-            //  but i'm never using it... 
+            if (taxonomy.RequiresName && string.IsNullOrWhiteSpace(blockName))
+                throw new Exception($"A -Name is required for block-type: [{blockType}].");
+
+            if (!taxonomy.NameAllowed && !string.IsNullOrWhiteSpace(blockName))
+                throw new Exception($"[{blockType}] may NOT have a -Name (current -Name is [{blockName}]).");
 
             Taxonomy parent = this._stack.Peek();
-            if(!taxonomy.AllowedParents.Contains(parent.NodeName)) 
-                throw new InvalidOperationException($"ScriptBlock [{blockType}] can NOT be a child of: [{parent.NodeName}].");
+            if (!taxonomy.AllowedParents.Contains(parent.NodeName))
+                throw new InvalidOperationException(
+                    $"ScriptBlock [{blockType}] can NOT be a child of: [{parent.NodeName}].");
+    
+           // TODO: account for wildcards here. (and... just use Regex.IsMatch(currentBlockName, taxonomy.WildcardPattern)  ...    
+           // TODO: also, I THINK this is/could-be where I account for .AllowedChildren? (if not, remove them from grammar).
 
             this.PushCurrentTaxonomy(taxonomy, blockName);
         }
 
         // TODO: Either REQUIRE blockName to be the same as what was handed in via Enter (as an additional validation/test)
         //          OR, remove it from being an argument. One or the other. 
+        //      EXCEPT: Setup/Assertions/Cleanup (for both Runbooks AND Surfaces) do NOT have names (and can't have names).
         public void ExitBlock(string blockType, string blockName)
         {
             Taxonomy taxonomy = this._grammar.Find(t => t.NodeName == blockType);
