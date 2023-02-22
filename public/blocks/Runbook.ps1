@@ -9,21 +9,21 @@
 
 	Runbook "Firewall Stuff" { 
 		Setup {} 
-		Assertions {}
+		Assertions {
+			Assert "This";
+		}
 
 		Operations {
-			#Implement [-Facet] "Intellisense Name Here would be Great" -something? 
-			Implement -FacetName "Facet to Process";
+			#Implement [-Surface] "Intellisense Name Here would be Great" -something? 
+			Implement -SurfaceName "Surface to Process";
 			Implement "My Facet Name"; # I could add -ExecutionOrder, but seems odd... 
-			#Implement -Facet "facet is just a switch/syntactic sugar" -Impact/Overwrite/whatever goes here... 
+			#Implement -Surface "surface is just a switch/syntactic sugar" -Impact/Overwrite/whatever goes here... 
 		}
 
 		Cleanup { }
 	}
 
-
 #>
-
 
 function Runbook {
 	[CmdletBinding()]
@@ -44,8 +44,23 @@ function Runbook {
 	};
 	
 	process {
+		Write-Verbose "Compiling Runbook [$Name].";
+		
+		[Proviso.Core.Definitions.RunbookDefinition]$runbook = New-Object Proviso.Core.Definitions.RunbookDefinition($Name);
 		
 		& $RunbookBlock;
+		
+		try {
+			Write-Debug "	Adding Runbook [$Name] to Catalog.";
+			[bool]$replaced = $global:PvCatalog.SetRunbookDefinition($runbook, (Allow-DefinitionReplacement));
+			
+			if ($replaced) {
+				Write-Verbose "Runbook [$($Name)] was replaced.";
+			}
+		}
+		catch {
+			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		}
 	};
 	
 	end {

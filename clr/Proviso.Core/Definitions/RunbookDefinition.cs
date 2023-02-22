@@ -1,27 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Management.Automation;
+using Proviso.Core.Interfaces;
 using Proviso.Core.Models;
 
 namespace Proviso.Core.Definitions
 {
-    public class RunbookDefinition
+    public class RunbookDefinition : IValidated
     {
-        public string RunbookName { get; set; }
+        private List<AssertDefinition> _assertDefinitions = new List<AssertDefinition>();
+        private List<ImplementDefinition> _implementDefinitions = new List<ImplementDefinition>();
 
+        public string Name { get; private set; }
+        public ScriptBlock Setup { get; set; }
+        public ScriptBlock Cleanup { get; set; }
+
+        public List<ImplementDefinition> Implements => this._implementDefinitions;
+        public List<AssertDefinition> AssertDefinitions => this._assertDefinitions;
 
         public RunbookDefinition(string name)
         {
-            this.RunbookName = name;
+            this.Setup = null;
+            this.Cleanup = null;
+
+            this.Name = name;
         }
 
-        public List<SurfaceDefinition> GetSurfaces()
+        public void AddAssert(AssertDefinition added)
         {
-            throw new NotImplementedException();
+            // TODO: execute added.Validate();
+            this._assertDefinitions.Add(added);
         }
 
-        internal Runbook ToRunbook()
+        public void AddFacetImplementationReference(ImplementDefinition added)
         {
-            throw new NotImplementedException();
+            // TODO: MAYBE? execute added.Validate();
+            this._implementDefinitions.Add(added);
+        }
+
+        public void Validate(object validationContext)
+        {   
+            // TODO: is there anything to validate here? 
+            // maybe that the COUNT of Implement defs is > 0?
+            //  and... make sure to allow for -skip/disabled as a Implement params.
+            //      then to check that ALL are not disabled. (Actually, if they're all Implement "blah" -Skip ... 
+            //      i think i just report on that at run time. 
         }
     }
 }

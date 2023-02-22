@@ -4,19 +4,31 @@
 
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 
+	$global:DebugPreference = "Continue";
+	#$global:VerbosePreference = "Continue";
+
 	Facet "My First Facet" { }
-	Read-Facet "My First Facet" -Verbose -Debug;
+	Read-Facet "My First Facet";
 
 write-host "--------------------------------------------------"
 
+	Surface "Extended Events" {
+		Facet "ANOTHER My First Facet" { }
+	}
+
+	Read-Facet "ANOTHER My First Facet" { } 
+
 	Facet "My Second Facet" { }
+
+write-host "--------------------------------------------------"
 
 	$facets = @(
 		[PSCustomObject]@{ Name = "My First Facet" }
+		[PSCustomObject]@{ Name = "ANOTHER My First Facet" }
 		[PSCustomObject]@{ Name = "My Second Facet" }
 	)
 
-	$facets | Read-Facet -Verbose;
+	$facets | Read-Facet;
 
 #>
 
@@ -50,26 +62,23 @@ function Read-Facet {
 	};
 	
 	process {
-		
 		# Validate Operation:
 		[Proviso.Core.Definitions.FacetDefinition]$facet = $null;
 		try {
 			$facet = $global:PvCatalog.GetFacetByName($Name);
 		}
 		catch {
-			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 		
 		if ($null -eq $facet) {
 			throw "Error. No Facet or Pattern with the name [$Name] was found.";
 		}
 		
-		# TODO: 
-		# 		make sure to proxy for -Target_S_ and -Servers... 
+		# TODO: Make sure to proxy for -Target_S_ and -Servers... 
 		
 		# NOTE: No -Config or -Models for this operation:
 		$result = Execute-Pipeline -Verb "Read" -OperationType "Facet" -Name $Name -Model $null -Target $Target;
-		
 	};
 	
 	end {

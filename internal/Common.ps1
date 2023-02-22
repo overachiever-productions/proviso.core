@@ -21,6 +21,13 @@ function Write-PvVerbose {
 		#[switch]$Verbose
 	);
 	
+	# TODO: add a 'Verboser' object that is, effectively, an IDENTITY/SEQUENCE - calling it increments. 
+	# 		and ... with that, verbose will prefix all calls with # ... as in: 
+	# 		0001. Starting up blah blah blah
+	# 		0002. doing yada yada
+	# 		0003. Compiling xyz... 
+	
+	
 	# ACTUALLY. Might make this public?
 	
 	# spits stuff out to the console if -Verbose

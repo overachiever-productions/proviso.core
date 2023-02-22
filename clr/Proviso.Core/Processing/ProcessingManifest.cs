@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Management.Automation;
 using Proviso.Core.Definitions;
 using Proviso.Core.Models;
 
@@ -8,10 +9,14 @@ namespace Proviso.Core.Processing
     public class ProcessingManifest
     {
         private List<FacetDefinition> _facetDefinitions = new List<FacetDefinition>();
+        private List<Facet> _facets = new List<Facet>();
+        private List<Surface> _surfaces = new List<Surface>();
 
         public OperationType OperationType { get; private set; }
         public Verb Verb { get; private set; }
         public string OperatorTargetName { get; set; }
+
+        public List<Surface> Surfaces => this._surfaces;
 
         #region Timing Details & HostName Info
         public DateTime PipelineStart { get; set; }
@@ -26,49 +31,52 @@ namespace Proviso.Core.Processing
         public string HostName { get; set; }
         #endregion
 
-        public Facet ProcessingFacet { get; private set; }
-        public Surface ProcessingSurface { get; private set; }
-        public Runbook ProcessingRunbook { get; private set; }
+        public Facet TargetFacet { get; private set; }
+        public Surface TargetSurface { get; private set; }
+        public Runbook TargetRunbook { get; private set; }
 
         public int FacetDefinitionsCount
         {
             get { return this._facetDefinitions.Count; }
         }
 
-        // REFACTOR: change these to PROPERTIES (get only) and ... tweak the calling code in PowerShell accordingly.
-        public bool HasRunbookSetup()
+        public bool HasRunbookSetup
         {
-            switch (this.OperationType)
+            get
             {
-                case OperationType.Surface:
-                    throw new NotImplementedException("PENDING");
-                    //break;
-                default:
-                    return false;
+                switch (this.OperationType)
+                {
+                    case OperationType.Runbook:
+                        return this.TargetRunbook.Setup != null;
+                    default:
+                        return false;
+                }
             }
         }
-        // REFACTOR: change these to PROPERTIES (get only) and ... tweak the calling code in PowerShell accordingly.
-        public bool HasRunbookAssertions()
+        public bool HasRunbookAssertions
         {
-            switch (this.OperationType)
+            get
             {
-                case OperationType.Surface:
-                    throw new NotImplementedException("PENDING");
-                    //break;
-                default:
-                    return false;
+                switch (this.OperationType)
+                {
+                    case OperationType.Runbook:
+                        return this.TargetRunbook.Asserts.Count > 0;
+                    default:
+                        return false;
+                }
             }
         }
-        // REFACTOR: change these to PROPERTIES (get only) and ... tweak the calling code in PowerShell accordingly.
-        public bool HasRunbookCleanup()
+        public bool HasRunbookCleanup
         {
-            switch (this.OperationType)
+            get
             {
-                case OperationType.Surface:
-                    throw new NotImplementedException("PENDING");
-                    //break;
-                default:
-                    return false;
+                switch (this.OperationType)
+                {
+                    case OperationType.Runbook:
+                        return this.TargetRunbook.Cleanup != null;
+                    default:
+                        return false;
+                }
             }
         }
 
@@ -81,7 +89,7 @@ namespace Proviso.Core.Processing
 
         public void AddSurfaceDefinition(SurfaceDefinition added)
         {
-
+            
         }
 
         public void AddFacetDefinition(FacetDefinition added)
@@ -91,52 +99,91 @@ namespace Proviso.Core.Processing
 
         public void ExecuteDiscovery(Catalog currentCatalog)
         {
-            //                  TODO: address Aspects. 
-            //                  TODO: address ... Iterate/Enumerate (modality operations) + paths. 
-            //                       and verify that we've got all of the correct Iterate/Iterator + Add/Remove and Enumerate/Enumerator + Add/Remove
-            //                               blocks that we need - based on Naive/Explict. 
+            Formatter.WriteVerbose("C# says hello.");
 
-            //                  likewise, verify that we've got all of the Except, Extract, Compare, Configure blocks (or syntactic-sugar repointers/shortcuts)
-            //                       to satisfy the CURRENT .Verb
+            // TODO: probably need to EXPAND surfaces at this point?
+            //      see comments in the 'implementDefs' foreach within case OperationType.Runbook (below)
+            //      though, an INITIAL expansion phase already occurred in the pipeline... 
 
+            // Targeting: 
             switch (this.OperationType)
             {
-                case OperationType.Facet:
+                case OperationType.Runbook:
+                    RunbookDefinition runbookDef = currentCatalog.GetRunbook(this.OperatorTargetName);
+                    if (runbookDef == null)
+                        throw new Exception($"Proviso Framework Error. Runbook [{this.OperatorTargetName}] not found in PvCatalog.");
+
+                    Runbook runbook = new Runbook(runbookDef.Name, runbookDef.Setup, runbookDef.Cleanup);
+                    runbook.Setup = runbookDef.Setup;
+
+                    foreach (AssertDefinition aDef in runbookDef.AssertDefinitions)
+                    {
+
+                    }
+
+                    foreach (var implementDefinition in runbookDef.Implements)
+                    {
+                        var surfaceDefinition = currentCatalog.GetSurface(implementDefinition.SurfaceName);
+                        if (surfaceDefinition == null)
+                            throw new Exception($"Proviso Framework Error. A Surface with the name of [{implementDefinition.SurfaceName}] could not be found in the PvCatalog.");
+
+                        // TODO:
+                        // now ... convert the surfaceDefinition to ... a Surface... 
+                        //      and... i THINK the currentCatalog should have, maybe?, already done this with all Surfaces?
+                        //      so that I'm not 'double-creating' or converting surfaces/etc.
+                    }
+
+                    runbook.Cleanup = runbookDef.Cleanup;
+
+                    this.TargetRunbook = runbook;
+
                     break;
                 case OperationType.Surface:
+
+                    // todo: account for aspects
+                    //      think the best way to do so is ... 
+                    //          a) need to wrap aspects processing in a loop - cuz their .Paths and such can impact lower down. 
+                    //          b) make sure each Facet has a .ParentAspect property that is either null or <aspectName>. 
                     break;
-                case OperationType.Runbook:
-                    RunbookDefinition target = currentCatalog.GetRunbook(this.OperatorTargetName);
-                    this.ProcessingRunbook = target.ToRunbook();
+                case OperationType.Facet:
+                    FacetDefinition facetDef = currentCatalog.GetFacetByName(this.OperatorTargetName);
+                    if (facetDef == null)
+                        throw new Exception($"Proviso Framework Error. Facet [{this.OperatorTargetName}] not found in PVCatalog.");
+
+                    Facet facet = new Facet(facetDef.Name, facetDef.Id, facetDef.FacetType, facetDef.AspectName, facetDef.SurfaceName, null);
+                    this._facets.Add(facet);
+
+                    // JUSTIFICATION: this is a bit odd/weird. But, since we're running a FACET (vs a Surface or Runbook), and SINCE the Pipeline (powershell)
+                    //  expects to iterate over 1 or more Surfaces (either via Read|Test|Invoke-Surface - or via operations against a Runbook) the easiet
+                    //      way to do this was to simply interject a 'FakeSurface' into the Manifest's list of surfaces to process, just so'z there's always 1. 
+                    //      Yeah. This is arguably LAME, but having 2x 'paths' or versions of an otherwise single pipeline came with its own problems as well. 
+                    this._surfaces.Add(new PlaceHolderSurface(facet));
+
                     break;
                 default:
                     throw new InvalidOperationException();
             }
 
+            // Validation: 
+            foreach (Facet f in this._facets)
+            {
+                if (f.FacetType == FacetType.Pattern)
+                {
+                    // make sure we've got an iterator. 
+                    // and that paths match up as they should/need-to. 
+                    //      er, make sure we've got 1 iterator per each path-indication of an iterator, right?
 
-            //if (this.OperationType == OperationType.Runbook)
-            //{
-            //    this.ProcessingSurface = x;
-            //}
+                    // also see if we've got ANY properties. 
+                    //  if we don't that's 'fine'. we just can't READ against this thing... 
+                    //      i.e., ONLY if there's a -Target ... then, the ... 'read' or 'extract' becomes, literally: $target. 
+                    //      so, there needs to be some way to specify that. 
+                }
 
-            //if (this.OperationType == OperationType.Surface)
-            //{
-            //    this.Processing
-            //}
-
-
-            // Rules: 
-            // 1. If we're in a Runbook, set up a new .Runbook property. 
-            //      and translate Definition 'stuff' to actual code blocks and such. 
-            //      so that we've got properties for the Setup, Assertions, cleanup/etc. 
-
-
-            // 2. If we're in a Surface, setup a new .Surface property... 
-            //      just like above 
-            //  only... also ... account for ... aspects? 
-            //      think the best way to do so is ... 
-            //          a) need to wrap aspects processing in a loop - cuz their .Paths and such can impact lower down. 
-            //          b) make sure each Facet has a .ParentAspect property that is either null or <aspectName>. 
+                //foreach (Cohort c in f.RawCohorts ?)
+                //{
+                //    //     make sure we've got an Enumerate(or)
+                //}
+            }
 
 
             // 3. For each Facet:

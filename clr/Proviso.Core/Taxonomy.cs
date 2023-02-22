@@ -8,6 +8,8 @@ namespace Proviso.Core
         public string NodeName { get; set; }
         public bool Rootable { get; set; }
         public bool Tracked { get; set; }
+        public bool AllowsWildcards => this.WildcardPattern != "";
+        public string WildcardPattern { get; set; }
         public bool RequiresName { get; set; }
         public bool NameAllowed { get; set; }
         public List<string> AllowedParents { get; set; }
@@ -17,6 +19,7 @@ namespace Proviso.Core
         {
             this.Rootable = false;
             this.RequiresName = true;
+            this.WildcardPattern = "";
             this.NameAllowed = true;
             this.AllowedParents = new List<string>();
             this.AllowedChildren = new List<string>();
@@ -73,8 +76,13 @@ namespace Proviso.Core
                     RequiresName = false,
                     NameAllowed = false,
                     AllowedParents = new List<string> { "Runbook", "Surface" }, 
-                    // TODO: figure out how to address wildcards like this:
                     AllowedChildren = new List<string> { "Assert*" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Assert", 
+                    WildcardPattern = "Assert*",
+                    AllowedParents =  new List<string> { "Assertions" }
                 },
                 new Taxonomy
                 {

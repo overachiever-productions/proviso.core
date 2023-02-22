@@ -62,6 +62,16 @@ namespace Proviso.Core
             return "";
         }
 
+        public string GetParentBlockName()
+        {
+            if (this._namesStack.Count > 1)
+            {
+                return this._namesStack.Skip(1).First();
+            }
+
+            return "";
+        }
+
         public string GetCurrentBlockNameByType(string type)
         {
             if (this._currentBlocks.ContainsKey(type))
@@ -103,6 +113,16 @@ namespace Proviso.Core
             return "";
         }
 
+        public string GetGrandParentBlockName()
+        {
+            if (this._namesStack.Count > 2)
+            {
+                return this._namesStack.Skip(2).First();
+            }
+
+            return "";
+        }
+
         public void EnterBlock(string blockType, string blockName)
         {
             Taxonomy taxonomy = this._grammar.Find(t => t.NodeName == blockType);
@@ -126,12 +146,13 @@ namespace Proviso.Core
             if (!taxonomy.NameAllowed && !string.IsNullOrWhiteSpace(blockName))
                 throw new Exception($"[{blockType}] may NOT have a -Name (current -Name is [{blockName}]).");
 
-            // TODO: is it ... _possible_ to check AllowedChildren? I've DEFINED which children are allowed in the grammar... 
-            //  but i'm never using it... 
-
             Taxonomy parent = this._stack.Peek();
-            if(!taxonomy.AllowedParents.Contains(parent.NodeName)) 
-                throw new InvalidOperationException($"ScriptBlock [{blockType}] can NOT be a child of: [{parent.NodeName}].");
+            if (!taxonomy.AllowedParents.Contains(parent.NodeName))
+                throw new InvalidOperationException(
+                    $"ScriptBlock [{blockType}] can NOT be a child of: [{parent.NodeName}].");
+    
+           // TODO: account for wildcards here. (and... just use Regex.IsMatch(currentBlockName, taxonomy.WildcardPattern)  ...    
+           // TODO: also, I THINK this is/could-be where I account for .AllowedChildren? (if not, remove them from grammar).
 
             this.PushCurrentTaxonomy(taxonomy, blockName);
         }

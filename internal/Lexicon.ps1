@@ -81,3 +81,15 @@ filter Get-CurrentBlockType {
 filter Get-ParentBlockType {
 	return $PvLexicon.GetParentBlockType();
 }
+
+filter Get-ParentBlockName {
+	return $PvLexicon.GetParentBlockName();
+}
+
+filter Get-GrandParentBlockType {
+	return $PvLexicon.GetGrandParentBlockType();
+}
+
+filter Get-GrandParentBlockName {
+	return $PvLexicon.GetGrandParentBlockName();
+}

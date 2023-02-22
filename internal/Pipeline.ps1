@@ -13,8 +13,6 @@ function Execute-Pipeline {
 		[object]$Model,
 		[object]$Config,
 		[object]$Target
-		
-		# TODO: impact and other options/etc. 
 	);
 	
 	begin {
@@ -30,8 +28,8 @@ function Execute-Pipeline {
 		[datetime]$pipelineStart = [datetime]::Now;
 		Write-Debug "	Pipeline Processing Starting. -Verb [$Verb] -OperationType [$OperationType] -Name [$Name] ";
 		
-		[Proviso.Core.Definitions.FacetDefinition[]]$facetDefinitions = @();
 		[Proviso.Core.Definitions.SurfaceDefinition[]]$surfaceDefinitions = @();
+		[Proviso.Core.Definitions.FacetDefinition[]]$facetDefinitions = @();
 		
 		[Proviso.Core.Definitions.FacetDefinition]$targetFacet = $null;
 		[Proviso.Core.Definitions.SurfaceDefinition]$targetSurface = $null;
@@ -72,6 +70,9 @@ function Execute-Pipeline {
 					
 					Write-Debug "		Processing Pipeline: Target is Runbook with name: [$Name]";
 				}
+				default {
+					throw "Invalid -OperationType: [$OperationType] specified for Execute-Pipeline.";
+				}
 			}
 		}
 		catch {
@@ -91,26 +92,26 @@ function Execute-Pipeline {
 		Write-Verbose "Processing Pipeline: Executing Discovery...";
 		$manifest.DiscoveryStart = [datetime]::Now;
 		
-		# Additional Expansion:
+		# Initial Expansion:
 		foreach ($surface in $surfaceDefinitions) {
 			Write-Host "		Processing Pipeline: Expanding Runbook Surface: [$($surface.Name)].";
 			$manifest.AddSurfaceDefinition($surface);
 		}
 		
 		foreach ($facet in $facetDefinitions) {
-			Write-Debug "		Processing Pipeline: Expanding Surface Facet: [$($facet.Name)]."
+			Write-Debug "		Processing Pipeline: Expanding Facet: [$($facet.Name)]."
 			$manifest.AddFacetDefinition($facet);
 		}
 		
 		# Validation & Binding (via CLR Discovery operations):
+		Write-Debug "			Processing Pipeline: ProcessingManifest.FacetDefinitionsCount = [$($manifest.FacetDefinitionsCount)].";
 		try {
-			Write-Debug "		Processing Pipeline: ProcessingManifest.FacetDefinitionsCount = [$($manifest.FacetDefinitionsCount)].";
-			
 			Write-Debug "		Processing Pipeline: Starting Discovery.";
 			$manifest.ExecuteDiscovery($Catalog);
 		}
 		catch {
-			Write-Debug "		Processing Pipeline: Exception During Discovery: $($_.Exception.Message) -Stack: $($_.ScriptStackTrace)"; throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+			Write-Debug "		Processing Pipeline: Exception During Discovery: $($_.Exception.Message) -Stack: $($_.ScriptStackTrace)";
+			#throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
 			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 		finally {
@@ -127,21 +128,32 @@ function Execute-Pipeline {
 		$manifest.ProcessingStart = [datetime]::Now;
 		Write-Debug "		Processing Pipeline: Starting Processing Phase.";
 		try {
-			if ($manifest.HasRunbookSetup()) {
+			if ($manifest.HasRunbookSetup) {
 				Write-Debug "		Processing Pipeline: Starting Runbook.Setup() codeblock.";
-				# execute the runbook setup
+				[scriptblock]$runbookSetup = $manifest.TargetRunbook.Setup;
+				Write-Host "Would be running: |$runbookSetup|";
+				
 				Write-Debug "		  Processing Pipeline: Runbook.Setup() codeblock complete.";
 			}
 			
-			if ($manifest.HasRunbookAssertions()) {
+			if ($manifest.HasRunbookAssertions) {
 				Write-Debug "		Processing Pipeline: Starting Runbook.Assertions() codeblock.";
-				# execute the assertions
+				foreach ($assert in $manifest.TargetRunbook.Assertions) {
+					if ($assert.Enabled) {
+						# run the assert.
+					}
+					else {
+						# disabled or ... config-only? and report on it... 
+					}
+				}
 				Write-Debug "		  Processing Pipeline: Runbook.Assertions() complete.";
 			}
 			
+			# NOTE: Theres' a cheat/hack in the CLR Processing Manifest that makes it so that there will always be at least 1x SURFACE
+			# 		to 'loop through' here. It 'marks' said surface as a 'marker/fake/placeholder' but this approach seemed better than 2x pipeline 'paths'
 			foreach ($surface in $manifest.Surfaces) {
 				# TODO: update any Context object here that needs updating... 
-				
+			
 				if ($surface.Setup) {
 					# do setup and handle errors/results
 				}
@@ -151,39 +163,58 @@ function Execute-Pipeline {
 					# Assert + handle results.
 				}
 				
-				# ahhh... bug/problem. 
-				# 		if there's no Surface... then ... we'll never process Facets.
-				# 		i can/could do them in another spot... but... that seems like it'd lead to DRY violations. 
-				# INSANELY, might actually make sense to create an anonymous Surface which'll return FALSE on all of the if($surface.X) operations above/below (setup, assertions, cleanup)
-				# 		and simply handle the idea of if($surface.IsPlaceHolderOnly) in the few spots where I need to do so. 
 				foreach ($facet in $surface.Facets) {
-					$global:PvFacetContext = $manifest.GetCurrentFacetContextInstance();
+					Write-Verbose "Starting Processing of Facet [$($facet.FacetName)].";
+					
+					#$global:PvFacetContext = $manifest.GetCurrentFacetContextInstance();
 					# TODO: update other contexts as well... i.e., Current.Facet/Surface and stuff... 
 					
-					foreach ($facetProperty in $facet.Properties) {
+					
+					if (0 -eq $facet.Properties.Count) {
+						# this can sorta be fine... 
+						# 	as in... $Target becomes the 'Read'/extract, $Model becomes the expect, Test = (does $target -eq $model), and Configure = (make $target become $model).
+						Write-Verbose "Facet [$($facet.FacetName)] has NO properties";
+						
 						if ($Verb -in @("Read", "Test", "Invoke")) {
-							# do read stuff... 
-							# 	which is JUST extract. 
+							Write-Debug "				Executing -Read with NO PROPERTY (returning -Target).";
+							
 						}
 						
 						if ($Verb -in ("Test", "Invoke")) {
-							# do compare stuff. 
-							# 	 specifically: 
-							# 		a. expect. 
-							# 		b. compare.
+							Write-Debug "				Executing -Compare with NO PROPERTY (comparing -Model vs -Target).";
 						}
 						
 						if ("Invoke" -eq $Verb) {
-							# do configure stuff - on things that need configure. 
+							Write-Debug "				Executing -Invoke with NO PROPERTY (comparing -Model vs -Target, setting -Target = -Model (if not equal) + recomparing).";
 							
-							# do re-extract 
-							
-							# do re-compare.
-							# 		meaning, we need to re-grab expect (if it's not stored already (and... arguably, it should already be stored))
 						}
-					}					
+					}
+					else {
+						foreach ($facetProperty in $facet.Properties) {
+							Write-Host "in ur props"
+							if ($Verb -in @("Read", "Test", "Invoke")) {
+								Write-Debug "				Executing -Read for Property [$($facetProperty.Name)]."
+							}
+							
+							if ($Verb -in ("Test", "Invoke")) {
+								# do compare stuff. 
+								# 	 specifically: 
+								# 		a. expect. 
+								# 		b. compare.
+							}
+							
+							if ("Invoke" -eq $Verb) {
+								# do configure stuff - on things that need configure. 
+								
+								# do re-extract 
+								
+								# do re-compare.
+								# 		meaning, we need to re-grab expect (if it's not stored already (and... arguably, it should already be stored))
+							}
+						}
+					}
 					
-					$global.PvFacetContext = $null;
+					#$global:PvFacetContext = $null;
 				}
 				
 				if ($surface.Cleanup) {
@@ -191,14 +222,15 @@ function Execute-Pipeline {
 				}
 			}
 			
-			if ($manifest.HasRunbookCleanup()) {
+			if ($manifest.HasRunbookCleanup) {
 				Write-Debug "		Processing Pipeline: Starting Runbook.Cleanup() codeblock.";
 				# execute runbook cleanup.
 				Write-Debug "		  Processing Pipeline: Runbook.Cleanup() codeblock complete.";
 			}
 		}
 		catch {
-			throw "Ruh roh! Processing Exception."
+			Write-Debug "		Processing Pipeline: Exception During Processing: $($_.Exception.Message) -Stack: $($_.ScriptStackTrace)";
+			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 		finally {
 			$manifest.ProcessingEnd = [datetime]::Now;

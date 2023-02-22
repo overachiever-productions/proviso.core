@@ -7,11 +7,21 @@ namespace Proviso.Core
 {
     public class Catalog
     {
+        private List<EnumeratorDefinition> _enumerators = new List<EnumeratorDefinition>();
+        private List<RunbookDefinition> _runbooks = new List<RunbookDefinition>();
         private List<FacetDefinition> _facets = new List<FacetDefinition>();
+        
+        // TODO: additional lists/collections to add: 
+        //  _surfaces 
+        //  _iterators 
+        //  TODO: PROBABLY different, but some sort of 'named' asserts (and ... provide option for 'authors' to add theirs as well. 
+
+        // REFACTOR: looks like I lost my mind... cohorts and properties should ONLY BE children of their PARENT Facet... 
+        //      er, well... did I ever decide to make properties|cohorts 'borrowable' from elsewhere?
+        //      if so, then... they got to BOTH their parents and here... (but I'm going to need some sort of import/borrow/use syntax/func. 
+        //      i THINK i was ONLY going to allow FACETS to be re-used like this (from one surface to the next)... but ... maybe I was going to do the same with props? (cohorts?)
         private List<CohortDefinition> _cohorts = new List<CohortDefinition>();
         private List<PropertyDefinition> _properties = new List<PropertyDefinition>();
-        private List<EnumeratorDefinition> _enumerators = new List<EnumeratorDefinition>();
-        
 
         public static Catalog Instance => new Catalog();
 
@@ -19,14 +29,22 @@ namespace Proviso.Core
 
         // REFACTOR: all of these Set<T>Definition calls can/should be replaced by some sort of SetDefinition<T>(t, bool allowReplace)
         //      kind of internal/private helper. i.e., have to leave the interfaces/public methods the same... but should implement the copy-paste-tweak guts as a generic... 
-        public bool SetSubBlockDefinition(ISubBlockDefinition added, bool allowReplace)
+        public bool SetRunbookDefinition(RunbookDefinition added, bool allowReplace)
         {
-            return false;
-        }
+            added.Validate(null);
 
-        public bool SetCleanupDefintion(ISubBlockDefinition added, bool allowReplace)
-        {
-            throw new NotImplementedException();
+            var exists = this._runbooks.Find(x => x.Name == added.Name);
+            if (exists != null)
+            {
+                if (allowReplace)
+                {
+                    exists = added;
+                    return true;
+                }
+
+                throw new Exception($"[Runbook] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique [Runbook] names and/or allow global replacement override.");
+            }
+            return false;
         }
         
         public bool SetFacetDefinition(FacetDefinition added, bool allowReplace)

@@ -141,7 +141,7 @@ function Facet {
 				Write-Verbose "Facet named [$Name] was replaced.";
 			}
 			
-			
+			Write-Verbose "Facet [$($definition.Name)] added to PvCatalog.";
 		}
 		catch {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";

@@ -15,27 +15,25 @@ function Cleanup {
 	
 	process {
 		$parentBlockType = Get-ParentBlockType;
+		$parentBlockName = Get-ParentBlockName;
 		
-		if ("Runbook" -eq $parentBlockType) {
-			$cleanup = New-Object Proviso.Core.Definitions.RunbookCleanupDefinition($CleanupBlock);
-		}
-		else {
-			$cleanup = New-Object Proviso.Core.Definitions.SurfaceCleanupDefinition($CleanupBlock);
-		}
+		Write-Verbose "Compiling .Cleanup{} for $parentBlockType named [$parentBlockName].";
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetSubBlockDefinition($cleanup, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "$($parentBlockType).Cleanup was replaced.";
+			if ("Runbook" -eq $parentBlockType) {
+				$runbook.Cleanup = $CleanupBlock;
+				Write-Debug "		Added Cleanup{ } of |$SetupBlock| to Runbook: [$parentBlockName].";
+			}
+			else {
+				$surface.Cleanup = $CleanupBlock;
+				Write-Debug "		Added Cleanup{ } of |$SetupBlock| to Surface: [$parentBlockName].";
 			}
 		}
 		catch {
 			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
-		
 	};
-	
+		
 	end {
 		Exit-Block $MyInvocation.MyCommand -Name $null -Verbose:$xVerbose -Debug:$xDebug;
 	};

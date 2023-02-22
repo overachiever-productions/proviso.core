@@ -15,19 +15,18 @@ function Setup {
 	
 	process {
 		$parentBlockType = Get-ParentBlockType;
-	
-		if ("Runbook" -eq $parentBlockType) {
-			$setup = New-Object Proviso.Core.Definitions.RunbookSetupDefinition($SetupBlock);
-		}
-		else {
-			$setup = New-Object Proviso.Core.Definitions.SurfaceSetupDefinition($SetupBlock);
-		}
+		$parentBlockName = Get-ParentBlockName;
+		
+		Write-Verbose "Compiling .Setup{} for $parentBlockType named [$parentBlockName].";
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetSubBlockDefinition($setup, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "$($parentBlockType).Setup was replaced.";
+			if ("Runbook" -eq $parentBlockType) {
+				$runbook.Setup = $SetupBlock;
+				Write-Debug "		Added Setup{ } of |$SetupBlock| to Runbook: [$parentBlockName].";
+			}
+			else {
+				$surface.Setup = $SetupBlock;
+				Write-Debug "		Added Setup{ } of |$SetupBlock| to Surface: [$parentBlockName].";
 			}
 		}
 		catch {

@@ -1,5 +1,6 @@
 ﻿using System;
 using Proviso.Core.Interfaces;
+using Proviso.Core.Models;
 
 namespace Proviso.Core.Definitions
 {

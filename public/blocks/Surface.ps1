@@ -31,7 +31,6 @@ function Surface {
 			$ModelPath, $TargetPath = $Path;
 		}
 		
-		
 		& $SurfaceBlock;
 	};
 	
