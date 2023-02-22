@@ -111,7 +111,6 @@ function Execute-Pipeline {
 		}
 		catch {
 			Write-Debug "		Processing Pipeline: Exception During Discovery: $($_.Exception.Message) -Stack: $($_.ScriptStackTrace)";
-			#throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
 			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 		finally {
@@ -126,7 +125,7 @@ function Execute-Pipeline {
 		#region "Processing"
 		Write-Verbose "Processing Pipeline: Executing Processing Phase...";
 		$manifest.ProcessingStart = [datetime]::Now;
-		Write-Debug "		Processing Pipeline: Starting Processing Phase.";
+		
 		try {
 			if ($manifest.HasRunbookSetup) {
 				Write-Debug "		Processing Pipeline: Starting Runbook.Setup() codeblock.";

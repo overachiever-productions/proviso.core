@@ -153,12 +153,16 @@ namespace Proviso.Core.Processing
                     Facet facet = new Facet(facetDef.Name, facetDef.Id, facetDef.FacetType, facetDef.AspectName, facetDef.SurfaceName, null);
                     this._facets.Add(facet);
 
-                    // JUSTIFICATION: this is a bit odd/weird. But, since we're running a FACET (vs a Surface or Runbook), and SINCE the Pipeline (powershell)
-                    //  expects to iterate over 1 or more Surfaces (either via Read|Test|Invoke-Surface - or via operations against a Runbook) the easiet
-                    //      way to do this was to simply interject a 'FakeSurface' into the Manifest's list of surfaces to process, just so'z there's always 1. 
-                    //      Yeah. This is arguably LAME, but having 2x 'paths' or versions of an otherwise single pipeline came with its own problems as well. 
+                    // HACK:
+                    //      The (PowerShell code) Processing phase starts by expanding any surfaces in either the RUNBOOK being executed, 
+                    //          OR, in the SURFACE being executed. Then for each Surface, the processing pipeline iterates over each
+                    //          Facet, and then from each facet 'on down' to each property/etc. 
+                    //      The 'rub' is that there's a single pipeline that does ... all of this (i.e., NESTED for-each loops). 
+                    //          So. Rather than have 2x pipelines (one for (optional)Surfaces -> Surfaces -> Facets, and one for JUST Facets),
+                    //           currently creating the notion of a PlaceHolderSurface that uses some if/else switches through the pipeline
+                    //           and elsewhere... vs having 2x pipelines with the potential for DRY-violations.
+                    //      MAY end up hating this hack and having 2x pipeline (at the facet level) implementations - or a helper func/etc.
                     this._surfaces.Add(new PlaceHolderSurface(facet));
-
                     break;
                 default:
                     throw new InvalidOperationException();
