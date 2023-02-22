@@ -1,9 +1,9 @@
 ﻿Set-StrictMode -Version 1.0;
 
-function Assertions {
+function Operations {
 	[CmdletBinding()]
 	param (
-		[ScriptBlock]$AssertionsBlock
+		[ScriptBlock]$OperationsBlock
 	);
 	
 	begin {
@@ -14,10 +14,9 @@ function Assertions {
 	};
 	
 	process {
-		# NOTE: this block IS essential. The begin/end blocks 'keep track' of where we are via the taxonomy. 
-		# 		other than that, this is JUST a wrapper - that, in turn, runs its $AssertionsBlock (so that Asserts can be loaded into a surface or runbook).
 		
-		& $AssertionsBlock;
+		
+		& $OperationsBlock;
 	};
 	
 	end {

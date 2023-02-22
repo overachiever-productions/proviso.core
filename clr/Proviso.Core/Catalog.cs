@@ -7,19 +7,46 @@ namespace Proviso.Core
 {
     public class Catalog
     {
+        private List<EnumeratorDefinition> _enumerators = new List<EnumeratorDefinition>();
+        private List<RunbookDefinition> _runbooks = new List<RunbookDefinition>();
         private List<FacetDefinition> _facets = new List<FacetDefinition>();
+        
+        // TODO: additional lists/collections to add: 
+        //  _surfaces 
+        //  _iterators 
+        //  TODO: PROBABLY different, but some sort of 'named' asserts (and ... provide option for 'authors' to add theirs as well. 
+
+        // REFACTOR: looks like I lost my mind... cohorts and properties should ONLY BE children of their PARENT Facet... 
+        //      er, well... did I ever decide to make properties|cohorts 'borrowable' from elsewhere?
+        //      if so, then... they got to BOTH their parents and here... (but I'm going to need some sort of import/borrow/use syntax/func. 
+        //      i THINK i was ONLY going to allow FACETS to be re-used like this (from one surface to the next)... but ... maybe I was going to do the same with props? (cohorts?)
         private List<CohortDefinition> _cohorts = new List<CohortDefinition>();
         private List<PropertyDefinition> _properties = new List<PropertyDefinition>();
-        private List<EnumeratorDefinition> _enumerators = new List<EnumeratorDefinition>();
-        
 
         public static Catalog Instance => new Catalog();
 
         private Catalog() { }
 
-
         // REFACTOR: all of these Set<T>Definition calls can/should be replaced by some sort of SetDefinition<T>(t, bool allowReplace)
         //      kind of internal/private helper. i.e., have to leave the interfaces/public methods the same... but should implement the copy-paste-tweak guts as a generic... 
+        public bool SetRunbookDefinition(RunbookDefinition added, bool allowReplace)
+        {
+            added.Validate(null);
+
+            var exists = this._runbooks.Find(x => x.Name == added.Name);
+            if (exists != null)
+            {
+                if (allowReplace)
+                {
+                    exists = added;
+                    return true;
+                }
+
+                throw new Exception($"[Runbook] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique [Runbook] names and/or allow global replacement override.");
+            }
+            return false;
+        }
+        
         public bool SetFacetDefinition(FacetDefinition added, bool allowReplace)
         {
             added.Validate(null);
@@ -103,9 +130,19 @@ namespace Proviso.Core
             return false;
         }
 
-        public FacetDefinition GetFacetByName(string name)
+        public RunbookDefinition GetRunbook(string name)
         {
             throw new NotImplementedException();
+        }
+
+        public SurfaceDefinition GetSurface(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public FacetDefinition GetFacetByName(string name)
+        {
+            return this._facets.Find(x => x.Name == name);
         }
 
         public FacetDefinition GetFacetById(string id)
@@ -122,12 +159,7 @@ namespace Proviso.Core
 
         public EnumeratorDefinition GetEnumerator(string name)
         {
-            // REFACTOR: if ... the output of .Find is ... null, then... i should just be able to return this.enums.Find()
-            var exists = this._enumerators.Find(x => x.Name == name);
-            if (exists == null) 
-                return null;
-
-            return exists;
+            return this._enumerators.Find(x => x.Name == name);
         }
     }
 }

@@ -6,7 +6,7 @@ function Cohort {
 		[Parameter(Mandatory, Position = 0)]
 		[string]$Name,
 		[Parameter(Mandatory, Position = 1)]
-		[ScriptBlock]$ScriptBlock,
+		[ScriptBlock]$CohortBlock,
 		[string]$ModelPath = $null,
 		[string]$TargetPath = $null,
 		[string]$Path,
@@ -54,7 +54,7 @@ function Cohort {
 			$definition.SetThrowOnConfig($ThrowOnConfig);
 		}
 		
-		& $ScriptBlock;
+		& $CohortBlock;
 	};
 	
 	end {

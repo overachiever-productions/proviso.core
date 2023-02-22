@@ -6,7 +6,7 @@ function Property {
 		[Parameter(Mandatory, Position = 0)]
 		[string]$Name,
 		[Parameter(Mandatory, Position = 1)]
-		[ScriptBlock]$ScriptBlock,
+		[ScriptBlock]$PropertyBlock,
 		[string]$ModelPath = $null,
 		[string]$TargetPath = $null,
 		[string]$Path,
@@ -55,7 +55,7 @@ function Property {
 			$definition.SetThrowOnConfig($ThrowOnConfig);
 		}
 		
-		& $ScriptBlock;
+		& $PropertyBlock;
 	};
 	
 	end {

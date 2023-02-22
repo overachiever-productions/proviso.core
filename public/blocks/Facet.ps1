@@ -4,8 +4,6 @@
 
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 
-	Get-Command 
-
 	$global:DebugPreference = "Continue";
 	$global:VerbosePreference = "Continue";
 
@@ -13,35 +11,32 @@
 #		Facet "Child" {}
 #	}
 
-	Facet "Host Ports" {
-		Property "ICMP" {
-		}
-		Property "RDP" {
-		}
-	}
-
-	Surface "Firewall Rules" {
-		Facet "SQL Server Ports" {
-			Property "SQL Server" {
-			}
-			Property "SQL Server - DAC" {
-			}
-			Property "SQL Server - Mirroring" { 
-			}
-			Cohort "Test Cohort" {
-				Enumerate {
-				}
-			}
-		}
-
-		Import -Facet "Host Ports";
-	}
-
-	Read-Facet "SQL Server Ports";
-	Read-Facet "Host Ports";
-
-	# Get this to work 'better' - i.e., the error I'm getting now is FUGLY: 
-	Read-Facet "This face does not exist";
+#	Facet "Host Ports" {
+#		Property "ICMP" {
+#		}
+#		Property "RDP" {
+#		}
+#	}
+#
+#	Surface "Firewall Rules" {
+#		Facet "SQL Server Ports" {
+#			Property "SQL Server" {
+#			}
+#			Property "SQL Server - DAC" {
+#			}
+#			Property "SQL Server - Mirroring" { 
+#			}
+#			Cohort "Test Cohort" {
+#				Enumerate {
+#				}
+#			}
+#		}
+#
+#		Import -Facet "Host Ports";
+#	}
+#
+#	Read-Facet "SQL Server Ports";
+#	Read-Facet "Host Ports";
 
 	Runbook "Firewall Stuff" { 
 		Setup {} 
@@ -83,7 +78,7 @@ function Facet {
 		[Parameter(Mandatory, Position = 0)]
 		[string]$Name,
 		[Parameter(Mandatory, Position = 1)]
-		[ScriptBlock]$ScriptBlock,
+		[ScriptBlock]$FacetBlock,
 		[string]$Id = $null,
 		[string]$ModelPath = $null,
 		[string]$TargetPath = $null,
@@ -114,7 +109,7 @@ function Facet {
 			$ModelPath, $TargetPath = $Path;
 		}
 		
-		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, $ModelPath, $TargetPath, $bypass, $Ignore);
+		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, $ModelPath, $TargetPath, $bypass, $Ignore, [Proviso.Core.FacetType]"Scalar");
 		
 		$definition.SurfaceName = $global:PvLexicon.GetCurrentSurface();
 		$definition.AspectName = $global:PvLexicon.GetCurrentAspect();
@@ -135,7 +130,7 @@ function Facet {
 			$definition.SetThrowOnConfig($ThrowOnConfig);
 		}
 		
-		& $ScriptBlock;
+		& $FacetBlock;
 	};
 	
 	end {
@@ -146,7 +141,7 @@ function Facet {
 				Write-Verbose "Facet named [$Name] was replaced.";
 			}
 			
-			
+			Write-Verbose "Facet [$($definition.Name)] added to PvCatalog.";
 		}
 		catch {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";

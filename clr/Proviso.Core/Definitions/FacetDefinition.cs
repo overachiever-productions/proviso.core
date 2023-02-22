@@ -1,5 +1,6 @@
 ﻿using System;
 using Proviso.Core.Interfaces;
+using Proviso.Core.Models;
 
 namespace Proviso.Core.Definitions
 {
@@ -9,11 +10,13 @@ namespace Proviso.Core.Definitions
         public string AspectName { get; set; }
 
         public string Id { get; set; }
+        public FacetType FacetType { get; private set; }
 
-        public FacetDefinition(string name, string id, string modelPath, string targetPath, bool skip, string skipReason) 
+        public FacetDefinition(string name, string id, string modelPath, string targetPath, bool skip, string skipReason, FacetType type) 
             : base(name, modelPath, targetPath, skip, skipReason)
         {
             this.Id = id;
+            this.FacetType = type;
         }
 
         public void Validate(object validationContext)
