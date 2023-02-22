@@ -31,15 +31,12 @@ function Execute-Pipeline {
 		[Proviso.Core.Definitions.SurfaceDefinition[]]$surfaceDefinitions = @();
 		[Proviso.Core.Definitions.FacetDefinition[]]$facetDefinitions = @();
 		
-		[Proviso.Core.Definitions.FacetDefinition]$targetFacet = $null;
-		[Proviso.Core.Definitions.SurfaceDefinition]$targetSurface = $null;
-		[Proviso.Core.Definitions.RunbookDefinition]$targetRunbook = $null;
 		Write-Debug "		Processing Pipeline: Processing Objects Defined.";
 		
 		try {
 			switch ($OperationType) {
 				"Facet" {
-					$targetFacet = $Catalog.GetFacetByName($Name);
+					[Proviso.Core.Definitions.FacetDefinition]$targetFacet = $Catalog.GetFacetByName($Name);
 					if ($null -eq $targetFacet) {
 						throw "Could not find [Facet] with name: [$Name].";
 					}
@@ -48,7 +45,7 @@ function Execute-Pipeline {
 					Write-Debug "		Processing Pipeline: Target is Facet with name: [$Name].";
 				}
 				"Surface" {
-					$targetSurface = $Catalog.GetSurface($Name);
+					[Proviso.Core.Definitions.SurfaceDefinition]$targetSurface = $Catalog.GetSurface($Name);
 					
 					if ($null -eq $targetSurface) {
 						throw "Could not find [Surface] with name: [$Name].";
@@ -58,7 +55,7 @@ function Execute-Pipeline {
 					Write-Debug "		Processing Pipeline: Target is Surface with name: [$Name]";
 				}
 				"Runbook" {
-					$targetRunbook = $Catalog.GetRunbook($Name);
+					[Proviso.Core.Definitions.RunbookDefinition]$targetRunbook = $Catalog.GetRunbook($Name);
 					
 					if ($null -eq $targetSurface) {
 						throw "Could not find [Runbook] with name: [$Name].";
