@@ -57,7 +57,7 @@ function Read-Facet {
 		# 					I don't think i CAN actually differentiate between the two. 
 		# 				the ONLY thing I can think of would be something like -Target and -[Multiple]Targets
 		
-		# TODO: address -Servers. 
+		# TODO: address -Servers. # See PowerShell in Action - 3rd Edition - Chapter/Section 20.5 - on remote runspaces. Great stuff in there. 
 		
 	};
 	
