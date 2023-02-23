@@ -102,8 +102,15 @@ namespace Proviso.Core
                 },
                 new Taxonomy
                 {
+                    NodeName = "Iterate",
+                    AllowedParents = new List<string> { "Pattern" },
+                    AllowedChildren = new List<string> { "Add", "Remove" }
+                },
+                new Taxonomy
+                {
                     NodeName = "Iterator",
-                    Rootable = true,
+                    Rootable = true,  // maybe NOT (see next line
+                    //AllowedParents = new List<string> { "Iterators" },  // MAYBE need to 'anchor' all globallllly defined IteratORs in an Iterators{} block?
                     AllowedChildren = new List<string> { "Add", "Remove" }
                 },
                 new Taxonomy

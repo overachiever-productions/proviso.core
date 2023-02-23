@@ -34,7 +34,7 @@ namespace Proviso.Core.Definitions
 
     public class DefinitionBase : IDefinable
     {
-        public DateTime Created { get; private set; }
+        public DateTime Created => DateTime.Now;
         public string Name { get; private set; }
         public string ModelPath { get; private set; }
         public string TargetPath { get; private set; }
@@ -48,7 +48,6 @@ namespace Proviso.Core.Definitions
             this.Skip = false;
             this.Impact = Impact.None;
 
-            this.Created = DateTime.UtcNow;
             this.Name = name;
         }
 
@@ -136,7 +135,7 @@ namespace Proviso.Core.Definitions
 
     public class EnumeratorDefinition : IValidated
     {
-        public DateTime Created { get; set; }
+        public DateTime Created => DateTime.Now;
         public string FacetName { get; set; }
         public string CohortName { get; set; }
 
@@ -147,8 +146,6 @@ namespace Proviso.Core.Definitions
 
         public EnumeratorDefinition(string name, bool isGlobal)
         {
-            this.Created = DateTime.UtcNow;
-
             this.Name = name;
             this.IsGlobal = isGlobal;
         }
@@ -212,8 +209,33 @@ namespace Proviso.Core.Definitions
         }
     }
 
+    public class IteratorDefinition : IValidated
+    {
+        public DateTime Created => DateTime.Now;
+        public string SurfaceName { get; set; }
+        public string AspectName { get; set; }
+        public string PatternName { get; set; }
+
+        public string Name { get; private set; }
+        public bool IsGlobal { get; private set; }
+        public ScriptBlock Iterate { get; set; }
+        public string OrderBy { get; set; }
+
+        public IteratorDefinition(string name, bool isGlobal)
+        {
+            this.Name = name;
+            this.IsGlobal = isGlobal;
+        }
+
+        public void Validate(object validationContext)
+        {
+            // TODO: Implement
+        }
+    }
+
     public class ImplementDefinition
     {
+        public DateTime Created => DateTime.Now;
         public string SurfaceName { get; private set; }
         public string DisplayFormat { get; private set; }
 
@@ -237,6 +259,8 @@ namespace Proviso.Core.Definitions
 
     public class SurfaceDefinition
     {
+        public DateTime Created => DateTime.Now;
+
         public SurfaceDefinition()
         {
 
@@ -258,6 +282,7 @@ namespace Proviso.Core.Definitions
         private List<AssertDefinition> _assertDefinitions = new List<AssertDefinition>();
         private List<ImplementDefinition> _implementDefinitions = new List<ImplementDefinition>();
 
+        public DateTime Created => DateTime.Now;
         public string Name { get; private set; }
         public ScriptBlock Setup { get; set; }
         public ScriptBlock Cleanup { get; set; }
@@ -297,6 +322,7 @@ namespace Proviso.Core.Definitions
 
     public class AssertDefinition
     {
+        public DateTime Created => DateTime.Now;
         public string Name { get; private set; }
         public string FailureMessage { get; private set; }
         public bool IsNegated { get; private set; }

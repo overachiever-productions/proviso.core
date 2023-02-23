@@ -8,6 +8,7 @@ namespace Proviso.Core
     public class Catalog
     {
         private List<EnumeratorDefinition> _enumerators = new List<EnumeratorDefinition>();
+        private List<IteratorDefinition> _iterators = new List<IteratorDefinition>();
         private List<RunbookDefinition> _runbooks = new List<RunbookDefinition>();
         private List<FacetDefinition> _facets = new List<FacetDefinition>();
         
@@ -127,6 +128,27 @@ namespace Proviso.Core
             }
             
             this._enumerators.Add(added);
+            return false;
+        }
+
+        public bool SetIteratorDefinition(IteratorDefinition added, bool allowReplace)
+        {
+            added.Validate(null);
+
+            var exists = this._iterators.Find(x => x.Name == added.Name);
+            if (exists != null)
+            {
+                if (allowReplace)
+                {
+                    exists = added;
+                    return true;
+                }
+
+                string e = exists.IsGlobal ? "Iterator" : "Iterate";
+                throw new Exception($"[{e}] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique {e} names and/or allow global replacement override.");
+            }
+
+            this._iterators.Add(added);
             return false;
         }
 
