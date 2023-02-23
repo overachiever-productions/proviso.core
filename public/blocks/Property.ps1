@@ -30,7 +30,8 @@ function Property {
 	process {
 		$definition = New-Object Proviso.Core.Definitions.PropertyDefinition($Name);
 		
-		$definition.FacetName = $global:PvLexicon.GetCurrentFacet();
+		# NOTE: Facets | Patterns ~ same... 
+		$definition.FacetName = (Collapse-Arguments -Arg1 ($global:PvLexicon.GetCurrentFacet()) -Arg2 ($global:PvLexicon.GetCurrentFacet()));
 		$definition.CohortName = $global:PvLexicon.GetCurrentCohort();
 		
 		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `

@@ -277,6 +277,33 @@ namespace Proviso.Core.Definitions
         }
     }
 
+    public class AssertDefinition
+    {
+        public DateTime Created => DateTime.Now;
+        public string Name { get; private set; }
+        public string FailureMessage { get; private set; }
+        public bool IsNegated { get; private set; }
+        public bool ConfigureOnly { get; private set; }
+
+        public ScriptBlock ScriptBlock { get; set; }
+        public bool IsIgnored { get; private set; }
+        public string IgnoredReason { get; private set; }
+
+        public AssertDefinition(string name, string failureMessage, bool negated, bool configureOnly)
+        {
+            this.Name = name;
+            this.FailureMessage = failureMessage;
+            this.IsNegated = negated;
+            this.ConfigureOnly = configureOnly;
+        }
+
+        public void SetIgnored(string reason)
+        {
+            this.IsIgnored = true;
+            this.IgnoredReason = reason; // this can totally be blank/null at this point... 
+        }
+    }
+
     public class RunbookDefinition : IValidated
     {
         private List<AssertDefinition> _assertDefinitions = new List<AssertDefinition>();
@@ -317,33 +344,6 @@ namespace Proviso.Core.Definitions
             //  and... make sure to allow for -skip/disabled as a Implement params.
             //      then to check that ALL are not disabled. (Actually, if they're all Implement "blah" -Skip ... 
             //      i think i just report on that at run time. 
-        }
-    }
-
-    public class AssertDefinition
-    {
-        public DateTime Created => DateTime.Now;
-        public string Name { get; private set; }
-        public string FailureMessage { get; private set; }
-        public bool IsNegated { get; private set; }
-        public bool ConfigureOnly { get; private set; }
-
-        public ScriptBlock ScriptBlock { get; set; }
-        public bool IsIgnored { get; private set; }
-        public string IgnoredReason { get; private set; }
-
-        public AssertDefinition(string name, string failureMessage, bool negated, bool configureOnly)
-        {
-            this.Name = name;
-            this.FailureMessage = failureMessage;
-            this.IsNegated = negated;
-            this.ConfigureOnly = configureOnly;
-        }
-
-        public void SetIgnored(string reason)
-        {
-            this.IsIgnored = true;
-            this.IgnoredReason = reason; // this can totally be blank/null at this point... 
         }
     }
 }

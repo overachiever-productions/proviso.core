@@ -17,12 +17,18 @@ write-host "--------------------------------------------------"
 
 		Pattern "My first Pattern" { 
 			Iterate {}
+			Add {}
+			Remove {}
+
+			Property "Do I need wrappers around Properties?" {}
 		}
 	}
 
+	Facet "My Second Facet" { }
+
 	Read-Facet "ANOTHER My First Facet" { } 
 
-	Facet "My Second Facet" { }
+	
 
 write-host "--------------------------------------------------"
 

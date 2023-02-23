@@ -28,7 +28,7 @@ function Cohort {
 	};
 	
 	process {
-		$definition = New-Object Proviso.Core.Definitions.CohortDefinition($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
+		$definition = New-Object Proviso.Core.Definitions.CohortDefinition($Name);
 		
 		$definition.FacetName = $global:PvLexicon.GetCurrentFacet();
 		
