@@ -14,6 +14,8 @@ write-host "--------------------------------------------------"
 
 	Surface "Extended Events" {
 		Facet "ANOTHER My First Facet" { }
+
+		#Pattern "My first Pattern" { }
 	}
 
 	Read-Facet "ANOTHER My First Facet" { } 

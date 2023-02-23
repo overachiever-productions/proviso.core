@@ -52,7 +52,7 @@ filter Is-Empty {
 	return [string]::IsNullOrWhiteSpace($Value);
 }
 
-function Is-ByPassed {
+function Is-Skipped {
 	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory, Position = 0)]
@@ -106,4 +106,53 @@ filter Allow-DefinitionReplacement {
 	# TODO: implement time-checks... 
 	
 	return $false;
+}
+
+function Set-Definitions {
+	[CmdletBinding()]
+	param (
+		[Parameter(Mandatory, Position = 0)]
+		[object]$iDefinable,
+		[parameter(Mandatory)]
+		[string]$BlockType, 
+		[string]$ModelPath = $null,
+		[string]$TargetPath = $null,
+		[ValidateSet("None", "Low", "Medium", "High")]
+		[string]$Impact = "None",
+		[switch]$Skip = $false,
+		[string]$Ignore = $null,
+		[object]$Expect = $null,
+		[object]$Extract = $null,
+		[string]$ThrowOnConfig = $null
+	);
+	
+	if ((Is-Skipped $BlockType -Name $Name -Skip:$Skip -Ignore $Ignore -Verbose:$xVerbose -Debug:$xDebug)) {
+		$iDefinable.SetSkipped($Ignore);
+	}
+	
+	if (Should-SetPaths $BlockType -Name $Name -ModelPath $ModelPath -TargetPath $TargetPath -Path $Path -Verbose:$xVerbose -Debug:$xDebug) {
+		$ModelPath, $TargetPath = $Path;
+	}
+	
+	$iDefinable.SetPaths($ModelPath, $TargetPath);
+	
+	if ($Impact -ne "None") {
+		$iDefinable.SetImpact(([Proviso.Core.Impact]$Impact));
+	}
+	
+	if ($Expect) {
+		$iDefinable.SetExpectFromParameter($Expect);
+	}
+	
+	if ($Extract) {
+		$iDefinable.SetExtractFromParameter($Extract);
+	}
+	
+	if ($ThrowOnConfig) {
+		$iDefinable.SetThrowOnConfig($ThrowOnConfig);
+	}
+	
+	# TODO: Comparison... 
+	# TODO: Processing Order? 
+	
 }

@@ -94,6 +94,14 @@ namespace Proviso.Core
                 },
                 new Taxonomy
                 {
+                    NodeName = "Pattern",
+                    Rootable = true,
+                    Tracked = true,
+                    AllowedParents = new List<string> { "Surface", "Aspect" },  // POSSIBLY a "Surfaces" node for ... globally defined surfaces.
+                    AllowedChildren = new List<string> { "Cohort", "Property" }
+                },
+                new Taxonomy
+                {
                     NodeName = "Iterator",
                     Rootable = true,
                     AllowedChildren = new List<string> { "Add", "Remove" }

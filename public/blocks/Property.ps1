@@ -28,32 +28,14 @@ function Property {
 	};
 	
 	process {
-		$bypass = Is-ByPassed $MyInvocation.MyCommand.Name -Name $Name -Skip:$Skip -Ignore $Ignore -Verbose:$xVerbose -Debug:$xDebug;
-		
-		if (Should-SetPaths $MyInvocation.MyCommand.Name -Name $Name -ModelPath $ModelPath -TargetPath $TargetPath -Path $Path -Verbose:$xVerbose -Debug:$xDebug) {
-			$ModelPath, $TargetPath = $Path;
-		}
-		
-		$definition = New-Object Proviso.Core.Definitions.PropertyDefinition($Name, $ModelPath, $TargetPath, $bypass, $Ignore);
+		$definition = New-Object Proviso.Core.Definitions.PropertyDefinition($Name);
 		
 		$definition.FacetName = $global:PvLexicon.GetCurrentFacet();
 		$definition.CohortName = $global:PvLexicon.GetCurrentCohort();
-
-		if ($Impact -ne "None") {
-			$definition.Impact = [Proviso.Core.Impact]$Impact;
-		}
 		
-		if ($Expect) {
-			$definition.SetExpectFromParameter($Expect);
-		}
-		
-		if ($Extract) {
-			$definition.SetExtractFromParameter($Extract);
-		}
-		
-		if ($ThrowOnConfig) {
-			$definition.SetThrowOnConfig($ThrowOnConfig);
-		}
+		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
+						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
+						-Verbose:$xVerbose -Debug:$xDebug;
 		
 		& $PropertyBlock;
 	};

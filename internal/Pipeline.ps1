@@ -104,8 +104,6 @@ function Execute-Pipeline {
 		Write-Debug "			Processing Pipeline: ProcessingManifest.FacetDefinitionsCount = [$($manifest.FacetDefinitionsCount)].";
 		try {
 			Write-Debug "		Processing Pipeline: Starting Discovery.";
-			#$manifest.ExecuteDiscovery($Catalog);
-			
 			switch ($OperationType) {
 				"Runbook" {
 					Write-Debug "			Processing Pipeline: Validation and Binding for Runbook: [$Name].";
@@ -150,7 +148,6 @@ function Execute-Pipeline {
 					[Proviso.Core.Models.Facet]$facet = New-Object Proviso.Core.Models.Facet($facetDef.Name, $facetDef.Id, $facetDef.FacetType, $facetDef.AspectName, $facetDef.SurfaceName, $null)
 					$manifest.AddFacet($facet);
 					$manifest.AddSurface((New-Object Proviso.Core.Models.PlaceHolderSurface($facet)));
-					
 				}
 				default {
 					throw "Proviso Framework Error. Invalid -OperationType: [$OperationType] encountered in Execute-Pipeline.";
@@ -158,7 +155,11 @@ function Execute-Pipeline {
 			}
 			
 			foreach ($facet in $manifest.Facets) {
+				Write-Host "i'm a facet!"
+				
 				if ("Pattern" -eq $facet.FacetType) {
+					
+					Write-Host "i'm a pattern!"
 					
 					# make sure we've got an iterator. 
 					# and that paths match up as they should/need-to. 
