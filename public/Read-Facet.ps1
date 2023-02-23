@@ -15,7 +15,7 @@ write-host "--------------------------------------------------"
 	Surface "Extended Events" {
 		Facet "ANOTHER My First Facet" { }
 
-		#Pattern "My first Pattern" { }
+		Pattern "My first Pattern" { }
 	}
 
 	Read-Facet "ANOTHER My First Facet" { } 
@@ -28,6 +28,7 @@ write-host "--------------------------------------------------"
 		[PSCustomObject]@{ Name = "My First Facet" }
 		[PSCustomObject]@{ Name = "ANOTHER My First Facet" }
 		[PSCustomObject]@{ Name = "My Second Facet" }
+		[PSCustomObject]@{ Name = "My first Pattern" }
 	)
 
 	$facets | Read-Facet;

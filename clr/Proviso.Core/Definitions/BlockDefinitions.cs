@@ -165,6 +165,8 @@ namespace Proviso.Core.Definitions
     {
         public string SurfaceName { get; set; }
         public string AspectName { get; set; }
+        public Membership MembershipType { get; private set; }
+        public string SpecifiedIterator { get; private set; }
 
         public string Id { get; private set; }
         public FacetType FacetType { get; private set; }
@@ -173,6 +175,22 @@ namespace Proviso.Core.Definitions
         {
             this.Id = id;
             this.FacetType = type;
+        }
+
+        public void SetPatternMembershipType(Membership membershipType)
+        {
+            if (this.FacetType == FacetType.Scalar)
+                throw new InvalidOperationException();
+
+            this.MembershipType = membershipType;
+        }
+
+        public void SetPatternIteratorFromParameter(string iteratorName)
+        {
+            if (this.FacetType == FacetType.Scalar)
+                throw new InvalidOperationException();
+
+            this.SpecifiedIterator = iteratorName;
         }
 
         public void Validate(object validationContext)
@@ -266,8 +284,6 @@ namespace Proviso.Core.Definitions
             //      i think i just report on that at run time. 
         }
     }
-
-
 
     public class AssertDefinition
     {

@@ -43,6 +43,28 @@ filter Has-Value {
 	return (-not ([string]::IsNullOrEmpty($Value)));
 }
 
+filter Has-ArrayValue {
+	param (
+		[Parameter(Position = 0)]
+		[string[]]$Value
+	)
+	
+	
+}
+
+filter Collapse-Arguments {
+	param (
+		[object]$Arg1,
+		[object]$Arg2
+	);
+	
+	if ($Arg1) {
+		return $Arg1;
+	}
+	
+	return $Arg2;
+}
+
 filter Is-Empty {
 	param (
 		[Parameter(Position = 0)]

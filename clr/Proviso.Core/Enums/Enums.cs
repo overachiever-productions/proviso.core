@@ -14,6 +14,12 @@
         High
     }
 
+    public enum Membership
+    {
+        Naive,
+        Explicit
+    }
+
     public enum OperationType
     {
         Facet,
