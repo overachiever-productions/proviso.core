@@ -112,7 +112,7 @@ function Set-Definitions {
 	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory, Position = 0)]
-		[object]$iDefinable,
+		[Proviso.Core.Definitions.IDefinable]$iDefinable,
 		[parameter(Mandatory)]
 		[string]$BlockType, 
 		[string]$ModelPath = $null,
