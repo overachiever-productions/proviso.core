@@ -10,11 +10,11 @@ function Cohort {
 		[string]$ModelPath = $null,
 		[string]$TargetPath = $null,
 		[string]$Path,
-		[string]$DisplayFormat = $null,
 		[ValidateSet("None", "Low", "Medium", "High")]
 		[string]$Impact = "None",
 		[switch]$Skip = $false,
 		[string]$Ignore = $null,
+		[string]$DisplayFormat = $null,
 		[object]$Expect,
 		[object]$Extract,
 		[switch]$UsesAdd = $false,
@@ -34,7 +34,7 @@ function Cohort {
 		
 		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
-						-Verbose:$xVerbose -Debug:$xDebug;
+						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		& $CohortBlock;
 	};

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Management.Automation;
+using System.Reflection;
 using Proviso.Core.Models;
 
 namespace Proviso.Core.Definitions
@@ -19,7 +20,9 @@ namespace Proviso.Core.Definitions
         bool Skip { get; }
         string SkipReason { get; }
         Impact Impact { get; }
+        string DisplayFormat { get; }
 
+        void SetDisplayFormat(string format);
         void SetPaths(string model, string target);
         void SetSkipped(string reason);
         void SetImpact(Impact impact);
@@ -38,6 +41,7 @@ namespace Proviso.Core.Definitions
         public bool Skip { get; private set; }
         public string SkipReason { get; private set; }
         public Impact Impact { get; private set; }
+        public string DisplayFormat { get; private set; }
 
         internal DefinitionBase(string name)
         {
@@ -46,6 +50,12 @@ namespace Proviso.Core.Definitions
 
             this.Created = DateTime.UtcNow;
             this.Name = name;
+        }
+
+        public void SetDisplayFormat(string format)
+        {
+            if (!string.IsNullOrWhiteSpace(format))
+                this.DisplayFormat = format;
         }
 
         public void SetPaths(string model, string target)

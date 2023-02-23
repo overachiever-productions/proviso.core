@@ -143,6 +143,7 @@ function Set-Definitions {
 		[string]$Impact = "None",
 		[switch]$Skip = $false,
 		[string]$Ignore = $null,
+		[string]$DisplayFormat = $null,
 		[object]$Expect = $null,
 		[object]$Extract = $null,
 		[string]$ThrowOnConfig = $null

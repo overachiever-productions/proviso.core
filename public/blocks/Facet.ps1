@@ -70,6 +70,7 @@ function Facet {
 		[string]$Impact = "None",
 		[switch]$Skip = $false,
 		[string]$Ignore = $null,
+		[string]$DisplayFormat = $null,
 		[object]$Expect = $null,
 		[object]$Extract = $null,
 		[string]$ThrowOnConfig = $null
@@ -90,7 +91,7 @@ function Facet {
 		
 		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
-						-Verbose:$xVerbose -Debug:$xDebug;
+						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		& $FacetBlock;
 	};
