@@ -302,6 +302,15 @@ function Execute-Pipeline {
 							
 							if ("Invoke" -eq $Verb) {
 								# do configure stuff - on things that need configure. 
+								# 		where 'Configure' can be either the contents of the Configure {} block, or, if/as directed, can be the 
+								# 		contents of an Add/Remove. 
+								
+								# IMPORTANT: and, when processing the Configure/Add/Remove mentioned above: 
+								# 		1. by this point, each PROPERTY will have an -Impact (either of None (default) or an explicit -Impact defined at the Property, OR an -Impact
+								# 				that was defined 'higher up' by a parent and which has 'inherited down' to each property that we're now iterating over... 
+								# 		2. if the current property's -Impact > (EITHER: (-AllowImpact switch passed in to the Invoke-FSR command) -or (the $global:ImpactPreferenceValue))
+								# 				then, for EACH 'configure' operation, there'll be an if(should-continue "property [name] of facet [y] has an impact of X. Proceed?"
+								# 					check that has to be run. 
 								
 								# do re-extract 
 								
