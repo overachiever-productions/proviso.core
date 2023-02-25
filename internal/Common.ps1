@@ -34,6 +34,15 @@ function Write-PvVerbose {
 	# always spits stuff out to the PvLog. 	
 }
 
+filter Is-Empty {
+	param (
+		[Parameter(Position = 0)]
+		[string]$Value
+	);
+	
+	return [string]::IsNullOrWhiteSpace($Value);
+}
+
 filter Has-Value {
 	param (
 		[Parameter(Position = 0)]
@@ -55,23 +64,20 @@ filter Has-ArrayValue {
 filter Collapse-Arguments {
 	param (
 		[object]$Arg1,
-		[object]$Arg2
+		[object]$Arg2,
+		[switch]$IgnoreEmptyStrings = $false # need to determine IF "" should be output when found... 
 	);
 	
 	if ($Arg1) {
 		return $Arg1;
 	}
+	elseif (-not $IgnoreEmptyStrings) {
+		if ((Is-Empty $Arg1)) {
+			return $Arg1;
+		}
+	}
 	
 	return $Arg2;
-}
-
-filter Is-Empty {
-	param (
-		[Parameter(Position = 0)]
-		[string]$Value
-	);
-	
-	return [string]::IsNullOrWhiteSpace($Value);
 }
 
 function Is-Skipped {
@@ -98,6 +104,16 @@ function Is-Skipped {
 	}
 }
 
+filter Allow-DefinitionReplacement {
+	# TODO: set some sort of global preference or whatever. 
+	# 	and, it has to be set to some sort of explicit option like { Yes | No | Time-Based }
+	
+	# otherwise, use compilation vs 'now' times:
+	# TODO: implement time-checks... 
+	
+	return $false;
+}
+
 function Should-SetPaths {
 	[CmdletBinding()]
 	param (
@@ -116,16 +132,6 @@ function Should-SetPaths {
 		
 		return $true;
 	}
-	
-	return $false;
-}
-
-filter Allow-DefinitionReplacement {
-	# TODO: set some sort of global preference or whatever. 
-	# 	and, it has to be set to some sort of explicit option like { Yes | No | Time-Based }
-	
-	# otherwise, use compilation vs 'now' times:
-	# TODO: implement time-checks... 
 	
 	return $false;
 }
