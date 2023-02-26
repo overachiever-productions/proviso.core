@@ -55,10 +55,20 @@ filter Has-Value {
 filter Has-ArrayValue {
 	param (
 		[Parameter(Position = 0)]
-		[string[]]$Value
+		[string[]]$Value		# NOTE: any STRING passed in will... be converted to @("string") 
 	)
 	
+	if ($null -eq $Value) {
+		return $false;
+	}
 	
+	foreach ($s in $Value) {
+		if (Has-Value $s) {
+			return $true;
+		}		
+	}
+	
+	return $false
 }
 
 filter Collapse-Arguments {

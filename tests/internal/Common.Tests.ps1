@@ -10,12 +10,18 @@ BeforeAll {
 
 Describe "$UnitName Tests" -Tag "UnitTests" {
 	
-	Context "Has-Value Tests" {
-		
-	}
-	
 	Context "Has-ArrayValue Tests" {
+		It "Returns False for Nulls" {
+			Has-ArrayValue $null | Should -Be $false;
+		}
 		
+		It "Returns False for Array of Empty Strings" {
+			Has-ArrayValue -Value @("", "") | Should -Be $false;
+		}
+		
+		It "Returns True for Value Found in One of Array Members" {
+			Has-ArrayValue @("", "yup", "") | Should -Be $true;
+		}
 	}
 	
 	Context "Collapse-Arguments Tests" {
