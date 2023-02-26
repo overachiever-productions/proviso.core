@@ -1,14 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Management.Automation;
+using System.Reflection.Metadata.Ecma335;
 using Proviso.Core.Definitions;
 using Proviso.Core.Models;
 
 namespace Proviso.Core
 {
+    public delegate bool CatalogPredicate<in T>(T existing, T replacement);
+
+    public static class CatalogExtensions
+    {
+        public static bool SetDefinition<T>(this List<T> list, T added, CatalogPredicate<T> predicate, bool allowReplace, string exceptionText)
+        {
+            var exists = list.Find(x => predicate(x, added));
+            if (exists != null)
+            {
+                if (allowReplace)
+                {
+                    exists = added;
+                    return true;
+                }
+
+                throw new Exception(exceptionText);
+            }
+
+            list.Add(added);
+            return false;
+        }
+    }
+
     public class Catalog
     {
         private List<EnumeratorDefinition> _enumerators = new List<EnumeratorDefinition>();
+        private List<EnumeratorAddDefinition> _enumeratorAdds = new List<EnumeratorAddDefinition>();
         private List<IteratorDefinition> _iterators = new List<IteratorDefinition>();
+        private List<IteratorAddDefinition> _iteratorAdds = new List<IteratorAddDefinition>();
         private List<RunbookDefinition> _runbooks = new List<RunbookDefinition>();
         private List<FacetDefinition> _facets = new List<FacetDefinition>();
         
@@ -28,128 +55,74 @@ namespace Proviso.Core
 
         private Catalog() { }
 
-        // REFACTOR: all of these Set<T>Definition calls can/should be replaced by some sort of SetDefinition<T>(t, bool allowReplace)
-        //      kind of internal/private helper. i.e., have to leave the interfaces/public methods the same... but should implement the copy-paste-tweak guts as a generic... 
         public bool SetRunbookDefinition(RunbookDefinition added, bool allowReplace)
         {
             added.Validate(null);
 
-            var exists = this._runbooks.Find(x => x.Name == added.Name);
-            if (exists != null)
-            {
-                if (allowReplace)
-                {
-                    exists = added;
-                    return true;
-                }
-
-                throw new Exception($"[Runbook] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique [Runbook] names and/or allow global replacement override.");
-            }
-            return false;
+            CatalogPredicate<RunbookDefinition> predicate = (exists, added) => exists.Name == added.Name;
+            string errorText = $"[Runbook] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique [Runbook] names and/or allow global replacement override.";
+            return this._runbooks.SetDefinition(added, predicate, allowReplace, errorText);
         }
         
         public bool SetFacetDefinition(FacetDefinition added, bool allowReplace)
         {
             added.Validate(null);
 
-            var exists = this._facets.Find(x => x.Name == added.Name);
-            if (exists != null)
-            {
-                if (allowReplace)
-                {
-                    exists = added;
-                    return true;
-                }
-
-                throw new Exception($"[Facet] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique [Facet] names and/or allow global replacement override.");
-            }
-
-            this._facets.Add(added);
-            return false;
-
+            // NOTE: using .Id instead of .Name in predicate:
+            CatalogPredicate<FacetDefinition> predicate = (exists, added) => exists.Id == added.Id;
+            string errorText = $"Facet with name [{added.Name}] already exists and can NOT be replaced. Ensure unique [Facet] names and/or allow global replacement override.";
+            return this._facets.SetDefinition(added, predicate, allowReplace, errorText);
         }
 
         public bool SetPropertyDefinition(PropertyDefinition added, bool allowReplace)
         {
             added.Validate(null);
 
-            var exists = this._properties.Find(x => x.Name == added.Name);
-            if (exists != null)
-            {
-                if (allowReplace)
-                {
-                    exists = added;
-                    return true;
-                }
-
-                throw new Exception($"[Property] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique [Property] names and/or allow global replacement override.");
-            }
-
-            this._properties.Add(added);
-            return false;
+            CatalogPredicate<PropertyDefinition> predicate = (exists, added) => exists.Name == added.Name;
+            string errorText = $"[Property] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique [Property] names and/or allow global replacement override.";
+            return this._properties.SetDefinition(added, predicate, allowReplace, errorText);
         }
 
         public bool SetCohortDefinition(CohortDefinition added, bool allowReplace)
         {
             added.Validate(null);
 
-            var exists = this._cohorts.Find(x => x.Name == added.Name);
-            if (exists != null)
-            {
-                if (allowReplace)
-                {
-                    exists = added;
-                    return true;
-                }
-
-                throw new Exception($"[Cohort] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique [Cohort] names and/or allow global replacement override.");
-            }
-
-            this._cohorts.Add(added);
-            return false;
-
+            CatalogPredicate<CohortDefinition> predicate = (exists, added) => exists.Name == added.Name;
+            string errorText = $"[Cohort] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique [Cohort] names and/or allow global replacement override.";
+            return this._cohorts.SetDefinition(added, predicate, allowReplace, errorText);
         }
 
         public bool SetEnumeratorDefinition(EnumeratorDefinition added, bool allowReplace)
         {
             added.Validate(null);
 
-            var exists = this._enumerators.Find(x => x.Name == added.Name);
-            if (exists != null)
-            {
-                if (allowReplace)
-                {
-                    exists = added;
-                    return true;
-                }
-
-                string e = exists.IsGlobal ? "Enumerator" : "Enumerate";
-                throw new Exception($"[{e}] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique {e} names and/or allow global replacement override.");
-            }
-            
-            this._enumerators.Add(added);
-            return false;
+            CatalogPredicate<EnumeratorDefinition> predicate = (exists, added) => exists.Name == added.Name;
+            string e = added.IsGlobal ? "Enumerator" : "Enumerate";
+            string errorText = $"[{e}] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique {e} names and/or allow global replacement override.";
+            return this._enumerators.SetDefinition(added, predicate, allowReplace, errorText);
         }
 
         public bool SetIteratorDefinition(IteratorDefinition added, bool allowReplace)
         {
             added.Validate(null);
 
-            var exists = this._iterators.Find(x => x.Name == added.Name);
-            if (exists != null)
+            CatalogPredicate<IteratorDefinition> predicate = (exists, added) => exists.Name == added.Name;
+            string e = added.IsGlobal ? "Iterator" : "Iterate";
+            string errorText = $"[{e}] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique {e} names and/or allow global replacement override.";
+            return this._iterators.SetDefinition(added, predicate, allowReplace, errorText);
+        }
+
+        public bool SetAddDefinition(IAddDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
+        {
+            switch (definition.Modality)
             {
-                if (allowReplace)
-                {
-                    exists = added;
-                    return true;
-                }
-
-                string e = exists.IsGlobal ? "Iterator" : "Iterate";
-                throw new Exception($"[{e}] with name [{added.Name}] already exists and can NOT be replaced. Ensure unique {e} names and/or allow global replacement override.");
+                case ModalityType.Enumerator:
+                    return this.SetEnumeratorAddDefinition((EnumeratorAddDefinition)definition, parentBlockType, parentBlockName, allowReplace);
+                case ModalityType.Iterator:
+                    return this.SetIteratorAddDefinition((IteratorAddDefinition)definition, parentBlockType, parentBlockName, allowReplace);
+                default:
+                    throw new Exception("Proviso Framework Error. Invalid Modality Specified for SetAddDefinition().");
             }
-
-            this._iterators.Add(added);
-            return false;
         }
 
         public RunbookDefinition GetRunbook(string name)
@@ -182,6 +155,44 @@ namespace Proviso.Core
         public EnumeratorDefinition GetEnumerator(string name)
         {
             return this._enumerators.Find(x => x.Name == name);
+        }
+
+        private bool SetIteratorAddDefinition(IteratorAddDefinition added, string parentBlockType, string parentBlockName, bool allowReplace)
+        {
+            FacetDefinition parent = this._facets.Find(x => (x.FacetType == FacetType.Pattern) && (x.Name == parentBlockName));
+            if (parent == null)
+            {
+                throw new Exception();
+            }
+            parent.Add = added;
+
+            if (added.Visibility == Visibility.Global)
+            {
+                CatalogPredicate<IteratorAddDefinition> predicate = (exists, added) => exists.Name == added.Name;
+                string errorText = $"Add for Enumerator with name [{added.Name}] already exists and can NOT be replaced.";
+                return this._iteratorAdds.SetDefinition(added, predicate, allowReplace, errorText);
+            }
+
+            return false;
+        }
+
+        private bool SetEnumeratorAddDefinition(EnumeratorAddDefinition added, string parentBlockType, string parentBlockName, bool allowReplace)
+        {
+            CohortDefinition parent = this._cohorts.Find(x => x.Name == parentBlockName);
+            if (parent == null)
+            {
+                throw new Exception();
+            }
+            parent.Add = added;
+
+            if (added.Visibility == Visibility.Global)
+            {
+                CatalogPredicate<EnumeratorAddDefinition> predicate = (exists, added) => exists.Name == added.Name;
+                string errorText = $"Add for Enumerator with name [{added.Name}] already exists and can NOT be replaced.";
+                return this._enumeratorAdds.SetDefinition(added, predicate, allowReplace, errorText);
+            }
+
+            return false;
         }
     }
 }
