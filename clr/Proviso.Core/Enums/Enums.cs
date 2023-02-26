@@ -20,11 +20,24 @@
         Explicit
     }
 
+    public enum ModalityType
+    {
+        Enumerator,
+        Iterator
+    }
+
     public enum OperationType
     {
         Facet,
         Surface,
         Runbook
+    }
+
+    public enum PropertyType
+    {
+        CohortProperty,
+        FacetProperty, 
+        PatternProperty
     }
 
     public enum RunbookOrSurface
@@ -44,5 +57,11 @@
         Read,
         Test,
         Invoke
+    }
+
+    public enum Visibility
+    {
+        Anonymous, 
+        Global
     }
 }

@@ -18,7 +18,7 @@ function Remove {
 		[string]$parentBlockType = $global:PvLexicon.GetCurrentBlockType();
 		[string]$parentBlockName = $global:PvLexicon.GetCurrentBlockName();
 		
-		Enter-Block ($MyInvocation.MyCommand) -Name (Collapse-Arguments -Arg1 $Name -Arg2 $parentBlockName) -Verbose:$xVerbose -Debug:$xDebug;
+		Enter-Block ($MyInvocation.MyCommand) -Name (Collapse-Arguments -Arg1 $Name -Arg2 $parentBlockName -IgnoreEmptyStrings) -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	process {

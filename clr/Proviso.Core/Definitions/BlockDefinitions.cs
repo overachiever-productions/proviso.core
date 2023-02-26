@@ -102,24 +102,29 @@ namespace Proviso.Core.Definitions
 
     public class PropertyDefinition : DefinitionBase, IValidated
     {
+        public PropertyType PropertyType { get; private set; }
+        // REFACTOR: how'z about ... ParentName? since I already (now) know the PropertyType
         public string FacetName { get; set; }
+        public string PatternName { get; set; }
         public string CohortName { get; set; }
 
-        public PropertyDefinition(string name) : base(name) { }
+        public PropertyDefinition(string name, PropertyType type) : base(name)
+        {
+            this.PropertyType = type;
+        }
 
         public void Validate(object validationContext)
         {
             if (string.IsNullOrWhiteSpace(this.Name))
                 throw new Exception("Proviso Validation Error. [Property] -Name can NOT be null/empty.");
-
-            if (string.IsNullOrWhiteSpace(this.FacetName) & string.IsNullOrWhiteSpace(this.CohortName))
-                throw new Exception("Proviso Validation Error. [Property] blocks must be within a Parent [Facet] or [Cohort] block.");
         }
     }
 
     public class CohortDefinition : DefinitionBase, IValidated
     {
         public string FacetName { get; set; }
+
+        public EnumeratorAddDefinition Add { get; internal set; }
 
         public CohortDefinition(string name) : base(name) { }
 
@@ -131,6 +136,58 @@ namespace Proviso.Core.Definitions
             if (string.IsNullOrWhiteSpace(this.FacetName))
                 throw new Exception("Proviso Validation Error. [Cohort] blocks must be within a Parent [Facet] block.");
         }
+    }
+
+    public interface IAddDefinition
+    {
+        DateTime Created { get; }
+        string Name { get; }
+        ModalityType Modality { get; }
+        Visibility Visibility { get; }
+        ScriptBlock ScriptBlock { get; }
+    }
+
+    public class AddDefinitionBase : IAddDefinition
+    {
+        public DateTime Created => DateTime.Now;
+        public string Name { get; private set; }
+        public ModalityType Modality { get; }
+        public Visibility Visibility { get; private set; }
+        public ScriptBlock ScriptBlock { get; private set; }
+
+        internal AddDefinitionBase(string name, ScriptBlock block, ModalityType type)
+        {
+            if (!string.IsNullOrEmpty(name))
+            {
+                this.Name = name;
+                this.Visibility = Visibility.Global;
+            }
+            else
+                this.Visibility = Visibility.Anonymous;
+
+            this.ScriptBlock = block;
+            this.Modality = type;
+        }
+    }
+
+    public class EnumeratorAddDefinition : AddDefinitionBase
+    {
+        public EnumeratorAddDefinition(string name, ScriptBlock block) : base(name, block, ModalityType.Enumerator) { }
+    }
+
+    public class IteratorAddDefinition : AddDefinitionBase
+    {
+        public IteratorAddDefinition(string name, ScriptBlock block) : base(name, block, ModalityType.Iterator) { }
+    }
+
+    public class EnumeratorRemoveDefinition
+    {
+
+    }
+
+    public class IteratorRemoveDefinition
+    {
+
     }
 
     public class EnumeratorDefinition : IValidated
@@ -174,6 +231,7 @@ namespace Proviso.Core.Definitions
         public string AspectName { get; set; }
         public Membership MembershipType { get; private set; }
         public string SpecifiedIterator { get; private set; }
+        public IteratorAddDefinition Add { get; internal set; }
 
         public string Id { get; private set; }
         public FacetType FacetType { get; private set; }
