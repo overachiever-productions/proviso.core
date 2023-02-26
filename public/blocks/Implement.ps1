@@ -1,7 +1,10 @@
 ﻿Set-StrictMode -Version 1.0;
 
 <#
-	Runbook 'import' or 'implementation' of a Facet.
+
+	Allows 'Execution' of a Facet from within a Runbook.
+
+	REFACTOR: MIGHT change this to 'Run' - i.e., that's what a RUNbook does... 
 
 #>
 

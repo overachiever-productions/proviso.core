@@ -34,15 +34,6 @@ function Write-PvVerbose {
 	# always spits stuff out to the PvLog. 	
 }
 
-filter Has-Value {
-	param (
-		[Parameter(Position = 0)]
-		[string]$Value
-	);
-	
-	return (-not ([string]::IsNullOrEmpty($Value)));
-}
-
 filter Is-Empty {
 	param (
 		[Parameter(Position = 0)]
@@ -52,7 +43,54 @@ filter Is-Empty {
 	return [string]::IsNullOrWhiteSpace($Value);
 }
 
-function Is-ByPassed {
+filter Has-Value {
+	param (
+		[Parameter(Position = 0)]
+		[string]$Value
+	);
+	
+	return (-not ([string]::IsNullOrEmpty($Value)));
+}
+
+filter Has-ArrayValue {
+	param (
+		[Parameter(Position = 0)]
+		[string[]]$Value		# NOTE: any STRING passed in will... be converted to @("string") 
+	)
+	
+	if ($null -eq $Value) {
+		return $false;
+	}
+	
+	foreach ($s in $Value) {
+		if (Has-Value $s) {
+			return $true;
+		}		
+	}
+	
+	return $false
+}
+
+filter Collapse-Arguments {
+	param (
+		[object]$Arg1,
+		[object]$Arg2,
+		[switch]$IgnoreEmptyStrings = $false # need to determine IF "" should be output when found... 
+	);
+	
+	if ($Arg1) {
+		return $Arg1;
+	}
+	elseif (-not $IgnoreEmptyStrings) {
+		if ((Is-Empty $Arg1)) {
+			return $Arg1;
+		}
+	}
+	
+	return $Arg2;
+}
+
+function Is-Skipped {
 	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory, Position = 0)]
@@ -74,6 +112,16 @@ function Is-ByPassed {
 		
 		Write-Verbose $verbose;
 	}
+}
+
+filter Allow-DefinitionReplacement {
+	# TODO: set some sort of global preference or whatever. 
+	# 	and, it has to be set to some sort of explicit option like { Yes | No | Time-Based }
+	
+	# otherwise, use compilation vs 'now' times:
+	# TODO: implement time-checks... 
+	
+	return $false;
 }
 
 function Should-SetPaths {
@@ -98,12 +146,52 @@ function Should-SetPaths {
 	return $false;
 }
 
-filter Allow-DefinitionReplacement {
-	# TODO: set some sort of global preference or whatever. 
-	# 	and, it has to be set to some sort of explicit option like { Yes | No | Time-Based }
+function Set-Definitions {
+	[CmdletBinding()]
+	param (
+		[Parameter(Mandatory, Position = 0)]
+		[Proviso.Core.Definitions.IDefinable]$iDefinable,
+		[parameter(Mandatory)]
+		[string]$BlockType, 
+		[string]$ModelPath = $null,
+		[string]$TargetPath = $null,
+		[ValidateSet("None", "Low", "Medium", "High")]
+		[string]$Impact = "None",
+		[switch]$Skip = $false,
+		[string]$Ignore = $null,
+		[string]$DisplayFormat = $null,
+		[object]$Expect = $null,
+		[object]$Extract = $null,
+		[string]$ThrowOnConfig = $null
+	);
 	
-	# otherwise, use compilation vs 'now' times:
-	# TODO: implement time-checks... 
+	if ((Is-Skipped $BlockType -Name $Name -Skip:$Skip -Ignore $Ignore -Verbose:$xVerbose -Debug:$xDebug)) {
+		$iDefinable.SetSkipped($Ignore);
+	}
 	
-	return $false;
+	if (Should-SetPaths $BlockType -Name $Name -ModelPath $ModelPath -TargetPath $TargetPath -Path $Path -Verbose:$xVerbose -Debug:$xDebug) {
+		$ModelPath, $TargetPath = $Path;
+	}
+	
+	$iDefinable.SetPaths($ModelPath, $TargetPath);
+	
+	if ($Impact -ne "None") {
+		$iDefinable.SetImpact(([Proviso.Core.Impact]$Impact));
+	}
+	
+	if ($Expect) {
+		$iDefinable.SetExpectFromParameter($Expect);
+	}
+	
+	if ($Extract) {
+		$iDefinable.SetExtractFromParameter($Extract);
+	}
+	
+	if ($ThrowOnConfig) {
+		$iDefinable.SetThrowOnConfig($ThrowOnConfig);
+	}
+	
+	# TODO: Comparison... 
+	# TODO: Processing Order? 
+	
 }

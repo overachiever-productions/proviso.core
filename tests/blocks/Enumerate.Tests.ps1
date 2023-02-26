@@ -9,7 +9,7 @@ BeforeAll {
 	
 	. "$root\public\blocks\Facet.ps1";
 	. "$root\public\blocks\Cohort.ps1";
-	
+Write-Host "uut: $uut"	
 	. $uut;
 }
 

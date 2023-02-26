@@ -17,6 +17,7 @@ namespace Proviso.Core.Processing
         public string OperatorTargetName { get; set; }
 
         public List<Surface> Surfaces => this._surfaces;
+        public List<Facet> Facets => this._facets;
 
         #region Timing Details & HostName Info
         public DateTime PipelineStart { get; set; }

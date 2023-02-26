@@ -1,5 +1,11 @@
 ﻿Set-StrictMode -Version 1.0;
 
+<#
+
+	Wrapper for Implement|Run operations within a Runbook.
+
+#>
+
 function Operations {
 	[CmdletBinding()]
 	param (
@@ -14,7 +20,6 @@ function Operations {
 	};
 	
 	process {
-		
 		
 		& $OperationsBlock;
 	};

@@ -19,12 +19,12 @@
 			[Import] -Pattern|Facet
 			Facet | Pattern 
 				[Iterate] (for Pattern)
-					[Add]	(Pattern)  - Install?
-					[Remove] (Pattern) - Uninstall?
+				[Add]	(Pattern)  - Install?
+				[Remove] (Pattern) - Uninstall?
 				Property | Cohort 
 					Enumerate
-						Add
-						Remove
+					Add
+					Remove
 					Property (of Cohort - and... recurses)
 					[Inclusion] (of Property | Cohort)
 					Expect

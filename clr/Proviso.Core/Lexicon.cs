@@ -49,6 +49,11 @@ namespace Proviso.Core
             return this.GetCurrentBlockNameByType("Facet");
         }
 
+        public string GetCurrentPattern()
+        {
+            return this.GetCurrentBlockNameByType("Pattern");
+        }
+
         public string GetCurrentCohort()
         {
             return this.GetCurrentBlockNameByType("Cohort");

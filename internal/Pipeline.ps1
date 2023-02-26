@@ -18,6 +18,11 @@ function Execute-Pipeline {
 	begin {
 		Write-Verbose "Starting Processing Pipeline.";
 		[Proviso.Core.Catalog]$Catalog = $global:PvCatalog;
+		
+		# TODO: spin up PoShLog. It's spiffy. 126KB. https://github.com/PoShLog/PoShLog 
+		# 	then... redirect existing Write-Debug and Write-Verbose calls in pipeline (below) to use Write-PvDebug and Write-PvVerbose
+		# 			hmmm... then, I'm going to need to EITHER: a) move those 2x Write-PvXXX methods into public or do something like $PvContext.WriteDebug/WriteVerbose? 
+		# 		the POINT being: LOGGING will only be available for actual pipeline operations. 'compile-time' stuff will continue to -verbose and -debug... but only to console.
 	};
 	
 	process {
@@ -30,7 +35,6 @@ function Execute-Pipeline {
 		
 		[Proviso.Core.Definitions.SurfaceDefinition[]]$surfaceDefinitions = @();
 		[Proviso.Core.Definitions.FacetDefinition[]]$facetDefinitions = @();
-		
 		Write-Debug "		Processing Pipeline: Processing Objects Defined.";
 		
 		try {
@@ -104,8 +108,6 @@ function Execute-Pipeline {
 		Write-Debug "			Processing Pipeline: ProcessingManifest.FacetDefinitionsCount = [$($manifest.FacetDefinitionsCount)].";
 		try {
 			Write-Debug "		Processing Pipeline: Starting Discovery.";
-			#$manifest.ExecuteDiscovery($Catalog);
-			
 			switch ($OperationType) {
 				"Runbook" {
 					Write-Debug "			Processing Pipeline: Validation and Binding for Runbook: [$Name].";
@@ -150,7 +152,6 @@ function Execute-Pipeline {
 					[Proviso.Core.Models.Facet]$facet = New-Object Proviso.Core.Models.Facet($facetDef.Name, $facetDef.Id, $facetDef.FacetType, $facetDef.AspectName, $facetDef.SurfaceName, $null)
 					$manifest.AddFacet($facet);
 					$manifest.AddSurface((New-Object Proviso.Core.Models.PlaceHolderSurface($facet)));
-					
 				}
 				default {
 					throw "Proviso Framework Error. Invalid -OperationType: [$OperationType] encountered in Execute-Pipeline.";
@@ -158,7 +159,11 @@ function Execute-Pipeline {
 			}
 			
 			foreach ($facet in $manifest.Facets) {
+				Write-Host "i'm a facet!"
+				
 				if ("Pattern" -eq $facet.FacetType) {
+					
+					Write-Host "i'm a pattern!"
 					
 					# make sure we've got an iterator. 
 					# and that paths match up as they should/need-to. 
@@ -301,6 +306,15 @@ function Execute-Pipeline {
 							
 							if ("Invoke" -eq $Verb) {
 								# do configure stuff - on things that need configure. 
+								# 		where 'Configure' can be either the contents of the Configure {} block, or, if/as directed, can be the 
+								# 		contents of an Add/Remove. 
+								
+								# IMPORTANT: and, when processing the Configure/Add/Remove mentioned above: 
+								# 		1. by this point, each PROPERTY will have an -Impact (either of None (default) or an explicit -Impact defined at the Property, OR an -Impact
+								# 				that was defined 'higher up' by a parent and which has 'inherited down' to each property that we're now iterating over... 
+								# 		2. if the current property's -Impact > (EITHER: (-AllowImpact switch passed in to the Invoke-FSR command) -or (the $global:ImpactPreferenceValue))
+								# 				then, for EACH 'configure' operation, there'll be an if(should-continue "property [name] of facet [y] has an impact of X. Proceed?"
+								# 					check that has to be run. 
 								
 								# do re-extract 
 								
@@ -345,6 +359,8 @@ function Execute-Pipeline {
 	};
 	
 	end {
+		# TODO: stop PoShLog... 
+		
 		$manifest.PipelineEnd = [datetime]::Now;
 		Write-Debug "	Pipeline Processing Complete.";
 		Write-Verbose "Processing Pipeline Complete.";

@@ -22,11 +22,11 @@ function Setup {
 		try {
 			if ("Runbook" -eq $parentBlockType) {
 				$runbook.Setup = $SetupBlock;
-				Write-Debug "		Added Setup{ } of |$SetupBlock| to Runbook: [$parentBlockName].";
+				Write-Debug "		Added Setup{ } to Runbook: [$parentBlockName].";
 			}
 			else {
 				$surface.Setup = $SetupBlock;
-				Write-Debug "		Added Setup{ } of |$SetupBlock| to Surface: [$parentBlockName].";
+				Write-Debug "		Added Setup{ } to Surface: [$parentBlockName].";
 			}
 		}
 		catch {
