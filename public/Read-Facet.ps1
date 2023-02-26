@@ -5,7 +5,7 @@
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 
 	$global:DebugPreference = "Continue";
-	#$global:VerbosePreference = "Continue";
+	$global:VerbosePreference = "Continue";
 
 	Facet "My First Facet" { }
 	Read-Facet "My First Facet";
@@ -14,11 +14,20 @@ write-host "--------------------------------------------------"
 
 	Surface "Extended Events" {
 		Facet "ANOTHER My First Facet" { }
+
+		Pattern "My first Pattern" { 
+			Iterate {}
+			Add {}
+			Remove {}
+
+			Property "Do I need wrappers around Properties?" {}
+		}
 	}
 
-	Read-Facet "ANOTHER My First Facet" { } 
-
 	Facet "My Second Facet" { }
+
+	Read-Facet "ANOTHER My First Facet" { } 
+	
 
 write-host "--------------------------------------------------"
 
@@ -26,6 +35,7 @@ write-host "--------------------------------------------------"
 		[PSCustomObject]@{ Name = "My First Facet" }
 		[PSCustomObject]@{ Name = "ANOTHER My First Facet" }
 		[PSCustomObject]@{ Name = "My Second Facet" }
+		[PSCustomObject]@{ Name = "My first Pattern" }
 	)
 
 	$facets | Read-Facet;
@@ -57,7 +67,7 @@ function Read-Facet {
 		# 					I don't think i CAN actually differentiate between the two. 
 		# 				the ONLY thing I can think of would be something like -Target and -[Multiple]Targets
 		
-		# TODO: address -Servers. 
+		# TODO: address -Servers. # See PowerShell in Action - 3rd Edition - Chapter/Section 20.5 - on remote runspaces. Great stuff in there. 
 		
 	};
 	

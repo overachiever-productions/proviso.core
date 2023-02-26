@@ -14,8 +14,8 @@ function Assertions {
 	};
 	
 	process {
-		# NOTE: this block IS essential. The begin/end blocks 'keep track' of where we are via the taxonomy. 
-		# 		other than that, this is JUST a wrapper - that, in turn, runs its $AssertionsBlock (so that Asserts can be loaded into a surface or runbook).
+		# NOTE: This block IS essential. The begin/end blocks 'keep track' of where we are via the taxonomy. 
+		# 		But, it doesn't really 'do' anything. It's a wrapper for individual Asserts.
 		
 		& $AssertionsBlock;
 	};

@@ -94,8 +94,23 @@ namespace Proviso.Core
                 },
                 new Taxonomy
                 {
-                    NodeName = "Iterator",
+                    NodeName = "Pattern",
                     Rootable = true,
+                    Tracked = true,
+                    AllowedParents = new List<string> { "Surface", "Aspect" },  // POSSIBLY a "Surfaces" node for ... globally defined surfaces.
+                    AllowedChildren = new List<string> { "Cohort", "Property" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Iterate",
+                    AllowedParents = new List<string> { "Pattern" },
+                    AllowedChildren = new List<string> { "Add", "Remove" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Iterator",
+                    Rootable = true,  // maybe NOT (see next line
+                    //AllowedParents = new List<string> { "Iterators" },  // MAYBE need to 'anchor' all globallllly defined IteratORs in an Iterators{} block?
                     AllowedChildren = new List<string> { "Add", "Remove" }
                 },
                 new Taxonomy
@@ -115,6 +130,16 @@ namespace Proviso.Core
                 },
                 new Taxonomy
                 {
+                    NodeName = "Add", 
+                    AllowedParents = new List<string> { "Pattern", "Cohort" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Remove",
+                    AllowedParents = new List<string> { "Pattern", "Cohort" }
+                },
+                new Taxonomy
+                {
                     NodeName = "Aspect", 
                     NameAllowed = true,
                     AllowedParents = new List<string> { "Surface" }, 
@@ -124,14 +149,14 @@ namespace Proviso.Core
                 {
                     NodeName = "Property",
                     Tracked = true,
-                    AllowedParents = new List<string> { "Facet", "Cohort" },
+                    AllowedParents = new List<string> { "Facet", "Pattern", "Cohort" },
                     AllowedChildren = new List<string> { "Inclusion", "Expect", "Extract", "Compare", "Configure" }
                 },
                 new Taxonomy
                 {
                     NodeName = "Cohort",
                     Tracked = true,
-                    AllowedParents = new List<string> { "Facet" },
+                    AllowedParents = new List<string> { "Facet", "Pattern" },
                     AllowedChildren = new List<string> { "Enumerate", "Property" }
                 }
             };

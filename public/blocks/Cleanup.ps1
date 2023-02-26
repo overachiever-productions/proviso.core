@@ -22,11 +22,11 @@ function Cleanup {
 		try {
 			if ("Runbook" -eq $parentBlockType) {
 				$runbook.Cleanup = $CleanupBlock;
-				Write-Debug "		Added Cleanup{ } of |$SetupBlock| to Runbook: [$parentBlockName].";
+				Write-Debug "		Added Cleanup{ } to Runbook: [$parentBlockName].";
 			}
 			else {
 				$surface.Cleanup = $CleanupBlock;
-				Write-Debug "		Added Cleanup{ } of |$SetupBlock| to Surface: [$parentBlockName].";
+				Write-Debug "		Added Cleanup{ } to Surface: [$parentBlockName].";
 			}
 		}
 		catch {

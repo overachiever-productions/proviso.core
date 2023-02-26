@@ -12,10 +12,11 @@ function Surface {
 		[string]$Path,
 		[ValidateSet("None", "Low", "Medium", "High")]
 		[string]$Impact = "None",
-		[switch]$Skip = $false,  # surfaces CAN be skipped/ignored when they're part of a runbook
+		[switch]$Skip = $false,  # surfaces CAN be skipped/ignored
 		[string]$Ignore = $null,
+		
 		# TODO: still need to work on these semantics:
-		[string[]]$ImpactsSurfaces = $null
+		[string[]]$ImpactsService = $null
 	);
 	
 	begin {
@@ -25,23 +26,28 @@ function Surface {
 	};
 	
 	process {
-		$bypass = Is-ByPassed $MyInvocation.MyCommand.Name -Name $Name -Skip:$Skip -Ignore $Ignore -Verbose:$xVerbose -Debug:$xDebug;
+		$definition = New-Object Proviso.Core.Definitions.SurfaceDefinition($Name);
 		
-		if (Should-SetPaths $MyInvocation.MyCommand.Name -Name $Name -ModelPath $ModelPath -TargetPath $TargetPath -Path $Path -Verbose:$xVerbose -Debug:$xDebug) {
-			$ModelPath, $TargetPath = $Path;
-		}
+		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
+						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $null `
+						-DisplayFormat $null -Verbose:$xVerbose -Debug:$xDebug;
 		
 		& $SurfaceBlock;
 	};
 	
 	end {
-#		try {
-#			$global:PvCatalog.AddSurfaceDefinition($definition);
-#		}
-#		catch {
-#			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
-#		}
-		
+		try {
+			[bool]$replaced = $global:PvCatalog.SetSurfaceDefinition($definition, (Allow-DefinitionReplacement));
+			
+			if ($replaced) {
+				Write-Verbose "Surface: [$Name] was replaced.";
+			}
+			
+			Write-Verbose "Surface: [$($definition.Name)] added to PvCatalog.";
+		}
+		catch {
+			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+		}
 		
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
