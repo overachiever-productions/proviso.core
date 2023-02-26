@@ -353,14 +353,11 @@ namespace Proviso.Core.Definitions
         }
     }
 
-    public class SurfaceDefinition
+    public class SurfaceDefinition: DefinitionBase, IValidated
     {
-        public DateTime Created => DateTime.Now;
 
-        public SurfaceDefinition()
-        {
 
-        }
+        public SurfaceDefinition(string name) : base(name) { }
 
         public void AddAssert(AssertDefinition added)
         {
@@ -368,6 +365,11 @@ namespace Proviso.Core.Definitions
         }
 
         internal Surface ToSurface()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Validate(object validationContext)
         {
             throw new NotImplementedException();
         }

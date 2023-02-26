@@ -101,10 +101,10 @@ function Facet {
 			[bool]$replaced = $global:PvCatalog.SetFacetDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
-				Write-Verbose "Facet named [$Name] was replaced.";
+				Write-Verbose "Facet: [$Name] was replaced.";
 			}
 			
-			Write-Verbose "Facet [$($definition.Name)] added to PvCatalog.";
+			Write-Verbose "Facet: [$($definition.Name)] added to PvCatalog.";
 		}
 		catch {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
