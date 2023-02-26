@@ -238,7 +238,7 @@ namespace Proviso.Core.Definitions
 
         public FacetDefinition(string name, string id, FacetType type) : base(name)
         {
-            this.Id = id;
+            this.Id = string.IsNullOrWhiteSpace(id) ? Guid.NewGuid().ToString() : id;
             this.FacetType = type;
         }
 
