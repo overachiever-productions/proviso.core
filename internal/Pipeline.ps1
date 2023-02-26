@@ -18,6 +18,11 @@ function Execute-Pipeline {
 	begin {
 		Write-Verbose "Starting Processing Pipeline.";
 		[Proviso.Core.Catalog]$Catalog = $global:PvCatalog;
+		
+		# TODO: spin up PoShLog. It's spiffy. 126KB. https://github.com/PoShLog/PoShLog 
+		# 	then... redirect existing Write-Debug and Write-Verbose calls in pipeline (below) to use Write-PvDebug and Write-PvVerbose
+		# 			hmmm... then, I'm going to need to EITHER: a) move those 2x Write-PvXXX methods into public or do something like $PvContext.WriteDebug/WriteVerbose? 
+		# 		the POINT being: LOGGING will only be available for actual pipeline operations. 'compile-time' stuff will continue to -verbose and -debug... but only to console.
 	};
 	
 	process {
@@ -30,7 +35,6 @@ function Execute-Pipeline {
 		
 		[Proviso.Core.Definitions.SurfaceDefinition[]]$surfaceDefinitions = @();
 		[Proviso.Core.Definitions.FacetDefinition[]]$facetDefinitions = @();
-		
 		Write-Debug "		Processing Pipeline: Processing Objects Defined.";
 		
 		try {
@@ -355,6 +359,8 @@ function Execute-Pipeline {
 	};
 	
 	end {
+		# TODO: stop PoShLog... 
+		
 		$manifest.PipelineEnd = [datetime]::Now;
 		Write-Debug "	Pipeline Processing Complete.";
 		Write-Verbose "Processing Pipeline Complete.";

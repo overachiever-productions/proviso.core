@@ -5,7 +5,7 @@
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 
 	$global:DebugPreference = "Continue";
-	#$global:VerbosePreference = "Continue";
+	$global:VerbosePreference = "Continue";
 
 	Facet "My First Facet" { }
 	Read-Facet "My First Facet";
@@ -27,7 +27,6 @@ write-host "--------------------------------------------------"
 	Facet "My Second Facet" { }
 
 	Read-Facet "ANOTHER My First Facet" { } 
-
 	
 
 write-host "--------------------------------------------------"
