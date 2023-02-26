@@ -1,5 +1,11 @@
 ﻿Set-StrictMode -Version 1.0;
 
+<# 
+	
+	The 'same' as a Facet, but acts as a 'template' against Iterator-filled 'versions' ... 
+
+#>
+
 function Pattern {
 	[CmdletBinding()]
 	[Alias("FacetPattern")]

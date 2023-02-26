@@ -20,7 +20,7 @@ function Add {
 	
 	process {
 		
-		Write-Verbose "Processing Add Block for [$parentBlockType]: [$parentBlockName]."
+		Write-Verbose "Processing Add Block for [$parentBlockType]: [$parentBlockName].";
 		
 		switch ($parentBlockType) {
 			"Pattern" {

@@ -125,6 +125,7 @@ namespace Proviso.Core.Definitions
         public string FacetName { get; set; }
 
         public EnumeratorAddDefinition Add { get; internal set; }
+        public EnumeratorRemoveDefinition Remove { get; internal set; }
 
         public CohortDefinition(string name) : base(name) { }
 
@@ -151,7 +152,7 @@ namespace Proviso.Core.Definitions
     {
         public DateTime Created => DateTime.Now;
         public string Name { get; private set; }
-        public ModalityType Modality { get; }
+        public ModalityType Modality { get; private set; }
         public Visibility Visibility { get; private set; }
         public ScriptBlock ScriptBlock { get; private set; }
 
@@ -170,6 +171,41 @@ namespace Proviso.Core.Definitions
         }
     }
 
+    public interface IRemoveDefinition
+    {
+        DateTime Created { get; }
+        string Name { get; }
+        ModalityType Modality { get; }
+        Visibility Visibility { get; }
+        Impact Impact { get; }
+        ScriptBlock ScriptBlock { get; }
+    }
+
+    public class RemoveDefinitionBase : IRemoveDefinition
+    {
+        public DateTime Created => DateTime.Now;
+        public string Name { get; private set; }
+        public ModalityType Modality { get; private set; }
+        public Visibility Visibility { get; private set; }
+        public Impact Impact { get; private set; }
+        public ScriptBlock ScriptBlock { get; private set; }
+
+        internal RemoveDefinitionBase(string name, Impact impact, ScriptBlock block, ModalityType modality)
+        {
+            if (!string.IsNullOrEmpty(name))
+            {
+                this.Name = name;
+                this.Visibility = Visibility.Global;
+            }
+            else
+                this.Visibility = Visibility.Anonymous;
+
+            this.Impact = impact;
+            this.ScriptBlock = block;
+            this.Modality = modality;
+        }
+    }
+
     public class EnumeratorAddDefinition : AddDefinitionBase
     {
         public EnumeratorAddDefinition(string name, ScriptBlock block) : base(name, block, ModalityType.Enumerator) { }
@@ -180,14 +216,14 @@ namespace Proviso.Core.Definitions
         public IteratorAddDefinition(string name, ScriptBlock block) : base(name, block, ModalityType.Iterator) { }
     }
 
-    public class EnumeratorRemoveDefinition
+    public class EnumeratorRemoveDefinition : RemoveDefinitionBase
     {
-
+        public EnumeratorRemoveDefinition(string name, Impact impact, ScriptBlock block) : base(name, impact, block, ModalityType.Enumerator) { }
     }
 
-    public class IteratorRemoveDefinition
+    public class IteratorRemoveDefinition : RemoveDefinitionBase
     {
-
+        public IteratorRemoveDefinition(string name, Impact impact, ScriptBlock block) : base(name, impact, block, ModalityType.Iterator) { }
     }
 
     public class EnumeratorDefinition : IValidated
@@ -231,7 +267,9 @@ namespace Proviso.Core.Definitions
         public string AspectName { get; set; }
         public Membership MembershipType { get; private set; }
         public string SpecifiedIterator { get; private set; }
+
         public IteratorAddDefinition Add { get; internal set; }
+        public IteratorRemoveDefinition Remove { get; internal set; }
 
         public string Id { get; private set; }
         public FacetType FacetType { get; private set; }

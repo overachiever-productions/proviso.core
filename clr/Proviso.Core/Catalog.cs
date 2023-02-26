@@ -34,8 +34,10 @@ namespace Proviso.Core
     {
         private List<EnumeratorDefinition> _enumerators = new List<EnumeratorDefinition>();
         private List<EnumeratorAddDefinition> _enumeratorAdds = new List<EnumeratorAddDefinition>();
+        private List<EnumeratorRemoveDefinition> _enumeratorRemoves = new List<EnumeratorRemoveDefinition>();
         private List<IteratorDefinition> _iterators = new List<IteratorDefinition>();
         private List<IteratorAddDefinition> _iteratorAdds = new List<IteratorAddDefinition>();
+        private List<IteratorRemoveDefinition> _iteratorRemoves = new List<IteratorRemoveDefinition>();
         private List<RunbookDefinition> _runbooks = new List<RunbookDefinition>();
         private List<FacetDefinition> _facets = new List<FacetDefinition>();
         
@@ -125,6 +127,19 @@ namespace Proviso.Core
             }
         }
 
+        public bool SetRemoveDefinition(IRemoveDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
+        {
+            switch (definition.Modality)
+            {
+                case ModalityType.Enumerator:
+                    return this.SetEnumeratorRemoveDefinition((EnumeratorRemoveDefinition)definition, parentBlockType, parentBlockName, allowReplace);
+                case ModalityType.Iterator:
+                    return this.SetIteratorRemoveDefinition((IteratorRemoveDefinition)definition, parentBlockType, parentBlockName, allowReplace);
+                default:
+                    throw new Exception("Proviso Framework Error. Invalid Modality Specified for SetAddDefinition().");
+            }
+        }
+
         public RunbookDefinition GetRunbook(string name)
         {
             throw new NotImplementedException();
@@ -157,39 +172,77 @@ namespace Proviso.Core
             return this._enumerators.Find(x => x.Name == name);
         }
 
-        private bool SetIteratorAddDefinition(IteratorAddDefinition added, string parentBlockType, string parentBlockName, bool allowReplace)
+        private bool SetIteratorAddDefinition(IteratorAddDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
         {
             FacetDefinition parent = this._facets.Find(x => (x.FacetType == FacetType.Pattern) && (x.Name == parentBlockName));
             if (parent == null)
             {
                 throw new Exception();
             }
-            parent.Add = added;
+            parent.Add = definition;
 
-            if (added.Visibility == Visibility.Global)
+            if (definition.Visibility == Visibility.Global)
             {
                 CatalogPredicate<IteratorAddDefinition> predicate = (exists, added) => exists.Name == added.Name;
-                string errorText = $"Add for Enumerator with name [{added.Name}] already exists and can NOT be replaced.";
-                return this._iteratorAdds.SetDefinition(added, predicate, allowReplace, errorText);
+                string errorText = $"Add for Enumerator with name [{definition.Name}] already exists and can NOT be replaced.";
+                return this._iteratorAdds.SetDefinition(definition, predicate, allowReplace, errorText);
             }
 
             return false;
         }
 
-        private bool SetEnumeratorAddDefinition(EnumeratorAddDefinition added, string parentBlockType, string parentBlockName, bool allowReplace)
+        private bool SetEnumeratorAddDefinition(EnumeratorAddDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
         {
             CohortDefinition parent = this._cohorts.Find(x => x.Name == parentBlockName);
             if (parent == null)
             {
                 throw new Exception();
             }
-            parent.Add = added;
+            parent.Add = definition;
 
-            if (added.Visibility == Visibility.Global)
+            if (definition.Visibility == Visibility.Global)
             {
                 CatalogPredicate<EnumeratorAddDefinition> predicate = (exists, added) => exists.Name == added.Name;
-                string errorText = $"Add for Enumerator with name [{added.Name}] already exists and can NOT be replaced.";
-                return this._enumeratorAdds.SetDefinition(added, predicate, allowReplace, errorText);
+                string errorText = $"Add for Enumerator with name [{definition.Name}] already exists and can NOT be replaced.";
+                return this._enumeratorAdds.SetDefinition(definition, predicate, allowReplace, errorText);
+            }
+
+            return false;
+        }
+
+        private bool SetIteratorRemoveDefinition(IteratorRemoveDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
+        {
+            FacetDefinition parent = this._facets.Find(x => (x.FacetType == FacetType.Pattern) && (x.Name == parentBlockName));
+            if (parent == null)
+            {
+                throw new Exception();
+            }
+            parent.Remove = definition;
+
+            if (definition.Visibility == Visibility.Global)
+            {
+                CatalogPredicate<IteratorRemoveDefinition> predicate = (exists, added) => exists.Name == added.Name;
+                string errorText = $"Remove for Enumerator with name [{definition.Name}] already exists and can NOT be replaced.";
+                return this._iteratorRemoves.SetDefinition(definition, predicate, allowReplace, errorText);
+            }
+
+            return false;
+        }
+
+        private bool SetEnumeratorRemoveDefinition(EnumeratorRemoveDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
+        {
+            CohortDefinition parent = this._cohorts.Find(x => x.Name == parentBlockName);
+            if (parent == null)
+            {
+                throw new Exception();
+            }
+            parent.Remove = definition;
+
+            if (definition.Visibility == Visibility.Global)
+            {
+                CatalogPredicate<EnumeratorRemoveDefinition> predicate = (exists, added) => exists.Name == added.Name;
+                string errorText = $"Remove for Enumerator with name [{definition.Name}] already exists and can NOT be replaced.";
+                return this._enumeratorRemoves.SetDefinition(definition, predicate, allowReplace, errorText);
             }
 
             return false;
