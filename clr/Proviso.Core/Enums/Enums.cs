@@ -4,8 +4,7 @@
     {
         Scalar,
         Pattern, 
-        IncludedScalar,
-        IncludedPattern
+        Import
     }
 
     public enum Impact

@@ -93,6 +93,8 @@ function Facet {
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug
 		
+		# TODO: facets|patterns are NOT currently being added to their parent Surface. (Nor am i accounting for option of .. 'global' Facets.)
+		
 		try {
 			[bool]$replaced = $global:PvCatalog.SetFacetDefinition($definition, (Allow-DefinitionReplacement));
 			
