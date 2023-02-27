@@ -376,8 +376,9 @@ namespace Proviso.Core.Definitions
 
         public void Validate(object validationContext)
         {
+            // TODO: Implement
             // TODO: this'll be roughly the same as for ... Implement|Run Def... 
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
 

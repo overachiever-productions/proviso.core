@@ -42,7 +42,7 @@ function Surface {
 			Write-Verbose "Surface: [$($definition.Name)] added to PvCatalog.";
 		}
 		catch {
-			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 		
 		& $SurfaceBlock;

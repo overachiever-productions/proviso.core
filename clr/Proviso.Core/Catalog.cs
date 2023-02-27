@@ -67,7 +67,7 @@ namespace Proviso.Core
             return this._runbooks.SetDefinition(definition, predicate, allowReplace, errorText);
         }
 
-        public bool SetSurfaceDefiniotion(SurfaceDefinition definition, bool allowReplace)
+        public bool SetSurfaceDefinition(SurfaceDefinition definition, bool allowReplace)
         {
             definition.Validate(null);
 
