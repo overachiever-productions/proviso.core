@@ -129,9 +129,9 @@ namespace Proviso.Core
             switch (definition.Modality)
             {
                 case ModalityType.Enumerator:
-                    return this.SetEnumeratorAddDefinition((EnumeratorAddDefinition)definition, parentBlockType, parentBlockName, allowReplace);
+                    return this.SetEnumeratorAddDefinition((EnumeratorAddDefinition)definition, parentBlockName, allowReplace);
                 case ModalityType.Iterator:
-                    return this.SetIteratorAddDefinition((IteratorAddDefinition)definition, parentBlockType, parentBlockName, allowReplace);
+                    return this.SetIteratorAddDefinition((IteratorAddDefinition)definition, parentBlockName, allowReplace);
                 default:
                     throw new Exception("Proviso Framework Error. Invalid Modality Specified for SetAddDefinition().");
             }
@@ -182,12 +182,12 @@ namespace Proviso.Core
             return this._enumerators.Find(x => x.Name == name);
         }
 
-        private bool SetIteratorAddDefinition(IteratorAddDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
+        private bool SetIteratorAddDefinition(IteratorAddDefinition definition, string parentBlockName, bool allowReplace)
         {
             FacetDefinition parent = this._facets.Find(x => (x.FacetType == FacetType.Pattern) && (x.Name == parentBlockName));
             if (parent == null)
             {
-                throw new Exception();
+                throw new Exception($"Parent Pattern: [{parentBlockName}] not found in PvCatalog.");
             }
             parent.Add = definition;
 
@@ -201,12 +201,12 @@ namespace Proviso.Core
             return false;
         }
 
-        private bool SetEnumeratorAddDefinition(EnumeratorAddDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
+        private bool SetEnumeratorAddDefinition(EnumeratorAddDefinition definition, string parentBlockName, bool allowReplace)
         {
             CohortDefinition parent = this._cohorts.Find(x => x.Name == parentBlockName);
             if (parent == null)
             {
-                throw new Exception();
+                throw new Exception($"Parent Cohort: [{parentBlockName}] not found in PvCatalog.");
             }
             parent.Add = definition;
 

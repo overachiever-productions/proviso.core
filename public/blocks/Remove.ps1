@@ -53,9 +53,6 @@ function Remove {
 			}
 		}
 		
-	};
-	
-	end {
 		try {
 			[bool]$replaced = $global:PvCatalog.SetRemoveDefinition($removeDefinition, $parentBlockType, $parentBlockName);
 			
@@ -66,8 +63,9 @@ function Remove {
 		catch {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
 		}
-		
-		
+	};
+	
+	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

@@ -51,20 +51,20 @@ function Add {
 				throw 
 			}
 		}
-	};
-	
-	end {
+		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetAddDefinition($addDefinition, $parentBlockType, $parentBlockName);
+			[bool]$replaced = $global:PvCatalog.SetAddDefinition($addDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Add block replaced.";
-			}				
+			}
 		}
 		catch {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
 		}
-		
+	};
+	
+	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

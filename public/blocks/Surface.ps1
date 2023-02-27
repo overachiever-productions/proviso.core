@@ -29,13 +29,9 @@ function Surface {
 		$definition = New-Object Proviso.Core.Definitions.SurfaceDefinition($Name);
 		
 		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
-						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $null `
+						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $null -Extract $null -ThrowOnConfig $null `
 						-DisplayFormat $null -Verbose:$xVerbose -Debug:$xDebug;
 		
-		& $SurfaceBlock;
-	};
-	
-	end {
 		try {
 			[bool]$replaced = $global:PvCatalog.SetSurfaceDefinition($definition, (Allow-DefinitionReplacement));
 			
@@ -49,6 +45,10 @@ function Surface {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 		
+		& $SurfaceBlock;
+	};
+	
+	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

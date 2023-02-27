@@ -39,11 +39,7 @@ function Assert {
 		# 		hmmm. but, if not... then... a) we won't hit this code (i.e., the "Assert" func (this) won't be called and ... b) how to fix that? 
 		# 			maybe some sort of Import-Assert or Assert-That? which takes in NAMED/existing 'asserts'?
 		
-
 		
-	};
-	
-	end {
 		try {
 			if ("Runbook" -eq $grandParentBlockType) {
 				$runbook.AddAssert($assert);
@@ -57,7 +53,9 @@ function Assert {
 		catch {
 			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
-		
+	};
+	
+	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

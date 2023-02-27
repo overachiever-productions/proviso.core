@@ -91,12 +91,8 @@ function Facet {
 		
 		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
-						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
+						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug
 		
-		& $FacetBlock;
-	};
-	
-	end {
 		try {
 			[bool]$replaced = $global:PvCatalog.SetFacetDefinition($definition, (Allow-DefinitionReplacement));
 			
@@ -110,6 +106,10 @@ function Facet {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 		
+		& $FacetBlock;
+	};
+	
+	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }
