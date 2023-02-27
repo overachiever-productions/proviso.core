@@ -14,7 +14,7 @@
 		}
 
 		Operations {
-			#Implement [-Surface] "Intellisense Name Here would be Great" -something? 
+			Implement -Surface "Intellisense Name Here would be Great";
 			Implement -SurfaceName "Surface to Process";
 			Implement "My Facet Name"; # I could add -ExecutionOrder, but seems odd... 
 			#Implement -Surface "surface is just a switch/syntactic sugar" -Impact/Overwrite/whatever goes here... 

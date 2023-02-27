@@ -67,7 +67,8 @@ namespace Proviso.Core.Definitions
 
         public void SetSkipped(string reason)
         {
-            throw new NotImplementedException();
+            this.Skip = true;
+            this.SkipReason = reason;
         }
 
         public void SetImpact(Impact impact)
@@ -96,7 +97,7 @@ namespace Proviso.Core.Definitions
 
         public void SetThrowOnConfig(string message)
         {
-            throw new NotImplementedException("-ThrowOnComfig has not been implemented in DefinitionsBase (clr).");
+            throw new NotImplementedException("-ThrowOnConfig has not been implemented in DefinitionsBase (clr).");
         }
     }
 
@@ -329,18 +330,6 @@ namespace Proviso.Core.Definitions
         }
     }
 
-    public class ImplementDefinition
-    {
-        public DateTime Created => DateTime.Now;
-        public string SurfaceName { get; private set; }
-        public string DisplayFormat { get; private set; }
-
-        public ImplementDefinition(string surfaceName)
-        {
-            this.SurfaceName = surfaceName;
-        }
-    }
-
     public class AspectDefinition : DefinitionBase, IValidated
     {
         public string SurfaceName { get; set; }
@@ -355,8 +344,6 @@ namespace Proviso.Core.Definitions
 
     public class SurfaceDefinition: DefinitionBase, IValidated
     {
-
-
         public SurfaceDefinition(string name) : base(name) { }
 
         public void AddAssert(AssertDefinition added)
@@ -368,6 +355,17 @@ namespace Proviso.Core.Definitions
         {
             throw new NotImplementedException();
         }
+
+        public void Validate(object validationContext)
+        {
+            // TODO: this'll be roughly the same as for ... Implement|Run Def... 
+            throw new NotImplementedException();
+        }
+    }
+
+    public class ImplementDefinition : DefinitionBase, IValidated
+    {
+        internal ImplementDefinition(string name) : base(name) { }
 
         public void Validate(object validationContext)
         {
