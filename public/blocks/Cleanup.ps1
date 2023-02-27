@@ -3,9 +3,9 @@
 function Cleanup {
 	[CmdletBinding()]
 	param (
-		[ScriptBlock]$CleanupBlock,
 		[switch]$Skip = $false,
-		[string]$Ignore = $null
+		[string]$Ignore = $null,
+		[ScriptBlock]$CleanupBlock
 	);
 	
 	begin {
@@ -21,14 +21,32 @@ function Cleanup {
 		
 		Write-Verbose "Compiling .Cleanup{} for $parentBlockType named [$parentBlockName].";
 		
+		$type = [Proviso.Core.SetupOrCleanup]::Cleanup;
+		
 		try {
-			if ("Runbook" -eq $parentBlockType) {
-				$runbook.Cleanup = $CleanupBlock;
-				Write-Debug "		Added Cleanup{ } to Runbook: [$parentBlockName].";
+			switch ($parentBlockType) {
+				"Runbook" {
+					$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Runbook, $type, $parentBlockName);
+					$runbook.Cleanup = $definition;
+					
+					Write-Debug "		Added Cleanup{ } to Runbook: [$parentBlockName].";
+				}
+				"Surface" {
+					$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Surface, $type, $parentBlockName);
+					$surface.Cleanup = $definition;
+					
+					Write-Debug "		Added Cleanup{ } to Surface: [$parentBlockName].";
+				}
+				default {
+					throw "Syntax Error. Cleanup can ONLY be a member of Runbooks and Surfaces.";
+				}
 			}
-			else {
-				$surface.Cleanup = $CleanupBlock;
-				Write-Debug "		Added Cleanup{ } to Surface: [$parentBlockName].";
+			
+			# set 'common properties':
+			$definition.ScriptBlock = $CleanupBlock;
+			
+			if ((Is-Skipped -ObjectType ($MyInvocation.MyCommand) -Name "_Cleanup_" -Skip:$Skip -Ignore $Ignore)) {
+				$definition.SetSkipped($Ignore);
 			}
 		}
 		catch {
