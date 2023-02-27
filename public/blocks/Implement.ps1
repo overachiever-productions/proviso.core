@@ -45,11 +45,11 @@ function Implement {
 		$grandParentBlockName = Get-GrandParentBlockName;
 		
 		Write-Verbose "Compiling Facet Inclusion for Surface [$SurfaceName] via Implement for Runbook: [$grandParentBlockName].";
-		
-		[Proviso.Core.Definitions.ImplementDefinition]$definition = New-Object Proviso.Core.Definitions.ImplementDefinition($SurfaceName);
+				
+		$definition = New-Object Proviso.Core.Definitions.ImplementDefinition($SurfaceName);
 		
 		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
-						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $null `
+						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $null -Extract $null -ThrowOnConfig $null `
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		try{

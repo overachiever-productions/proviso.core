@@ -3,7 +3,9 @@
 function Cleanup {
 	[CmdletBinding()]
 	param (
-		[ScriptBlock]$CleanupBlock
+		[ScriptBlock]$CleanupBlock,
+		[switch]$Skip = $false,
+		[string]$Ignore = $null
 	);
 	
 	begin {

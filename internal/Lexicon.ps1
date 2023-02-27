@@ -6,9 +6,9 @@
 		[Assertions]
 			[Assert]
 		Operations
-			Run 
-			Run
-			Run
+			Implement 
+			Implement
+			Implement
 		[Cleanup]
 
 	Surface
@@ -16,8 +16,7 @@
 		[Assertions]
 			[Assert]
 		[Aspect]
-			[Import] -Pattern|Facet
-			Facet | Pattern 
+			Facet | Pattern | [Import] -Pattern|Facet
 				[Iterate] (for Pattern)
 				[Add]	(Pattern)  - Install?
 				[Remove] (Pattern) - Uninstall?

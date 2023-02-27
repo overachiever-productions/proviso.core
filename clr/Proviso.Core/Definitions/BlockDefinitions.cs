@@ -342,6 +342,24 @@ namespace Proviso.Core.Definitions
         }
     }
 
+    public class SetupOrCleanupDefinition
+    {
+        public DateTime Created => DateTime.Now;
+        public string  ParentName { get; private set; }
+        public RunbookOrSurface RunbookOrSurface { get; private set; }
+        public SetupOrCleanup SetupOrCleanup { get; private set; }
+        public bool Skip { get; private set; }
+        public string SkipReason { get; private set; }
+        public ScriptBlock ScriptBlock { get; set; }
+
+        public SetupOrCleanupDefinition(RunbookOrSurface runbookOrSurface, SetupOrCleanup setupOrCleanup, string parentName)
+        {
+            this.RunbookOrSurface = runbookOrSurface;
+            this.SetupOrCleanup = setupOrCleanup;
+            this.ParentName = parentName;
+        }
+    }
+
     public class SurfaceDefinition: DefinitionBase, IValidated
     {
         public SurfaceDefinition(string name) : base(name) { }
@@ -365,7 +383,7 @@ namespace Proviso.Core.Definitions
 
     public class ImplementDefinition : DefinitionBase, IValidated
     {
-        internal ImplementDefinition(string name) : base(name) { }
+        public ImplementDefinition(string name) : base(name) { }
 
         public void Validate(object validationContext)
         {
@@ -407,8 +425,8 @@ namespace Proviso.Core.Definitions
 
         public DateTime Created => DateTime.Now;
         public string Name { get; private set; }
-        public ScriptBlock Setup { get; set; }
-        public ScriptBlock Cleanup { get; set; }
+        public SetupOrCleanupDefinition Setup { get; set; }
+        public SetupOrCleanupDefinition Cleanup { get; set; }
 
         public List<ImplementDefinition> Implements => this._implementDefinitions;
         public List<AssertDefinition> AssertDefinitions => this._assertDefinitions;
@@ -443,4 +461,3 @@ namespace Proviso.Core.Definitions
         }
     }
 }
-

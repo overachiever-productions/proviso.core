@@ -3,6 +3,8 @@
 function Setup {
 	[CmdletBinding()]
 	param (
+		[switch]$Skip = $false,
+		[string]$Ignore = $null,
 		[ScriptBlock]$SetupBlock
 	);
 	
@@ -19,14 +21,32 @@ function Setup {
 		
 		Write-Verbose "Compiling .Setup{} for $parentBlockType named [$parentBlockName].";
 		
+		$type = [Proviso.Core.SetupOrCleanup]::Setup;
+		
 		try {
-			if ("Runbook" -eq $parentBlockType) {
-				$runbook.Setup = $SetupBlock;
-				Write-Debug "		Added Setup{ } to Runbook: [$parentBlockName].";
+			switch ($parentBlockType) {
+				"Runbook" {
+					$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Runbook, $type, $parentBlockName);
+					$runbook.Setup = $definition;
+					
+					Write-Debug "		Added Setup{ } to Runbook: [$parentBlockName].";
+				}
+				"Surface" {
+					$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Surface, $type, $parentBlockName);
+					$surface.Setup = $definition;
+					
+					Write-Debug "		Added Setup{ } to Surface: [$parentBlockName].";
+				}
+				default {
+					throw "Syntax Error. Setup can ONLY be a member of Runbooks and Surfaces.";
+				}
 			}
-			else {
-				$surface.Setup = $SetupBlock;
-				Write-Debug "		Added Setup{ } to Surface: [$parentBlockName].";
+			
+			# set 'common properties':
+			$definition.ScriptBlock = $SetupBlock;
+			
+			if ((Is-Skipped -ObjectType ($MyInvocation.MyCommand) -Name "_Setup_" -Skip:$Skip -Ignore $Ignore)) {
+				$definition.SetSkipped($Ignore);
 			}
 		}
 		catch {
