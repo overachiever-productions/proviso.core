@@ -150,34 +150,34 @@ namespace Proviso.Core
             }
         }
 
-        public RunbookDefinition GetRunbook(string name)
+        public RunbookDefinition GetRunbookDefinition(string name)
         {
             throw new NotImplementedException();
         }
 
-        public SurfaceDefinition GetSurface(string name)
+        public SurfaceDefinition GetSurfaceDefinition(string name)
         {
-            throw new NotImplementedException();
+            return this._surfaces.Find(x => x.Name == name);
         }
 
-        public FacetDefinition GetFacetByName(string name)
+        public FacetDefinition GetFacetDefinitionByName(string name)
         {
             return this._facets.Find(x => x.Name == name);
         }
 
-        public FacetDefinition GetFacetById(string id)
+        public FacetDefinition GetFacetDefinitionById(string id)
         {
             // TODO: I'm not even sure this method/approach is needed.
             //  if it's NOT... then a) remove and b) change GetFacetByName to GetFacet(string name)
             throw new NotImplementedException();
         }
 
-        public CohortDefinition GetCohort(string name)
+        public CohortDefinition GetCohortDefinition(string name)
         {
             throw new NotImplementedException();
         }
 
-        public EnumeratorDefinition GetEnumerator(string name)
+        public EnumeratorDefinition GetEnumeratorDefinition(string name)
         {
             return this._enumerators.Find(x => x.Name == name);
         }

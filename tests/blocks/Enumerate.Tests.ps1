@@ -9,7 +9,6 @@ BeforeAll {
 	
 	. "$root\public\blocks\Facet.ps1";
 	. "$root\public\blocks\Cohort.ps1";
-Write-Host "uut: $uut"	
 	. $uut;
 }
 
@@ -48,7 +47,7 @@ Describe "$UnitName Tests" -Tag "UnitTests" {
 				}
 			}
 			
-			$enumerate = $global:PvCatalog.GetEnumerator("Another Test Cohort");
+			$enumerate = $global:PvCatalog.GetEnumeratorDefinition("Another Test Cohort");
 			
 			$enumerate | Should -Not -BeNullOrEmpty;
 			$enumerate.Name | Should -Be "Another Test Cohort";
@@ -80,7 +79,7 @@ Describe "$UnitName Tests" -Tag "UnitTests" {
 				}
 			}
 			
-			$extracted = $global:PvCatalog.GetEnumerator("Enumerate Members of SysAdmin");
+			$extracted = $global:PvCatalog.GetEnumeratorDefinition("Enumerate Members of SysAdmin");
 			$extracted.IsGlobal | Should -Be $true;
 		}
 		
