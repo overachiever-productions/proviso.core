@@ -14,10 +14,9 @@
 		}
 
 		Operations {
-			#Implement [-Surface] "Intellisense Name Here would be Great" -something? 
-			Implement -SurfaceName "Surface to Process";
-			Implement "My Facet Name"; # I could add -ExecutionOrder, but seems odd... 
-			#Implement -Surface "surface is just a switch/syntactic sugar" -Impact/Overwrite/whatever goes here... 
+			Implement -Surface "Intellisense Name Here would be Great";
+			Implement -SurfaceName "Surface to Process" -Impact "Medium";
+			Implement "My Facet Name"; 
 		}
 
 		Cleanup { }
@@ -48,10 +47,6 @@ function Runbook {
 		
 		[Proviso.Core.Definitions.RunbookDefinition]$runbook = New-Object Proviso.Core.Definitions.RunbookDefinition($Name);
 		
-		& $RunbookBlock;
-	};
-	
-	end {
 		try {
 			Write-Debug "	Adding Runbook [$Name] to Catalog.";
 			[bool]$replaced = $global:PvCatalog.SetRunbookDefinition($runbook, (Allow-DefinitionReplacement));
@@ -64,6 +59,10 @@ function Runbook {
 			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 		
+		& $RunbookBlock;
+	};
+	
+	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

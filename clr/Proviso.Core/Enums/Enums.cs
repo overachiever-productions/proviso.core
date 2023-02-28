@@ -3,7 +3,8 @@
     public enum FacetType
     {
         Scalar,
-        Pattern
+        Pattern, 
+        Import
     }
 
     public enum Impact

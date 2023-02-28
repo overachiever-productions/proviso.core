@@ -26,11 +26,11 @@ function Remove {
 		switch ($parentBlockType) {
 			"Pattern" {
 				Write-Debug "				Processing Remove Block for Pattern: [$parentBlockName].";
-				$removeDefinition = New-Object Proviso.Core.Definitions.IteratorRemoveDefinition($Name, $RemoveBlock);
+				$removeDefinition = New-Object Proviso.Core.Definitions.IteratorRemoveDefinition($Name, $Impact, $RemoveBlock);
 			}
 			"Cohort" {
 				Write-Debug "				Processing Remove Block for Cohort: [$parentBlockName].";
-				$removeDefinition = New-Object Proviso.Core.Definitions.EnumeratorRemoveDefinition($Name, $RemoveBlock);
+				$removeDefinition = New-Object Proviso.Core.Definitions.EnumeratorRemoveDefinition($Name, $Impact, $RemoveBlock);
 			}
 			"Iterators" {
 				if (Is-Empty $Name) {
@@ -38,7 +38,7 @@ function Remove {
 				}
 				
 				Write-Debug "				Processing Remove Block for Global Iterator: [$Name].";
-				$removeDefinition = New-Object Proviso.Core.Definitions.IteratorRemoveDefinition($Name, $RemoveBlock);
+				$removeDefinition = New-Object Proviso.Core.Definitions.IteratorRemoveDefinition($Name, $Impact, $RemoveBlock);
 			}
 			"Enumerators" {
 				if (Is-Empty $Name) {
@@ -46,18 +46,15 @@ function Remove {
 				}
 				
 				Write-Debug "				Processing Remove Block for Global Enumerator [$Name]";
-				$removeDefinition = New-Object Proviso.Core.Definitions.EnumeratorRemoveDefinition($Name, $RemoveBlock);
+				$removeDefinition = New-Object Proviso.Core.Definitions.EnumeratorRemoveDefinition($Name, $Impact, $RemoveBlock);
 			}
 			default {
 				throw
 			}
 		}
 		
-	};
-	
-	end {
 		try {
-			[bool]$replaced = $global:PvCatalog.SetRemoveDefinition($removeDefinition, $parentBlockType, $parentBlockName);
+			[bool]$replaced = $global:PvCatalog.SetRemoveDefinition($removeDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Remove block replaced.";
@@ -66,8 +63,9 @@ function Remove {
 		catch {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
 		}
-		
-		
+	};
+	
+	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

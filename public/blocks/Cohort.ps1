@@ -36,10 +36,6 @@ function Cohort {
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
-		& $CohortBlock;
-	};
-	
-	end {
 		try {
 			[bool]$replaced = $global:PvCatalog.SetCohortDefinition($definition, (Allow-DefinitionReplacement));
 			
@@ -50,6 +46,12 @@ function Cohort {
 		catch {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
 		}
+		
+		& $CohortBlock;
+	};
+	
+	end {
+
 		
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};

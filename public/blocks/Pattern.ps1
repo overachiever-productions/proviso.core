@@ -59,10 +59,6 @@ function Pattern {
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
-		& $PatternBlock;
-	};
-	
-	end {
 		try {
 			[bool]$replaced = $global:PvCatalog.SetFacetDefinition($definition, (Allow-DefinitionReplacement));
 			
@@ -76,6 +72,10 @@ function Pattern {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 		
+		& $PatternBlock;
+	};
+	
+	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

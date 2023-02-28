@@ -67,7 +67,8 @@ namespace Proviso.Core.Definitions
 
         public void SetSkipped(string reason)
         {
-            throw new NotImplementedException();
+            this.Skip = true;
+            this.SkipReason = reason;
         }
 
         public void SetImpact(Impact impact)
@@ -96,7 +97,7 @@ namespace Proviso.Core.Definitions
 
         public void SetThrowOnConfig(string message)
         {
-            throw new NotImplementedException("-ThrowOnComfig has not been implemented in DefinitionsBase (clr).");
+            throw new NotImplementedException("-ThrowOnConfig has not been implemented in DefinitionsBase (clr).");
         }
     }
 
@@ -329,18 +330,6 @@ namespace Proviso.Core.Definitions
         }
     }
 
-    public class ImplementDefinition
-    {
-        public DateTime Created => DateTime.Now;
-        public string SurfaceName { get; private set; }
-        public string DisplayFormat { get; private set; }
-
-        public ImplementDefinition(string surfaceName)
-        {
-            this.SurfaceName = surfaceName;
-        }
-    }
-
     public class AspectDefinition : DefinitionBase, IValidated
     {
         public string SurfaceName { get; set; }
@@ -353,10 +342,26 @@ namespace Proviso.Core.Definitions
         }
     }
 
+    public class SetupOrCleanupDefinition
+    {
+        public DateTime Created => DateTime.Now;
+        public string  ParentName { get; private set; }
+        public RunbookOrSurface RunbookOrSurface { get; private set; }
+        public SetupOrCleanup SetupOrCleanup { get; private set; }
+        public bool Skip { get; private set; }
+        public string SkipReason { get; private set; }
+        public ScriptBlock ScriptBlock { get; set; }
+
+        public SetupOrCleanupDefinition(RunbookOrSurface runbookOrSurface, SetupOrCleanup setupOrCleanup, string parentName)
+        {
+            this.RunbookOrSurface = runbookOrSurface;
+            this.SetupOrCleanup = setupOrCleanup;
+            this.ParentName = parentName;
+        }
+    }
+
     public class SurfaceDefinition: DefinitionBase, IValidated
     {
-
-
         public SurfaceDefinition(string name) : base(name) { }
 
         public void AddAssert(AssertDefinition added)
@@ -368,6 +373,18 @@ namespace Proviso.Core.Definitions
         {
             throw new NotImplementedException();
         }
+
+        public void Validate(object validationContext)
+        {
+            // TODO: Implement
+            // TODO: this'll be roughly the same as for ... Implement|Run Def... 
+            //throw new NotImplementedException();
+        }
+    }
+
+    public class ImplementDefinition : DefinitionBase, IValidated
+    {
+        public ImplementDefinition(string name) : base(name) { }
 
         public void Validate(object validationContext)
         {
@@ -409,8 +426,8 @@ namespace Proviso.Core.Definitions
 
         public DateTime Created => DateTime.Now;
         public string Name { get; private set; }
-        public ScriptBlock Setup { get; set; }
-        public ScriptBlock Cleanup { get; set; }
+        public SetupOrCleanupDefinition Setup { get; set; }
+        public SetupOrCleanupDefinition Cleanup { get; set; }
 
         public List<ImplementDefinition> Implements => this._implementDefinitions;
         public List<AssertDefinition> AssertDefinitions => this._assertDefinitions;
@@ -445,4 +462,3 @@ namespace Proviso.Core.Definitions
         }
     }
 }
-
