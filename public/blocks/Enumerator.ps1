@@ -28,9 +28,7 @@ function Enumerator {
 		}
 		
 		$definition.Enumerate = $EnumeratorBlock;
-	};
-	
-	end {
+		
 		try {
 			[bool]$replaced = $global:PvCatalog.SetEnumeratorDefinition($definition, (Allow-DefinitionReplacement));
 			
@@ -41,7 +39,9 @@ function Enumerator {
 		catch {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
 		}
-		
+	};
+	
+	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

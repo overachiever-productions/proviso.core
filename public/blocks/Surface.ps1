@@ -29,13 +29,9 @@ function Surface {
 		$definition = New-Object Proviso.Core.Definitions.SurfaceDefinition($Name);
 		
 		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
-						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $null `
+						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $null -Extract $null -ThrowOnConfig $null `
 						-DisplayFormat $null -Verbose:$xVerbose -Debug:$xDebug;
 		
-		& $SurfaceBlock;
-	};
-	
-	end {
 		try {
 			[bool]$replaced = $global:PvCatalog.SetSurfaceDefinition($definition, (Allow-DefinitionReplacement));
 			
@@ -46,9 +42,13 @@ function Surface {
 			Write-Verbose "Surface: [$($definition.Name)] added to PvCatalog.";
 		}
 		catch {
-			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 		
+		& $SurfaceBlock;
+	};
+	
+	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

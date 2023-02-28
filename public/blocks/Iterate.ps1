@@ -36,9 +36,7 @@ function Iterate {
 		}
 		
 		$definition.Iterate = $IterateBlock;
-	};
-	
-	end {
+		
 		try {
 			[bool]$replaced = $global:PvCatalog.SetIteratorDefinition($definition, (Allow-DefinitionReplacement));
 			
@@ -53,7 +51,9 @@ function Iterate {
 		catch {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
 		}
-		
+	};
+	
+	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

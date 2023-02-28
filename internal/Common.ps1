@@ -49,7 +49,7 @@ filter Has-Value {
 		[string]$Value
 	);
 	
-	return (-not ([string]::IsNullOrEmpty($Value)));
+	return (-not ([string]::IsNullOrWhiteSpace($Value)));
 }
 
 filter Has-ArrayValue {
@@ -104,7 +104,7 @@ function Is-Skipped {
 	if ($Skip -or (Has-Value $Ignore)) {
 		$bypass = $true;
 		
-		$verbose = "Bypassing $($ObjectType): [$Name]. Reason: -Skip Enabled.";
+		$verbose = "Configuring $($ObjectType): [$Name] for bypass (-Skip Enabled).";
 		
 		if (Has-Value $Ignore) {
 			$verbose = $verbose.Replace(" -Skip Enabled", " '$Ignore'");
