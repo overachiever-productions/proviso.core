@@ -39,7 +39,7 @@ function Enumerate {
 		$definition.Enumerate = $EnumerateBlock;
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetEnumeratorDefinition($definition, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvCatalog.StoreEnumeratorDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				$replacedName = "for Cohort [$Name]";

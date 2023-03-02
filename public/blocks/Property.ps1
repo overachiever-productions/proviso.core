@@ -42,7 +42,7 @@ function Property {
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetPropertyDefinition($definition, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvCatalog.StorePropertyDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Property named [$Name] (within Facet [$($global:PvLexicon.GetCurrentFacet())]) was replaced.";

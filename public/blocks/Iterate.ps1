@@ -38,7 +38,7 @@ function Iterate {
 		$definition.Iterate = $IterateBlock;
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetIteratorDefinition($definition, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvCatalog.StoreIteratorDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				$replacedName = "for Pattern [$Name]";

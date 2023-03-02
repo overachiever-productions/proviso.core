@@ -30,7 +30,7 @@ function Enumerator {
 		$definition.Enumerate = $EnumeratorBlock;
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetEnumeratorDefinition($definition, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvCatalog.StoreEnumeratorDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Enumerator block named [$Name] was replaced.";

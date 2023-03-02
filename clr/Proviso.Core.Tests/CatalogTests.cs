@@ -16,10 +16,10 @@ public class CatalogTests
         var old = new EnumeratorDefinition("Test Enumerator", true);
         var newer = new EnumeratorDefinition("Test Enumerator", true);
 
-        sut.SetEnumeratorDefinition(old, false);
+        sut.StoreEnumeratorDefinition(old, false);
 
         Assert.That(
-            () => sut.SetEnumeratorDefinition(newer, false),
+            () => sut.StoreEnumeratorDefinition(newer, false),
             Throws.TypeOf<Exception>()
         );
     }
@@ -32,8 +32,8 @@ public class CatalogTests
         var old = new FakeEnumeratorDefinition("Test Enumerator", true);
         var newer = new EnumeratorDefinition("Test Enumerator", true);
 
-        sut.SetEnumeratorDefinition(old, true);
-        bool replaced = sut.SetEnumeratorDefinition(newer, true);
+        sut.StoreEnumeratorDefinition(old, true);
+        bool replaced = sut.StoreEnumeratorDefinition(newer, true);
 
         Assert.IsTrue(replaced);
     }
@@ -49,8 +49,8 @@ public class CatalogTests
         var newer = new EnumeratorDefinition("Test Enumerator", true);
         newer.OrderBy = "That’s where I saw the Leprechaun. He tells me to burn things.";
 
-        sut.SetEnumeratorDefinition(old, true);
-        bool replaced = sut.SetEnumeratorDefinition(newer, true);
+        sut.StoreEnumeratorDefinition(old, true);
+        bool replaced = sut.StoreEnumeratorDefinition(newer, true);
 
         var retrieved = sut.GetEnumeratorDefinition("Test Enumerator");
         StringAssert.AreEqualIgnoringCase(old.OrderBy, retrieved.OrderBy);

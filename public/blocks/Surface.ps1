@@ -33,7 +33,7 @@ function Surface {
 						-DisplayFormat $null -Verbose:$xVerbose -Debug:$xDebug;
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetSurfaceDefinition($definition, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvCatalog.StoreSurfaceDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Surface: [$Name] was replaced.";

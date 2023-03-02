@@ -96,7 +96,7 @@ function Facet {
 		# TODO: facets|patterns are NOT currently being added to their parent Surface. (Nor am i accounting for option of .. 'global' Facets.)
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetFacetDefinition($definition, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvCatalog.StoreFacetDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Facet: [$Name] was replaced.";

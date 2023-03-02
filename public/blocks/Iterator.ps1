@@ -30,7 +30,7 @@ function Iterator {
 		$definition.Iterate = $IteratorBlock;
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetIteratorDefinition($definition, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvCatalog.StoreIteratorDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Iterator block named [$Name] was replaced.";

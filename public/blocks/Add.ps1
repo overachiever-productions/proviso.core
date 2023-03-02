@@ -53,7 +53,7 @@ function Add {
 		}
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetAddDefinition($addDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvCatalog.StoreAddDefinition($addDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Add block replaced.";

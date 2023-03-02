@@ -60,7 +60,7 @@ function Pattern {
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetFacetDefinition($definition, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvCatalog.StoreFacetDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Facet named [$Name] was replaced.";

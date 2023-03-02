@@ -58,7 +58,7 @@ namespace Proviso.Core
 
         private Catalog() { }
 
-        public bool SetRunbookDefinition(RunbookDefinition definition, bool allowReplace)
+        public bool StoreRunbookDefinition(RunbookDefinition definition, bool allowReplace)
         {
             definition.Validate(null);
 
@@ -67,7 +67,7 @@ namespace Proviso.Core
             return this._runbooks.SetDefinition(definition, predicate, allowReplace, errorText);
         }
 
-        public bool SetSurfaceDefinition(SurfaceDefinition definition, bool allowReplace)
+        public bool StoreSurfaceDefinition(SurfaceDefinition definition, bool allowReplace)
         {
             definition.Validate(null);
 
@@ -76,7 +76,7 @@ namespace Proviso.Core
             return this._surfaces.SetDefinition(definition, predicate, allowReplace, errorText);
         }
         
-        public bool SetFacetDefinition(FacetDefinition definition, bool allowReplace)
+        public bool StoreFacetDefinition(FacetDefinition definition, bool allowReplace)
         {
             definition.Validate(null);
 
@@ -86,7 +86,7 @@ namespace Proviso.Core
             return this._facets.SetDefinition(definition, predicate, allowReplace, errorText);
         }
 
-        public bool SetPropertyDefinition(PropertyDefinition definition, bool allowReplace)
+        public bool StorePropertyDefinition(PropertyDefinition definition, bool allowReplace)
         {
             definition.Validate(null);
 
@@ -95,7 +95,7 @@ namespace Proviso.Core
             return this._properties.SetDefinition(definition, predicate, allowReplace, errorText);
         }
 
-        public bool SetCohortDefinition(CohortDefinition definition, bool allowReplace)
+        public bool StoreCohortDefinition(CohortDefinition definition, bool allowReplace)
         {
             definition.Validate(null);
 
@@ -104,7 +104,7 @@ namespace Proviso.Core
             return this._cohorts.SetDefinition(definition, predicate, allowReplace, errorText);
         }
 
-        public bool SetEnumeratorDefinition(EnumeratorDefinition definition, bool allowReplace)
+        public bool StoreEnumeratorDefinition(EnumeratorDefinition definition, bool allowReplace)
         {
             definition.Validate(null);
 
@@ -114,7 +114,7 @@ namespace Proviso.Core
             return this._enumerators.SetDefinition(definition, predicate, allowReplace, errorText);
         }
 
-        public bool SetIteratorDefinition(IteratorDefinition definition, bool allowReplace)
+        public bool StoreIteratorDefinition(IteratorDefinition definition, bool allowReplace)
         {
             definition.Validate(null);
 
@@ -124,7 +124,7 @@ namespace Proviso.Core
             return this._iterators.SetDefinition(definition, predicate, allowReplace, errorText);
         }
 
-        public bool SetAddDefinition(IAddDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
+        public bool StoreAddDefinition(IAddDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
         {
             switch (definition.Modality)
             {
@@ -133,11 +133,11 @@ namespace Proviso.Core
                 case ModalityType.Iterator:
                     return this.SetIteratorAddDefinition((IteratorAddDefinition)definition, parentBlockName, allowReplace);
                 default:
-                    throw new Exception("Proviso Framework Error. Invalid Modality Specified for SetAddDefinition().");
+                    throw new Exception("Proviso Framework Error. Invalid Modality Specified for StoreAddDefinition().");
             }
         }
 
-        public bool SetRemoveDefinition(IRemoveDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
+        public bool StoreRemoveDefinition(IRemoveDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
         {
             switch (definition.Modality)
             {
@@ -146,7 +146,7 @@ namespace Proviso.Core
                 case ModalityType.Iterator:
                     return this.SetIteratorRemoveDefinition((IteratorRemoveDefinition)definition, parentBlockType, parentBlockName, allowReplace);
                 default:
-                    throw new Exception("Proviso Framework Error. Invalid Modality Specified for SetAddDefinition().");
+                    throw new Exception("Proviso Framework Error. Invalid Modality Specified for StoreAddDefinition().");
             }
         }
 

@@ -54,7 +54,7 @@ function Remove {
 		}
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetRemoveDefinition($removeDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvCatalog.StoreRemoveDefinition($removeDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Remove block replaced.";

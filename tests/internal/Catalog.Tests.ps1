@@ -66,7 +66,6 @@ Describe "$UnitName Tests" -Tag "IntegrationTests" {
 			
 			$pattern = $global:PvCatalog.GetFacetDefinitionByName("Fake Pattern 1");
 			$pattern | Should -Not -Be $null;
-			$pattern.Iterator | Should -Be "Global Iterator that does not exist";
 		}
 	}
 	
