@@ -79,7 +79,7 @@ function Read-Facet {
 		# Validate Operation:
 		[Proviso.Core.Definitions.FacetDefinition]$facet = $null;
 		try {
-			$facet = $global:PvCatalog.GetFacetByName($Name);
+			$facet = $global:PvCatalog.GetFacetDefinitionByName($Name);
 		}
 		catch {
 			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";

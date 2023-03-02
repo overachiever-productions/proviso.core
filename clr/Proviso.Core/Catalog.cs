@@ -152,7 +152,7 @@ namespace Proviso.Core
 
         public RunbookDefinition GetRunbookDefinition(string name)
         {
-            throw new NotImplementedException();
+            return this._runbooks.Find(x => x.Name == name);
         }
 
         public SurfaceDefinition GetSurfaceDefinition(string name)

@@ -52,7 +52,7 @@ public class CatalogTests
         sut.SetEnumeratorDefinition(old, true);
         bool replaced = sut.SetEnumeratorDefinition(newer, true);
 
-        var retrieved = sut.GetEnumerator("Test Enumerator");
+        var retrieved = sut.GetEnumeratorDefinition("Test Enumerator");
         StringAssert.AreEqualIgnoringCase(old.OrderBy, retrieved.OrderBy);
     }
 }

@@ -17,9 +17,28 @@ Describe "$UnitName Tests" -Tag "IntegrationTests" {
 		}
 	}
 	
-	# 'candy shell' to help surface anything that breaks functionality during future dev.
+	# These tests are used to 'lock in' behavior - i.e., will fail if something breaks behavior.
 	Context "Validation Tests " {
-		It "Stores Facets As Expected" {
+		It "Stores Runbooks" {
+			Runbook "Firewall Stuff" {
+				Setup {	}
+				Assertions {
+					Assert "This" { };
+				}
+				
+				Operations {
+					Implement -Surface "Intellisense Name Here would be Great";
+					Implement -SurfaceName "Surface to Process" -Impact "Medium";
+					Implement "My Facet Name";
+				}
+				
+				Cleanup {}
+			}
+			
+			$global:PvCatalog.GetRunbookDefinition("Firewall Stuff") | Should -Not -Be $null;			
+		}
+		
+		It "Stores Surfaces (and children)" {
 			Surface "Test Surface 1" {
 				Facet "Test Surface 1 - Facet A" {
 					Property "Basic Property" {}
@@ -28,6 +47,26 @@ Describe "$UnitName Tests" -Tag "IntegrationTests" {
 			
 			$global:PvCatalog.GetSurfaceDefinition("Test Surface 1") | Should -Not -Be $null;
 			$global:PvCatalog.GetFacetDefinitionByName("Test Surface 1 - Facet A") | Should -Not -Be $null;
+		}
+		
+		It "Stores Facets" {
+			Facet "Minimally Viable - 11" {};
+			Facet "Minimally Viable - 12" {};
+			Facet "Minimally Viable - 13" {
+				Property "Property 14" {};
+			}
+			
+			$global:PvCatalog.GetFacetDefinitionByName("Minimally Viable - 11") | Should -Not -Be $null;
+			$global:PvCatalog.GetFacetDefinitionByName("Minimally Viable - 12") | Should -Not -Be $null;
+			$global:PvCatalog.GetFacetDefinitionByName("Minimally Viable - 13") | Should -Not -Be $null;
+		}
+		
+		It "Stores Patterns" {
+			Pattern "Fake Pattern 1" -Iterator "Global Iterator that does not exist" { }
+			
+			$pattern = $global:PvCatalog.GetFacetDefinitionByName("Fake Pattern 1");
+			$pattern | Should -Not -Be $null;
+			$pattern.Iterator | Should -Be "Global Iterator that does not exist";
 		}
 	}
 	
