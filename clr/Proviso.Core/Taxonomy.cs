@@ -18,6 +18,7 @@ namespace Proviso.Core
         public Taxonomy()
         {
             this.Rootable = false;
+            this.Tracked = false;
             this.RequiresName = true;
             this.WildcardPattern = "";
             this.NameAllowed = true;
@@ -89,7 +90,7 @@ namespace Proviso.Core
                     NodeName = "Facet",
                     Rootable = true,
                     Tracked = true,
-                    AllowedParents = new List<string> { "Surface", "Aspect" },  // POSSIBLY a "Surfaces" node for ... globally defined surfaces.
+                    AllowedParents = new List<string> { "Surface", "Aspect", "Facets" },  
                     AllowedChildren = new List<string> { "Cohort", "Property" }
                 },
                 new Taxonomy
@@ -97,7 +98,7 @@ namespace Proviso.Core
                     NodeName = "Pattern",
                     Rootable = true,
                     Tracked = true,
-                    AllowedParents = new List<string> { "Surface", "Aspect" },  // POSSIBLY a "Surfaces" node for ... globally defined surfaces.
+                    AllowedParents = new List<string> { "Surface", "Aspect", "Facets" },  // "Facets" is block-name for global parents (but can be aliased as Patterns).  
                     AllowedChildren = new List<string> { "Cohort", "Property" }
                 },
                 new Taxonomy
@@ -109,14 +110,13 @@ namespace Proviso.Core
                 new Taxonomy
                 {
                     NodeName = "Iterator",
-                    Rootable = true,  // maybe NOT (see next line
-                    //AllowedParents = new List<string> { "Iterators" },  // MAYBE need to 'anchor' all globallllly defined IteratORs in an Iterators{} block?
+                    AllowedParents = new List<string> { "Pattern", "Iterators"},
                     AllowedChildren = new List<string> { "Add", "Remove" }
                 },
                 new Taxonomy
                 {
                     NodeName = "Enumerator",
-                    Rootable = true,
+                    AllowedParents = new List<string> { "Cohort", "Enumerators" },
                     AllowedChildren = new List<string> { "Add", "Remove" }
                 },
                 new Taxonomy
@@ -149,15 +149,35 @@ namespace Proviso.Core
                 {
                     NodeName = "Property",
                     Tracked = true,
-                    AllowedParents = new List<string> { "Facet", "Pattern", "Cohort" },
+                    AllowedParents = new List<string> { "Facet", "Pattern", "Cohort", "Properties" },
                     AllowedChildren = new List<string> { "Inclusion", "Expect", "Extract", "Compare", "Configure" }
                 },
                 new Taxonomy
                 {
                     NodeName = "Cohort",
                     Tracked = true,
-                    AllowedParents = new List<string> { "Facet", "Pattern" },
+                    AllowedParents = new List<string> { "Facet", "Pattern", "Cohorts" },
                     AllowedChildren = new List<string> { "Enumerate", "Property" }
+                }, 
+                new Taxonomy
+                {
+                    NodeName = "Expect", 
+                    AllowedParents = new List<string> { "Property" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Extract",
+                    AllowedParents = new List<string> { "Property" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Compare",
+                    AllowedParents = new List<string> { "Property" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Configure",
+                    AllowedParents = new List<string> { "Property" }
                 }
             };
         }

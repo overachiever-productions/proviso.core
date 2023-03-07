@@ -1,5 +1,15 @@
 ﻿Set-StrictMode -Version 1.0;
 
+<#
+
+	TODO:
+		- MIGHT end up making sense to have Add-Member (cohort) and Add-Instance (patterns)
+			a. that seems cleaner and more intuitive in the first place. 
+			b. otherwise, worried about potential for someone to try and add an 'Add' for an enum into an Iterators {} block... etc. 
+
+#>
+
+
 function Add {
 	[CmdletBinding()]
 	param (

@@ -32,6 +32,6 @@ function Aspect {
 	};
 	
 	end {
-		
+		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

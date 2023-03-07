@@ -167,9 +167,7 @@ namespace Proviso.Core
 
         public FacetDefinition GetFacetDefinitionById(string id)
         {
-            // TODO: I'm not even sure this method/approach is needed.
-            //  if it's NOT... then a) remove and b) change GetFacetByName to GetFacet(string name)
-            throw new NotImplementedException();
+            return this._facets.Find(x => x.Id == id);
         }
 
         public CohortDefinition GetCohortDefinition(string name)
