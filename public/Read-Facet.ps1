@@ -21,6 +21,12 @@ write-host "--------------------------------------------------"
 			Remove {}
 
 			Property "Do I need wrappers around Properties?" {}
+			Property "No I don't need a parent wrapper" {}
+
+			Cohort "Members Test" {
+				Property "Cohort Property 1" {}
+				Property "Cohort Property 2" {}
+			}
 		}
 	}
 

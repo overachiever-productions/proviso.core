@@ -103,15 +103,13 @@ namespace Proviso.Core.Definitions
 
     public class PropertyDefinition : DefinitionBase, IValidated
     {
-        public PropertyType PropertyType { get; private set; }
-        // REFACTOR: how'z about ... ParentName? since I already (now) know the PropertyType
-        public string FacetName { get; set; }
-        public string PatternName { get; set; }
-        public string CohortName { get; set; }
+        public PropertyParentType ParentType { get; private set; }
+        public string ParentName { get; set; }
 
-        public PropertyDefinition(string name, PropertyType type) : base(name)
+        public PropertyDefinition(string name, PropertyParentType parentType, string parentName) : base(name)
         {
-            this.PropertyType = type;
+            this.ParentType = parentType;
+            this.ParentName = parentName;
         }
 
         public void Validate(object validationContext)
@@ -123,20 +121,36 @@ namespace Proviso.Core.Definitions
 
     public class CohortDefinition : DefinitionBase, IValidated
     {
-        public string FacetName { get; set; }
+        private List<PropertyDefinition> _properties = new List<PropertyDefinition>();
+
+        public PropertyParentType ParentType { get; private set; }
+        public string ParentName { get; set; }
 
         public EnumeratorAddDefinition Add { get; internal set; }
         public EnumeratorRemoveDefinition Remove { get; internal set; }
 
-        public CohortDefinition(string name) : base(name) { }
+        public CohortDefinition(string name, PropertyParentType parentType, string parentName) : base(name)
+        {
+            this.ParentType = parentType;
+            this.ParentName = parentName;
+        }
 
         public void Validate(object validationContext)
         {
             if (string.IsNullOrWhiteSpace(this.Name))
                 throw new Exception("Proviso Validation Error. [Cohort] -Name can NOT be null/empty.");
 
-            if (string.IsNullOrWhiteSpace(this.FacetName))
-                throw new Exception("Proviso Validation Error. [Cohort] blocks must be within a Parent [Facet] block.");
+            if (this.ParentType != PropertyParentType.Cohorts)
+            {
+                if(string.IsNullOrWhiteSpace(this.ParentName))
+                    throw new Exception("Proviso Validation Error. Non-Globally-Defined [Cohort] blocks must be within a Parent [Facet] or [Pattern] block.");
+            }
+        }
+
+        public void AddChildProperty(PropertyDefinition child)
+        {
+            child.Validate(null);
+            this._properties.Add(child);
         }
     }
 
@@ -264,11 +278,15 @@ namespace Proviso.Core.Definitions
 
     public class FacetDefinition : DefinitionBase, IValidated
     {
+        private List<PropertyDefinition> _properties = new List<PropertyDefinition>();
+        private List<CohortDefinition> _cohorts = new List<CohortDefinition>();
+
         public string SurfaceName { get; set; }
         public string AspectName { get; set; }
         public Membership MembershipType { get; private set; }
         public string SpecifiedIterator { get; private set; }
 
+        // TODO: specified iterators and iterator adds/removes need to be able to be PLURAL.
         public IteratorAddDefinition Add { get; internal set; }
         public IteratorRemoveDefinition Remove { get; internal set; }
 
@@ -303,6 +321,18 @@ namespace Proviso.Core.Definitions
                 throw new Exception("Proviso Validation Error. [Facet] -Name can NOT be null/empty.");
 
             // TODO: if there's an Aspect, there MUST also be a Surface. (But the inverse is not true/required.)
+        }
+
+        public void AddChildProperty(PropertyDefinition child)
+        {
+            child.Validate(null);
+            this._properties.Add(child);
+        }
+
+        public void AddChildCohort(CohortDefinition child)
+        {
+            child.Validate(null);
+            this._cohorts.Add(child);
         }
     }
 

@@ -49,7 +49,7 @@ function Enter-Block {
 		$PvLexicon.EnterBlock($Type, $Name);
 	}
 	catch {
-		throw "Proviso Exception: $($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+		throw "Proviso Exception: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 	}
 
 	Write-Debug "$("`t" * $PvLexicon.CurrentDepth)Entered $($Type): $Name";

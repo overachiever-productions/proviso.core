@@ -29,23 +29,20 @@ function Property {
 	
 	process {
 		$parentBlockType = $global:PvLexicon.GetParentBlockType();
-		$definition = New-Object Proviso.Core.Definitions.PropertyDefinition($Name, [Proviso.Core.PropertyType]$parentBlockType);
-		
-		# NOTE: Facets | Patterns ~ same... 
-		# REFACTOR: this is clunky AF
-		$definition.FacetName = $global:PvLexicon.GetCurrentFacet();
-		$definition.PatternName = $global:PvLexicon.GetCurrentPattern();
-		$definition.CohortName = $global:PvLexicon.GetCurrentCohort();
+		$parentName = $global:PvLexicon.GetParentBlockName();
+		$definition = New-Object Proviso.Core.Definitions.PropertyDefinition($Name, [Proviso.Core.PropertyParentType]$parentBlockType, $parentName);
 		
 		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		try {
+			Bind-Property -Property $definition -Verbose:$xVerbose -Debug:$xDebug;
+			
 			[bool]$replaced = $global:PvCatalog.StorePropertyDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
-				Write-Verbose "Property named [$Name] (within Facet [$($global:PvLexicon.GetCurrentFacet())]) was replaced.";
+				Write-Verbose "Property: [$Name] (within $($definition.PropertyParentType) [$($definition.ParentName)]) was replaced.";
 			}
 		}
 		catch {

@@ -7,7 +7,7 @@
 #>
 
 
-function Properties {
+function Cohorts {
 	[CmdletBinding()]
 	param (
 		[Alias('CohortsSetName')]

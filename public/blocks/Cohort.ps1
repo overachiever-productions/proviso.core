@@ -28,9 +28,9 @@ function Cohort {
 	};
 	
 	process {
-		$definition = New-Object Proviso.Core.Definitions.CohortDefinition($Name);
-		
-		$definition.FacetName = $global:PvLexicon.GetCurrentFacet();
+		$parentBlockType = $global:PvLexicon.GetParentBlockType();
+		$parentName = $global:PvLexicon.GetParentBlockName();
+		$definition = New-Object Proviso.Core.Definitions.CohortDefinition($Name, [Proviso.Core.PropertyParentType]$parentBlockType, $parentName);
 		
 		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
@@ -42,9 +42,6 @@ function Cohort {
 			if ($replaced) {
 				Write-Verbose "Cohort named [$Name] (within Facet [$($global:PvLexicon.GetCurrentFacet())]) was replaced.";
 			}
-			
-			
-			
 		}
 		catch {
 			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";

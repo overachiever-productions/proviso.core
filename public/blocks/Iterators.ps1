@@ -7,7 +7,7 @@
 #>
 
 
-function Properties {
+function Iterators {
 	[CmdletBinding()]
 	param (
 		[Alias('IteratorsSetName')]

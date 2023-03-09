@@ -144,7 +144,39 @@ namespace Proviso.Core
                     NameAllowed = true,
                     AllowedParents = new List<string> { "Surface" }, 
                     AllowedChildren = new List<string> { "Import", "Facet", "Pattern" }
-                }, 
+                },
+                #region Globally Defined Resources
+                new Taxonomy
+                {
+                    NodeName = "Properties", 
+                    Rootable = true,
+                    AllowedChildren = new List<string>{ "Property" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Cohorts",
+                    Rootable = true,
+                    AllowedChildren = new List<string>{ "Cohort" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Facets",
+                    Rootable = true,
+                    AllowedChildren = new List<string>{ "Facet" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Iterators",
+                    Rootable = true,
+                    AllowedChildren = new List<string>{ "Iterator", "Add", "Remove" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Enumerators",
+                    Rootable = true,
+                    AllowedChildren = new List<string>{ "Enumerator", "Add", "Remove" }
+                },
+                #endregion
                 new Taxonomy
                 {
                     NodeName = "Property",

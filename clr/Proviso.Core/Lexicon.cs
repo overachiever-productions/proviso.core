@@ -146,7 +146,7 @@ namespace Proviso.Core
             }
 
             if (taxonomy.RequiresName && string.IsNullOrWhiteSpace(blockName))
-                throw new Exception($"A -Name is required for block-type: [{blockType}].");
+                throw new Exception($"A -Name is required for block-parentType: [{blockType}].");
 
             if (!taxonomy.NameAllowed && !string.IsNullOrWhiteSpace(blockName))
                 throw new Exception($"[{blockType}] may NOT have a -Name (current -Name is [{blockName}]).");

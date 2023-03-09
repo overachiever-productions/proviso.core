@@ -34,11 +34,13 @@
         Runbook
     }
 
-    public enum PropertyType
+    public enum PropertyParentType
     {
-        CohortProperty,
-        FacetProperty, 
-        PatternProperty
+        Properties, 
+        Cohorts,
+        Cohort, 
+        Facet, 
+        Pattern
     }
 
     public enum RunbookOrSurface

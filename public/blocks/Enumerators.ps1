@@ -7,7 +7,7 @@
 #>
 
 
-function Properties {
+function Enumerators {
 	[CmdletBinding()]
 	param (
 		[Alias('EnumeratorsSetName')]

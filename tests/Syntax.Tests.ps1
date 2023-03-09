@@ -7,3 +7,27 @@ BeforeAll {
 	
 	Import-Module -Name "$root" -Force;
 }
+
+Describe "$UnitName Tests" -Tag "SyntaxTests" {
+	Context "Wrapper Tests" {
+		It "Allows Global Properties" {
+			Properties {}
+		}
+		
+		It "Allows Global Cohorts" {
+			Cohorts {}
+		}
+		
+		It "Allows Global Facets" {
+			Facets {}
+		}
+		
+		It "Allows Global Iterators" {
+			Iterators {}
+		}
+		
+		It "Allows Global Enumerators" {
+			Enumerators {}
+		}
+	}
+}

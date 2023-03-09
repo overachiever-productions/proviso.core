@@ -90,6 +90,9 @@ namespace Proviso.Core
         {
             definition.Validate(null);
 
+            // could do something here about ... if the ParentPropertyType <> Properties... then bind to parent as well. 
+
+
             CatalogPredicate<PropertyDefinition> predicate = (exists, added) => exists.Name == added.Name;
             string errorText = $"[Property] with name [{definition.Name}] already exists and can NOT be replaced. Ensure unique [Property] names and/or allow global replacement override.";
             return this._properties.SetDefinition(definition, predicate, allowReplace, errorText);
@@ -99,7 +102,7 @@ namespace Proviso.Core
         {
             definition.Validate(null);
 
-            CatalogPredicate<CohortDefinition> predicate = (exists, added) => exists.Name == added.Name;
+            CatalogPredicate<CohortDefinition> predicate = (exists, added) => (exists.Name == added.Name) && (exists.ParentName == added.ParentName);
             string errorText = $"[Cohort] with name [{definition.Name}] already exists and can NOT be replaced. Ensure unique [Cohort] names and/or allow global replacement override.";
             return this._cohorts.SetDefinition(definition, predicate, allowReplace, errorText);
         }
@@ -170,9 +173,9 @@ namespace Proviso.Core
             return this._facets.Find(x => x.Id == id);
         }
 
-        public CohortDefinition GetCohortDefinition(string name)
+        public CohortDefinition GetCohortDefinition(string name, string parentName)
         {
-            throw new NotImplementedException();
+            return this._cohorts.Find(x => x.Name == name && x.ParentName == parentName);
         }
 
         public EnumeratorDefinition GetEnumeratorDefinition(string name)

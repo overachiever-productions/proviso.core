@@ -7,7 +7,7 @@
 #>
 
 
-function Properties {
+function Facets {
 	[CmdletBinding()]
 	[Alias('Patterns')]
 	param (
