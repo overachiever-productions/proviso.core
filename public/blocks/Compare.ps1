@@ -3,7 +3,7 @@
 function Compare {
 	[CmdletBinding()]
 	param (
-
+		[ScriptBlock]$CompareBlock
 	);
 	
 	begin {
@@ -14,7 +14,7 @@ function Compare {
 	};
 	
 	process {
-		
+		Bind-Compare -CompareBlock $CompareBlock -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	end {

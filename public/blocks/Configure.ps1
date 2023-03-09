@@ -14,7 +14,7 @@ function Configure {
 	};
 	
 	process {
-		
+		Bind-Configure -ConfigureBlock $ConfigureBlock -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	end {

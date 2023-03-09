@@ -14,7 +14,7 @@ function Expect {
 	};
 	
 	process {
-		
+		Bind-Expect -ExpectBlock $ExpectBlock -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	end {

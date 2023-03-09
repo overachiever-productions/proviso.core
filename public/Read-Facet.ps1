@@ -24,7 +24,9 @@ write-host "--------------------------------------------------"
 			Property "No I don't need a parent wrapper" {}
 
 			Cohort "Members Test" {
-				Property "Cohort Property 1" {}
+				Property "Cohort Property 1" {
+					Expect {}
+				}
 				Property "Cohort Property 2" {}
 			}
 		}

@@ -106,6 +106,11 @@ namespace Proviso.Core.Definitions
         public PropertyParentType ParentType { get; private set; }
         public string ParentName { get; set; }
 
+        public ScriptBlock Expect { get; set; }
+        public ScriptBlock Extract { get; set; }
+        public ScriptBlock Compare { get; set; }
+        public ScriptBlock Configure { get; set; }
+
         public PropertyDefinition(string name, PropertyParentType parentType, string parentName) : base(name)
         {
             this.ParentType = parentType;

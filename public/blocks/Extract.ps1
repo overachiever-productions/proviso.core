@@ -14,7 +14,7 @@ function Extract {
 	};
 	
 	process {
-		
+		Bind-Extract -ExtractBlock $ExtractBlock -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	end {

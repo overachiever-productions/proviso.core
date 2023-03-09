@@ -178,6 +178,11 @@ namespace Proviso.Core
             return this._cohorts.Find(x => x.Name == name && x.ParentName == parentName);
         }
 
+        public PropertyDefinition GetPropertyDefinition(string name, string parentName)
+        {
+            return this._properties.Find(x => x.Name == name && x.ParentName == parentName);
+        }
+
         public EnumeratorDefinition GetEnumeratorDefinition(string name)
         {
             return this._enumerators.Find(x => x.Name == name);
