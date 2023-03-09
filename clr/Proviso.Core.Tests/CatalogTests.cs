@@ -13,8 +13,8 @@ public class CatalogTests
     {
         var sut = Catalog.Instance;
 
-        var old = new EnumeratorDefinition("Test Enumerator", true);
-        var newer = new EnumeratorDefinition("Test Enumerator", true);
+        var old = new EnumeratorDefinition("Test Enumerator", true, EnumeratorParentType.Cohort, "FakeCohort");
+        var newer = new EnumeratorDefinition("Test Enumerator", true, EnumeratorParentType.Cohort, "FakeCohort");
 
         sut.StoreEnumeratorDefinition(old, false);
 
@@ -30,7 +30,7 @@ public class CatalogTests
         var sut = Catalog.Instance;
 
         var old = new FakeEnumeratorDefinition("Test Enumerator", true);
-        var newer = new EnumeratorDefinition("Test Enumerator", true);
+        var newer = new EnumeratorDefinition("Test Enumerator", true, EnumeratorParentType.Cohort, "FakeCohort");
 
         sut.StoreEnumeratorDefinition(old, true);
         bool replaced = sut.StoreEnumeratorDefinition(newer, true);
@@ -46,7 +46,7 @@ public class CatalogTests
 
         var old = new FakeEnumeratorDefinition("Test Enumerator", true);
         old.OrderBy = "I'm Idaho!";
-        var newer = new EnumeratorDefinition("Test Enumerator", true);
+        var newer = new EnumeratorDefinition("Test Enumerator", true, EnumeratorParentType.Cohort, "FakeCohort");
         newer.OrderBy = "That’s where I saw the Leprechaun. He tells me to burn things.";
 
         sut.StoreEnumeratorDefinition(old, true);

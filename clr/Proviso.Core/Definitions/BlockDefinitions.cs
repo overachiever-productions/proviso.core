@@ -131,6 +131,7 @@ namespace Proviso.Core.Definitions
         public PropertyParentType ParentType { get; private set; }
         public string ParentName { get; set; }
 
+        public EnumeratorDefinition Enumerate { get; private set; }
         public EnumeratorAddDefinition Add { get; internal set; }
         public EnumeratorRemoveDefinition Remove { get; internal set; }
 
@@ -156,6 +157,13 @@ namespace Proviso.Core.Definitions
         {
             child.Validate(null);
             this._properties.Add(child);
+        }
+
+        public void AddEnumerate(EnumeratorDefinition enumerate)
+        {
+            enumerate.Validate(null);
+
+            this.Enumerate = enumerate;
         }
     }
 
@@ -249,18 +257,20 @@ namespace Proviso.Core.Definitions
     public class EnumeratorDefinition : IValidated
     {
         public DateTime Created => DateTime.Now;
-        public string FacetName { get; set; }
-        public string CohortName { get; set; }
+        public EnumeratorParentType ParentType { get; private set; }
+        public string ParentName { get; private set; }
 
         public string Name { get; private set; }
         public bool IsGlobal { get; private set; }
         public ScriptBlock Enumerate { get; set; }
         public string OrderBy { get; set; }
 
-        public EnumeratorDefinition(string name, bool isGlobal)
+        public EnumeratorDefinition(string name, bool isGlobal, EnumeratorParentType parentType, string parentName)
         {
             this.Name = name;
             this.IsGlobal = isGlobal;
+            this.ParentType = parentType;
+            this.ParentName = parentName;
         }
 
         public void Validate(object validationContext)

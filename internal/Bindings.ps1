@@ -27,6 +27,22 @@ function Bind-Property {
 	}
 }
 
+<#
+	NOTE: this is for binding ENUMERATE blocks - not Enumerators - those can/should be done during discovery. 
+#>
+function Bind-Enumerate {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Definitions.EnumeratorDefinition]$Enumerate
+	);
+	
+	process {
+		$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
+		$cohort = $global:PvCatalog.GetCohortDefinition($Enumerate.ParentName, $grandParentName);
+		$cohort.AddEnumerate($Enumerate);
+	}
+}
+
 function Bind-Expect {
 	[CmdletBinding()]
 	param (
@@ -104,7 +120,6 @@ function Bind-Compare {
 		}
 	}
 }
-
 
 function Bind-Configure {
 	[CmdletBinding()]

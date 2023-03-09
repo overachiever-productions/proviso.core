@@ -1,5 +1,11 @@
 ﻿namespace Proviso.Core
 {
+    public enum EnumeratorParentType
+    {
+        Enumerators,
+        Cohort
+    }
+
     public enum FacetType
     {
         Scalar,
@@ -42,6 +48,7 @@
         Facet, 
         Pattern
     }
+
 
     public enum RunbookOrSurface
     {

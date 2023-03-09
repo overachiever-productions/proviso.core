@@ -24,6 +24,9 @@ write-host "--------------------------------------------------"
 			Property "No I don't need a parent wrapper" {}
 
 			Cohort "Members Test" {
+				Enumerate {
+					return @("Piggly","Wiggly");
+				}
 				Property "Cohort Property 1" {
 					Expect {}
 				}
