@@ -52,7 +52,7 @@ function Enter-Block {
 		throw "Proviso Exception: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 	}
 
-	Write-Debug "$("`t" * $PvLexicon.CurrentDepth)Entered $($Type): $Name";
+	Write-Debug "$("`t" * $PvLexicon.CurrentDepth)Entered $($Type): [$Name]";
 }
 
 function Exit-Block {
@@ -63,7 +63,7 @@ function Exit-Block {
 		[string]$Name = $null
 	);
 	
-	Write-Debug "$("`t" * $PvLexicon.CurrentDepth) Exiting $($Type): $Name";
+	Write-Debug "$("`t" * $PvLexicon.CurrentDepth) Exiting $($Type): [$Name]";
 	
 	try {
 		$PvLexicon.ExitBlock($Type, $Name);

@@ -39,6 +39,7 @@ function Enumerate {
 		try {
 			Bind-Enumerate -Enumerate $definition -Verbose:$xVerbose -Debug:$xDebug;
 			
+			# TODO: only goes in catalog if there's a name, right?
 			[bool]$replaced = $global:PvCatalog.StoreEnumeratorDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {

@@ -84,18 +84,17 @@ function Facet {
 	};
 	
 	process {
-		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, [Proviso.Core.FacetType]"Scalar");
-		
-		$definition.SurfaceName = $global:PvLexicon.GetCurrentSurface();
-		$definition.AspectName = $global:PvLexicon.GetCurrentAspect();
+		$parentName = $global:PvLexicon.GetParentBlockName();
+		[Proviso.Core.FacetParentType]$parentType = Get-FacetParentType;
+		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, [Proviso.Core.FacetType]"Scalar", $parentType, $parentName);
 		
 		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
-						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug
-		
-		# TODO: facets|patterns are NOT currently being added to their parent Surface. (Nor am i accounting for option of .. 'global' Facets.)
+						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		try {
+			Bind-Facet -Facet $definition -Verbose:$xVerbose -Debug:$xDebug;
+			
 			[bool]$replaced = $global:PvCatalog.StoreFacetDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
@@ -105,7 +104,7 @@ function Facet {
 			Write-Verbose "Facet: [$($definition.Name)] added to PvCatalog.";
 		}
 		catch {
-			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 		
 		& $FacetBlock;

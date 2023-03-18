@@ -6,6 +6,14 @@
         Cohort
     }
 
+    public enum FacetParentType
+    {
+        Facets, 
+        Patterns, 
+        Aspect, 
+        Surface
+    }
+
     public enum FacetType
     {
         Scalar,
@@ -19,6 +27,12 @@
         Low,
         Medium,
         High
+    }
+
+    public enum IteratorParentType
+    {
+        Iterators,
+        Pattern
     }
 
     public enum Membership

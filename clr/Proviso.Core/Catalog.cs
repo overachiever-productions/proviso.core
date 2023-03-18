@@ -163,9 +163,9 @@ namespace Proviso.Core
             return this._surfaces.Find(x => x.Name == name);
         }
 
-        public FacetDefinition GetFacetDefinitionByName(string name)
+        public FacetDefinition GetFacetDefinitionByName(string name, string parentName)
         {
-            return this._facets.Find(x => x.Name == name);
+            return this._facets.Find(x => x.Name == name && x.ParentName == parentName);
         }
 
         public FacetDefinition GetFacetDefinitionById(string id)
@@ -188,33 +188,14 @@ namespace Proviso.Core
             return this._enumerators.Find(x => x.Name == name);
         }
 
-        private bool SetIteratorAddDefinition(IteratorAddDefinition definition, string parentBlockName, bool allowReplace)
-        {
-            FacetDefinition parent = this._facets.Find(x => (x.FacetType == FacetType.Pattern) && (x.Name == parentBlockName));
-            if (parent == null)
-            {
-                throw new Exception($"Parent Pattern: [{parentBlockName}] not found in PvCatalog.");
-            }
-            parent.Add = definition;
-
-            if (definition.Visibility == Visibility.Global)
-            {
-                CatalogPredicate<IteratorAddDefinition> predicate = (exists, added) => exists.Name == added.Name;
-                string errorText = $"Add for Enumerator with name [{definition.Name}] already exists and can NOT be replaced.";
-                return this._iteratorAdds.SetDefinition(definition, predicate, allowReplace, errorText);
-            }
-
-            return false;
-        }
-
         private bool SetEnumeratorAddDefinition(EnumeratorAddDefinition definition, string parentBlockName, bool allowReplace)
         {
-            CohortDefinition parent = this._cohorts.Find(x => x.Name == parentBlockName);
-            if (parent == null)
-            {
-                throw new Exception($"Parent Cohort: [{parentBlockName}] not found in PvCatalog.");
-            }
-            parent.Add = definition;
+            //CohortDefinition parent = this._cohorts.Find(x => x.Name == parentBlockName);
+            //if (parent == null)
+            //{
+            //    throw new Exception($"Parent Cohort: [{parentBlockName}] not found in PvCatalog.");
+            //}
+            //parent.Add = definition;
 
             if (definition.Visibility == Visibility.Global)
             {
@@ -226,14 +207,52 @@ namespace Proviso.Core
             return false;
         }
 
+        private bool SetEnumeratorRemoveDefinition(EnumeratorRemoveDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
+        {
+            //CohortDefinition parent = this._cohorts.Find(x => x.Name == parentBlockName);
+            //if (parent == null)
+            //{
+            //    throw new Exception();
+            //}
+            //parent.Remove = definition;
+
+            if (definition.Visibility == Visibility.Global)
+            {
+                CatalogPredicate<EnumeratorRemoveDefinition> predicate = (exists, added) => exists.Name == added.Name;
+                string errorText = $"Remove for Enumerator with name [{definition.Name}] already exists and can NOT be replaced.";
+                return this._enumeratorRemoves.SetDefinition(definition, predicate, allowReplace, errorText);
+            }
+
+            return false;
+        }
+
+        private bool SetIteratorAddDefinition(IteratorAddDefinition definition, string parentBlockName, bool allowReplace)
+        {
+            //FacetDefinition parent = this._facets.Find(x => (x.FacetType == FacetType.Pattern) && (x.Name == parentBlockName));
+            //if (parent == null)
+            //{
+            //    throw new Exception($"Parent Pattern: [{parentBlockName}] not found in PvCatalog.");
+            //}
+            //parent.Add = definition;
+
+            if (definition.Visibility == Visibility.Global)
+            {
+                CatalogPredicate<IteratorAddDefinition> predicate = (exists, added) => exists.Name == added.Name;
+                string errorText = $"Add for Enumerator with name [{definition.Name}] already exists and can NOT be replaced.";
+                return this._iteratorAdds.SetDefinition(definition, predicate, allowReplace, errorText);
+            }
+
+            return false;
+        }
+
         private bool SetIteratorRemoveDefinition(IteratorRemoveDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
         {
-            FacetDefinition parent = this._facets.Find(x => (x.FacetType == FacetType.Pattern) && (x.Name == parentBlockName));
-            if (parent == null)
-            {
-                throw new Exception();
-            }
-            parent.Remove = definition;
+            //FacetDefinition parent = this._facets.Find(x => (x.FacetType == FacetType.Pattern) && (x.Name == parentBlockName));
+            //if (parent == null)
+            //{
+            //    throw new Exception();
+            //}
+            //parent.Remove = definition;
 
             if (definition.Visibility == Visibility.Global)
             {
@@ -245,23 +264,6 @@ namespace Proviso.Core
             return false;
         }
 
-        private bool SetEnumeratorRemoveDefinition(EnumeratorRemoveDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
-        {
-            CohortDefinition parent = this._cohorts.Find(x => x.Name == parentBlockName);
-            if (parent == null)
-            {
-                throw new Exception();
-            }
-            parent.Remove = definition;
 
-            if (definition.Visibility == Visibility.Global)
-            {
-                CatalogPredicate<EnumeratorRemoveDefinition> predicate = (exists, added) => exists.Name == added.Name;
-                string errorText = $"Remove for Enumerator with name [{definition.Name}] already exists and can NOT be replaced.";
-                return this._enumeratorRemoves.SetDefinition(definition, predicate, allowReplace, errorText);
-            }
-
-            return false;
-        }
     }
 }

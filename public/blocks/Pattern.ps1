@@ -41,11 +41,9 @@ function Pattern {
 	};
 	
 	process {
-		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, [Proviso.Core.FacetType]"Pattern");
-		
-		# Pattern-Specific Props:
-		$definition.SurfaceName = $global:PvLexicon.GetCurrentSurface();
-		$definition.AspectName = $global:PvLexicon.GetCurrentAspect();
+		$parentName = $global:PvLexicon.GetParentBlockName();
+		[Proviso.Core.FacetParentType]$parentType = Get-FacetParentType -FacetType ([Proviso.Core.FacetType]"Pattern");
+		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, [Proviso.Core.FacetType]"Pattern", $parentType, $parentName);
 		
 		$definition.SetPatternMembershipType(([Proviso.Core.Membership]$ComparisonType));
 		if ((Has-ArrayValue $Iterator) -and (Has-ArrayValue $ExplicitIterator)) {
@@ -60,6 +58,8 @@ function Pattern {
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		try {
+			Bind-Facet -Facet $definition -Verbose:$xVerbose -Debug:$xDebug;
+			
 			[bool]$replaced = $global:PvCatalog.StoreFacetDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
@@ -69,7 +69,7 @@ function Pattern {
 			Write-Verbose "Facet [$($definition.Name)] added to PvCatalog.";
 		}
 		catch {
-			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 		
 		& $PatternBlock;

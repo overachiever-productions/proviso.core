@@ -6,13 +6,16 @@
 
 #>
 
-
 function Facets {
 	[CmdletBinding()]
 	[Alias('Patterns')]
 	param (
+		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Named')]
 		[Alias('FacetsSetName', 'PatternsSetName')]
-		[string]$Name,
+		[string]$Name = $null,
+		
+		[Parameter(Mandatory, Position = 1, ParameterSetName = 'Named')]
+		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Anonymous')]
 		[ScriptBlock]$FacetsBlock
 	);
 	
@@ -25,7 +28,7 @@ function Facets {
 	
 	process {
 		
-		$FacetsBlock;
+		& $FacetsBlock;
 	};
 	
 	end {

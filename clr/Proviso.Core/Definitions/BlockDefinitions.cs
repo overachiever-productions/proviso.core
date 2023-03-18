@@ -132,8 +132,8 @@ namespace Proviso.Core.Definitions
         public string ParentName { get; set; }
 
         public EnumeratorDefinition Enumerate { get; private set; }
-        public EnumeratorAddDefinition Add { get; internal set; }
-        public EnumeratorRemoveDefinition Remove { get; internal set; }
+        public EnumeratorAddDefinition Add { get; set; }
+        public EnumeratorRemoveDefinition Remove { get; set; }
 
         public CohortDefinition(string name, PropertyParentType parentType, string parentName) : base(name)
         {
@@ -162,7 +162,6 @@ namespace Proviso.Core.Definitions
         public void AddEnumerate(EnumeratorDefinition enumerate)
         {
             enumerate.Validate(null);
-
             this.Enumerate = enumerate;
         }
     }
@@ -179,7 +178,7 @@ namespace Proviso.Core.Definitions
     public class AddDefinitionBase : IAddDefinition
     {
         public DateTime Created => DateTime.Now;
-        public string Name { get; private set; }
+        public string Name { get; internal set; }
         public ModalityType Modality { get; private set; }
         public Visibility Visibility { get; private set; }
         public ScriptBlock ScriptBlock { get; private set; }
@@ -212,7 +211,7 @@ namespace Proviso.Core.Definitions
     public class RemoveDefinitionBase : IRemoveDefinition
     {
         public DateTime Created => DateTime.Now;
-        public string Name { get; private set; }
+        public string Name { get; internal set; }
         public ModalityType Modality { get; private set; }
         public Visibility Visibility { get; private set; }
         public Impact Impact { get; private set; }
@@ -280,7 +279,7 @@ namespace Proviso.Core.Definitions
 
             if (IsGlobal)
             {
-                // TODO: Implement AND set up some rudimentar unit tests..
+                // TODO: Implement AND set up some rudimentary unit tests..
                 //  e.g., globals can't have facet/cohort names
             }
             else
@@ -295,23 +294,31 @@ namespace Proviso.Core.Definitions
     {
         private List<PropertyDefinition> _properties = new List<PropertyDefinition>();
         private List<CohortDefinition> _cohorts = new List<CohortDefinition>();
+        private List<IteratorDefinition> _iterators = new List<IteratorDefinition>();
+        private List<string> _namedIterators = new List<string>();
+        private List<IteratorAddDefinition> _adds = new List<IteratorAddDefinition>();
+        private List<IteratorRemoveDefinition> _removes = new List<IteratorRemoveDefinition>();
 
-        public string SurfaceName { get; set; }
-        public string AspectName { get; set; }
+        public string ParentName { get; private set; }
+        public FacetParentType ParentType { get; private set; }
+
         public Membership MembershipType { get; private set; }
-        public string SpecifiedIterator { get; private set; }
+
+        //public string SpecifiedIterator { get; private set; }
 
         // TODO: specified iterators and iterator adds/removes need to be able to be PLURAL.
-        public IteratorAddDefinition Add { get; internal set; }
-        public IteratorRemoveDefinition Remove { get; internal set; }
+        //public IteratorAddDefinition Add { get; internal set; }
+        //public IteratorRemoveDefinition Remove { get; internal set; }
 
         public string Id { get; private set; }
         public FacetType FacetType { get; private set; }
 
-        public FacetDefinition(string name, string id, FacetType type) : base(name)
+        public FacetDefinition(string name, string id, FacetType type, FacetParentType parentType, string parentName) : base(name)
         {
             this.Id = string.IsNullOrWhiteSpace(id) ? Guid.NewGuid().ToString() : id;
             this.FacetType = type;
+            this.ParentName = parentName;
+            this.ParentType = parentType;
         }
 
         public void SetPatternMembershipType(Membership membershipType)
@@ -324,15 +331,18 @@ namespace Proviso.Core.Definitions
 
         public void SetPatternIteratorFromParameter(string iteratorName)
         {
+            // TODO: this NEEDS to be an array... or... this info needs to be stored as arrays... 
+            //      i.e., powershell can LOOP through the inputs and add if/as needed... or, i can pass a string array HERE. 
+            //      either way, there needs to be an array/list of specified iterators.
             if (this.FacetType == FacetType.Scalar)
                 throw new InvalidOperationException();
 
-            this.SpecifiedIterator = iteratorName;
+            //this.SpecifiedIterator = iteratorName;
         }
 
         public void Validate(object validationContext)
         {
-            if (string.IsNullOrWhiteSpace(this.Name))
+            if (string.IsNullOrWhiteSpace(this.Name)) // TODO: this error is hard-coded as Facet - could be Facet OR Pattern.
                 throw new Exception("Proviso Validation Error. [Facet] -Name can NOT be null/empty.");
 
             // TODO: if there's an Aspect, there MUST also be a Surface. (But the inverse is not true/required.)
@@ -349,24 +359,65 @@ namespace Proviso.Core.Definitions
             child.Validate(null);
             this._cohorts.Add(child);
         }
+
+        public void AddIterate(IteratorDefinition iterator)
+        {
+            if (this.FacetType == FacetType.Scalar)
+                throw new InvalidOperationException();
+
+            // Patterns can have _UP TO_ 1x anonymous iterate block. 
+            if (string.IsNullOrWhiteSpace(iterator.Name))
+                iterator.Name = "_ANONYMOUS_";
+
+            var exists = this._iterators.Find(x => x.Name == iterator.Name);
+            if(exists != null)
+                throw new InvalidOperationException();
+
+            this._iterators.Add(iterator);
+        }
+
+        public void AddIterateAdd(IteratorAddDefinition added)
+        {
+            if (string.IsNullOrWhiteSpace(added.Name))
+                added.Name = "_ANONYMOUS_";
+
+            var exists = this._adds.Find(x => x.Name == added.Name);
+            if (exists != null)
+                throw new InvalidOperationException();
+
+            this._adds.Add(added);
+        }
+
+        public void AddIterateRemove(IteratorRemoveDefinition added)
+        {
+            if (string.IsNullOrWhiteSpace(added.Name))
+                added.Name = "_ANONYMOUS_";
+
+            var exists = this._removes.Find(x => x.Name == added.Name);
+            if (exists != null)
+                throw new InvalidOperationException();
+
+            this._removes.Add(added);
+        }
     }
 
     public class IteratorDefinition : IValidated
     {
         public DateTime Created => DateTime.Now;
-        public string SurfaceName { get; set; }
-        public string AspectName { get; set; }
-        public string PatternName { get; set; }
+        public IteratorParentType ParentType { get; private set; }
+        public string ParentName { get; private set; }
 
-        public string Name { get; private set; }
+        public string Name { get; internal set; }
         public bool IsGlobal { get; private set; }
         public ScriptBlock Iterate { get; set; }
         public string OrderBy { get; set; }
 
-        public IteratorDefinition(string name, bool isGlobal)
+        public IteratorDefinition(string name, bool isGlobal, IteratorParentType parentType, string parentName)
         {
             this.Name = name;
             this.IsGlobal = isGlobal;
+            this.ParentType = parentType;
+            this.ParentName = parentName;
         }
 
         public void Validate(object validationContext)
@@ -412,6 +463,11 @@ namespace Proviso.Core.Definitions
         public void AddAssert(AssertDefinition added)
         {
             throw new NotImplementedException();
+        }
+
+        public void AddFacet(FacetDefinition added)
+        {
+
         }
 
         internal Surface ToSurface()

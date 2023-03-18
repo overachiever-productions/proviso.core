@@ -37,6 +37,9 @@ function Cohort {
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		try {
+			Bind-Cohort -Cohort $definition -Verbose:$xVerbose -Debug:$xDebug;
+			
+			# TODO: verify that cohorts are stored in catalog via name + PARENT-name
 			[bool]$replaced = $global:PvCatalog.StoreCohortDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
@@ -51,8 +54,6 @@ function Cohort {
 	};
 	
 	end {
-
-		
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }
