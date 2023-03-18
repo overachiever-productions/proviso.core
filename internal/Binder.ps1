@@ -9,11 +9,14 @@ function Bind-Property {
 	process {
 		switch ($Property.ParentType) {
 			"Properties" {
-				Write-Debug "		NOT Binding Property: [$($Property.Name)] to parent, because parent is a Properties wrapper.";
+				Write-Debug "$(Get-DebugIndent)	NOT Binding Property: [$($Property.Name)] to parent, because parent is a Properties wrapper.";
 			}
 			"Cohort" {
 				$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
 				$parent = $global:PvCatalog.GetCohortDefinition($Property.ParentName, $grandParentName);
+				
+				Write-Debug "$(Get-DebugIndent)	Binding Property [$($Property.Name)] to parent Cohort, named: [$($Property.ParentName)], with grandparent named: [$grandParentName].";
+				
 				$parent.AddChildProperty($Property);
 			}
 			{ $_ -in @("Facet", "Pattern") } {
@@ -21,7 +24,7 @@ function Bind-Property {
 				$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
 				$parent = $global:PvCatalog.GetFacetDefinitionByName($Property.ParentName, $grandParentName);
 				
-				Write-Debug "				Binding Property [$($Property.Name)] to Parent of Type [$parentType], named: [$($Property.ParentName)], with a grandparent named: [$grandParentName].";
+				Write-Debug "$(Get-DebugIndent)	Binding Property [$($Property.Name)] to Parent [$parentType], named: [$($Property.ParentName)], with grandparent named: [$grandParentName].";
 				
 				$parent.AddChildProperty($Property);
 			}
@@ -41,14 +44,14 @@ function Bind-Cohort {
 	process {
 		switch ($Cohort.ParentType) {
 			"Cohorts" {
-				Write-Debug "		NOT Binding Cohort: [$($Cohort.Name)] to parent, because parent is a Cohorts wrapper.";
+				Write-Debug "$(Get-DebugIndent)	NOT Binding Cohort: [$($Cohort.Name)] to parent, because parent is a Cohorts wrapper.";
 			}
 			{ $_ -in @("Facet", "Pattern") } {
 				$parentType = $global:PvLexicon.GetParentBlockType();
 				$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
 				$parent = $global:PvCatalog.GetFacetDefinitionByName($Cohort.ParentName, $grandParentName);
 				
-				Write-Debug "				Binding Cohort [$($Cohort.Name)] to Parent of Type [$parentType], named: [$($Cohort.ParentName)], with a grandparent named: [$grandParentName].";
+				Write-Debug "$(Get-DebugIndent)	Binding Cohort [$($Cohort.Name)] to Parent of Type [$parentType], named: [$($Cohort.ParentName)], with a grandparent named: [$grandParentName].";
 				
 				$parent.AddChildCohort($Cohort);
 			}
@@ -68,6 +71,9 @@ function Bind-Enumerate {
 	process {
 		$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
 		$cohort = $global:PvCatalog.GetCohortDefinition($Enumerate.ParentName, $grandParentName);
+		
+		Write-Debug "$(Get-DebugIndent)	Binding Enumrate to Cohort: [$($Enumerate.ParentName)].";
+		
 		$cohort.AddEnumerate($Enumerate);
 	}
 }
@@ -85,6 +91,8 @@ function Bind-EnumeratorAdd {
 			$parentName = $global:PvLexicon.GetParentBlockName();
 			$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
 			$parent = $global:PvCatalog.GetCohortDefinition($parentName, $grandParentName);
+			
+			Write-Debug "$(Get-DebugIndent)	Binding Enumerate-Add to Cohort: [$($parentName)].";
 			
 			$parent.Add = $Add;
 		}
@@ -105,6 +113,8 @@ function Bind-EnumeratorRemove {
 			$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
 			$parent = $global:PvCatalog.GetCohortDefinition($parentName, $grandParentName);
 			
+			Write-Debug "$(Get-DebugIndent)	Binding Enumerate-Remove to Cohort: [$($parentName)].";
+			
 			$parent.Remove = $Remove;
 		}
 	}
@@ -119,6 +129,9 @@ function Bind-Iterate {
 	process {
 		$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
 		$pattern = $global:PvCatalog.GetFacetDefinitionByName($Iterate.ParentName, $grandParentName);
+		
+		Write-Debug "$(Get-DebugIndent)	Binding Iterate to Pattern: [$($pattern.Name)].";
+		
 		$pattern.AddIterate($Iterate);
 	}
 }
@@ -137,7 +150,7 @@ function Bind-IteratorAdd {
 			$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
 			$parent = $global:PvCatalog.GetFacetDefinitionByName($parentName, $grandParentName);
 			
-			Write-Debug "					Binding Iterator-Add to parent Pattern: [$parentName] -> GrandParent: [$grandParentName]";
+			Write-Debug "$(Get-DebugIndent)		Binding Iterator-Add to parent Pattern: [$parentName] -> GrandParent: [$grandParentName]";
 			
 			$parent.AddIterateAdd($Add);
 		}
@@ -157,7 +170,7 @@ function Bind-IteratorRemove {
 			$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
 			$parent = $global:PvCatalog.GetFacetDefinitionByName($parentName, $grandParentName);
 			
-			Write-Debug "					Binding Iterator-Remove to parent Pattern: [$parentName] -> GrandParent: [$grandParentName]";
+			Write-Debug "$(Get-DebugIndent)		Binding Iterator-Remove to parent Pattern: [$parentName] -> GrandParent: [$grandParentName]";
 			
 			$parent.AddIterateRemove($Remove);
 		}
@@ -177,19 +190,19 @@ function Bind-Facet {
 			$facetType = "Facet";
 		}
 		
-		# TODO: Asses debug text for $facetType of Import... 
+		# TODO: Assess debug text for $facetType of Import... Or... is that done at discovery time? 
 		
 		switch ($parentBlockType) {
 			"Facets" {
-				Write-Debug "		Bypassing Binding of $($facetType): [$($Facet.Name) to parent, because parent is a $($facetType)s wrapper.";
+				Write-Debug "$(Get-DebugIndent)Bypassing Binding of $($facetType): [$($Facet.Name) to parent, because parent is a $($facetType)s wrapper.";
 			}
 			"Aspect" {
-				Write-Host "I should be binding $($facetType): [$($Facet.Name)] to ... Aspect? "
+	Write-Host "I should be binding $($facetType): [$($Facet.Name)] to ... Aspect? "
 			}
 			"Surface" {
 				$surfaceName = $global:PvLexicon.GetParentBlockName();
 				$surface = $global:PvCatalog.GetSurfaceDefinition($surfaceName);
-				Write-Debug "			Binding $($facetType): [$($Facet.Name)] to Surface: [$surfaceName].";
+				Write-Debug "$(Get-DebugIndent)	Binding $($facetType): [$($Facet.Name)] to Surface: [$surfaceName].";
 				
 				$surface.AddFacet($Facet);
 			}
@@ -210,10 +223,13 @@ function Bind-Expect {
 		
 		switch ($parentBlockType) {
 			"Inclusion" {
-				throw "Inclusiong BINDING not yet implemented";
+				throw "Inclusion BINDING not yet implemented";
 			}
 			"Property" {
 				$parentProperty = $global:PvCatalog.GetPropertyDefinition($parentName, $grandParentName);
+				
+				Write-Debug "$(Get-DebugIndent)		Binding Expect to Property: [$($parentName)].";
+				
 				$parentProperty.Expect = $ExpectBlock;
 			}
 			default {
@@ -240,6 +256,8 @@ function Bind-Extract {
 			}
 			"Property" {
 				$parentProperty = $global:PvCatalog.GetPropertyDefinition($parentName, $grandParentName);
+				
+				Write-Debug "$(Get-DebugIndent)		Binding Extract to Property: [$($parentName)].";
 				$parentProperty.Extract = $ExtractBlock;
 			}
 			default {
@@ -266,6 +284,8 @@ function Bind-Compare {
 			}
 			"Property" {
 				$parentProperty = $global:PvCatalog.GetPropertyDefinition($parentName, $grandParentName);
+				
+				Write-Debug "$(Get-DebugIndent)		Binding Compare to Property: [$($parentName)].";
 				$parentProperty.Compare = $CompareBlock;
 			}
 			default {
@@ -292,6 +312,8 @@ function Bind-Configure {
 			}
 			"Property" {
 				$parentProperty = $global:PvCatalog.GetPropertyDefinition($parentName, $grandParentName);
+				
+				Write-Debug "$(Get-DebugIndent)		Binding Configure to Property: [$($parentName)].";
 				$parentProperty.Configure = $ConfigureBlock;
 			}
 			default {

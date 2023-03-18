@@ -92,3 +92,7 @@ filter Get-GrandParentBlockType {
 filter Get-GrandParentBlockName {
 	return $PvLexicon.GetGrandParentBlockName();
 }
+
+filter Get-DebugIndent {
+	return "`t" * $PvLexicon.CurrentDepth;
+}
