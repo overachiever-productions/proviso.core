@@ -42,11 +42,11 @@ function Assert {
 		
 		try {
 			if ("Runbook" -eq $grandParentBlockType) {
-				$runbook.AddAssert($assert);
+				$currentRunbook.AddAssert($assert);
 				Write-Debug "				Adding Assert [$Name] to Runbook: [$grandParentBlockName].";
 			}
 			else {
-				$surface.AddAssert($assert);
+				$currentSurface.AddAssert($assert);
 				Write-Debug "				Added Assert [$Name] to Surface: [$grandParentBlockName].";
 			}
 		}

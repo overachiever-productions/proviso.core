@@ -88,7 +88,7 @@ namespace Proviso.Core
                 new Taxonomy
                 {
                     NodeName = "Facet",
-                    Rootable = true,
+                    Rootable = false,
                     Tracked = true,
                     AllowedParents = new List<string> { "Surface", "Aspect", "Facets" },  
                     AllowedChildren = new List<string> { "Cohort", "Property" }

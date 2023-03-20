@@ -77,6 +77,7 @@ function Facet {
 	);
 	
 	begin {
+		$currentFacetType = "Facet";
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		
@@ -85,6 +86,7 @@ function Facet {
 	
 	process {
 		$parentName = $global:PvLexicon.GetParentBlockName();
+
 		[Proviso.Core.FacetParentType]$parentType = Get-FacetParentType;
 		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, [Proviso.Core.FacetType]"Scalar", $parentType, $parentName);
 		

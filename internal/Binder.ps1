@@ -185,29 +185,22 @@ function Bind-Facet {
 	
 	process {
 		$parentBlockType = $global:PvLexicon.GetParentBlockType();
-		$facetType = $Facet.FacetType;
-		if ("Scalar" -eq $facetType) {
-			$facetType = "Facet";
-		}
 		
 		# TODO: Assess debug text for $facetType of Import... Or... is that done at discovery time? 
 		
 		switch ($parentBlockType) {
 			"Facets" {
-				Write-Debug "$(Get-DebugIndent)Bypassing Binding of $($facetType): [$($Facet.Name) to parent, because parent is a $($facetType)s wrapper.";
+				Write-Debug "$(Get-DebugIndent)Bypassing Binding of $($currentFacetType): [$($Facet.Name) to parent, because parent is a $($currentFacetType)s wrapper.";
 			}
 			"Aspect" {
-				$aspect = $currentAspect;
-				
-				Write-Debug "$(Get-DebugIndent) Binding $($facetType): [$($Facet.Name)] to Aspect: [$($aspect.Name)].";
-				$aspect.AddFacet($Facet);
+				Write-Debug "$(Get-DebugIndent) Binding $($currentFacetType): [$($Facet.Name)] to Aspect: [$($currentAspect.Name)].";
+				$currentAspect.AddFacet($Facet);
 			}
 			"Surface" {
 				$surfaceName = $global:PvLexicon.GetParentBlockName();
-				$surface = $global:PvLexicon.GetCurrentSurface();
-				Write-Debug "$(Get-DebugIndent)	Binding $($facetType): [$($Facet.Name)] to Surface: [$surfaceName].";
 				
-				$surface.AddFacet($Facet);
+				Write-Debug "$(Get-DebugIndent)	Binding $($currentFacetType): [$($Facet.Name)] to Surface: [$surfaceName].";
+				$currentSurface.AddFacet($Facet);
 			}
 		}
 	}
@@ -343,5 +336,12 @@ function Bind-Configure {
 
 filter Get-FacetParentType {
 	$ParentBlockType = $global:PvLexicon.GetParentBlockType();
-	return [Proviso.Core.FacetParentType]$ParentBlockType;
+	try {
+		return [Proviso.Core.FacetParentType]$ParentBlockType;
+	}
+	catch {
+		# MKC: It APPEARs that I only need this additional bit of error handling for Pester tests:
+		# 		Specifically: I can NOT get 'stand-alone' Facets|Patterns to reach this logic in anything other than Pester.
+		throw "Compilation Exception. [$currentFacetType] can NOT be a stand-alone (root-level) block (must be inside either an Aspect, Surface, or $($currentFacetType)s block).";
+	}
 }

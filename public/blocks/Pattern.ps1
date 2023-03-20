@@ -34,6 +34,7 @@ function Pattern {
 	);
 	
 	begin {
+		$currentFacetType = "Pattern";
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		

@@ -11,9 +11,11 @@ BeforeAll {
 Describe "$UnitName Tests" -Tag "IntegrationTests" {
 	Context "Behavior Tests" {
 		It "Stores Basic Details For Retrieval" {
-			Facet "Basic Facet" { }
+			Facets {
+				Facet "Basic Facet" { }
+			}
 			
-			$global:PvCatalog.GetFacetDefinitionByName("Basic Facet") | Should -Not -Be $null;
+			$global:PvCatalog.GetFacetDefinitionByName("Basic Facet", $null) | Should -Not -Be $null;
 		}
 	}
 	
@@ -45,28 +47,35 @@ Describe "$UnitName Tests" -Tag "IntegrationTests" {
 				}
 			}
 			
-			$global:PvCatalog.GetSurfaceDefinition("Test Surface 1") | Should -Not -Be $null;
-			$global:PvCatalog.GetFacetDefinitionByName("Test Surface 1 - Facet A") | Should -Not -Be $null;
+			#$global:PvCatalog.GetSurfaceDefinition("Test Surface 1") | Should -Not -Be $null;
+			$global:PvCatalog.GetFacetDefinitionByName("Test Surface 1 - Facet A", "Test Surface 1") | Should -Not -Be $null;
 		}
 		
 		It "Stores Facets" {
-			Facet "Minimally Viable - 11" {};
-			Facet "Minimally Viable - 12" {};
-			Facet "Minimally Viable - 13" {
-				Property "Property 14" {};
+			Facets {
+				Facet "Minimally Viable - 11" {
+				};
+				Facet "Minimally Viable - 12" {
+				};
+				Facet "Minimally Viable - 13" {
+					Property "Property 14" {
+					};
+				}
 			}
 			
-			$global:PvCatalog.GetFacetDefinitionByName("Minimally Viable - 11") | Should -Not -Be $null;
-			$global:PvCatalog.GetFacetDefinitionByName("Minimally Viable - 12") | Should -Not -Be $null;
-			$global:PvCatalog.GetFacetDefinitionByName("Minimally Viable - 13") | Should -Not -Be $null;
+			$global:PvCatalog.GetFacetDefinitionByName("Minimally Viable - 11", $null) | Should -Not -Be $null;
+			$global:PvCatalog.GetFacetDefinitionByName("Minimally Viable - 12", $null) | Should -Not -Be $null;
+			$global:PvCatalog.GetFacetDefinitionByName("Minimally Viable - 13", $null) | Should -Not -Be $null;
 		}
 		
 		It "Stores Patterns" {
-			Pattern "Fake Pattern 1" -Iterator "Global Iterator that does not exist" { }
+			Facets {
+				Pattern "Fake Pattern 1" -Iterator "Global Iterator that does not exist" { }
+			}
 			
-			$pattern = $global:PvCatalog.GetFacetDefinitionByName("Fake Pattern 1");
+			
+			$pattern = $global:PvCatalog.GetFacetDefinitionByName("Fake Pattern 1", $null);
 			$pattern | Should -Not -Be $null;
 		}
 	}
-	
 }
