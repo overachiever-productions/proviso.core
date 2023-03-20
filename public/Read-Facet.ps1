@@ -16,28 +16,30 @@
 write-host "--------------------------------------------------"
 
 	Surface "Extended Events" {
-		Facet "ANOTHER My First Facet" { }
+		Aspect "Named Aspect" {
+			Facet "ANOTHER My First Facet" { }
 
-		Pattern "My first Pattern" { 
-			Iterate {}
-			Add {}
-			Remove {}
-
-			Property "Do I need wrappers around Properties?" {}
-			Property "No I don't need a parent wrapper" {}
-
-			Cohort "Members Test" {
-				Enumerate {
-					return @("Piggly","Wiggly");
-				}
-				Add {
-					# set some global array to $array + some new value or whatever... 
-				}
+			Pattern "My first Pattern" { 
+				Iterate {}
+				Add {}
 				Remove {}
-				Property "Cohort Property 1" {
-					Expect {}
+
+				Property "Do I need wrappers around Properties?" {}
+				Property "No I don't need a parent wrapper" {}
+
+				Cohort "Members Test" {
+					Enumerate {
+						return @("Piggly","Wiggly");
+					}
+					Add {
+						# set some global array to $array + some new value or whatever... 
+					}
+					Remove {}
+					Property "Cohort Property 1" {
+						Expect {}
+					}
+					Property "Cohort Property 2" {}
 				}
-				Property "Cohort Property 2" {}
 			}
 		}
 	}

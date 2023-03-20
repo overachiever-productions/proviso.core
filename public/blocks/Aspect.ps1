@@ -3,8 +3,12 @@
 function Aspect {
 	[CmdletBinding()]
 	param (
+		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Named')]
+		[Alias('AspectName')]
 		[string]$Name = $null,
-		[Parameter(Mandatory, Position = 1)]
+		
+		[Parameter(Mandatory, Position = 1, ParameterSetName = 'Named')]
+		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Anonymous')]
 		[ScriptBlock]$ScriptBlock,
 		[string]$ModelPath = $null,
 		[string]$TargetPath = $null,
@@ -22,10 +26,27 @@ function Aspect {
 	};
 	
 	process {
-		$bypass = Is-ByPassed $MyInvocation.MyCommand.Name -Name $Name -Skip:$Skip -Ignore $Ignore -Verbose:$xVerbose -Debug:$xDebug;
+		$parentName = $global:PvLexicon.GetParentBlockName();
+		$definition = New-Object Proviso.Core.Definitions.AspectDefinition($Name, $parentName);
 		
-		if (Should-SetPaths $MyInvocation.MyCommand.Name -Name $Name -ModelPath $ModelPath -TargetPath $TargetPath -Path $Path -Verbose:$xVerbose -Debug:$xDebug) {
-			$ModelPath, $TargetPath = $Path;
+		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
+						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $null -Extract $null -ThrowOnConfig $null `
+						-DisplayFormat $null -Verbose:$xVerbose -Debug:$xDebug;
+		
+		$currentAspect = $definition;
+		try {
+			Bind-Aspect -Aspect $definition -Verbose:$xVerbose -Debug:$xDebug;
+			
+			[bool]$replaced = $global:PvCatalog.StoreAspectDefinition($definition, (Allow-DefinitionReplacement));
+			
+			if ($replaced) {
+				Write-Verbose "Aspect: [$Name] was replaced.";
+			}
+			
+			Write-Verbose "Aspect: [$($definition.Name)] added to PvCatalog.";
+		}
+		catch {
+			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 		
 		& $ScriptBlock;
@@ -33,5 +54,6 @@ function Aspect {
 	
 	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
+		$global:currentAspect = $null;
 	};
 }

@@ -44,7 +44,6 @@ function Enter-Block {
 		[string]$Name = $null
 	);
 	
-	# $stack = (Get-PSCallStack).Command -join ",";
 	try {
 		$PvLexicon.EnterBlock($Type, $Name);
 	}
@@ -52,7 +51,7 @@ function Enter-Block {
 		throw "Proviso Exception: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 	}
 
-	Write-Debug "$("`t" * $PvLexicon.CurrentDepth)Entered $($Type): [$Name]";
+	Write-Debug "$(Get-DebugIndent)Entered $($Type): [$Name]";
 }
 
 function Exit-Block {
@@ -63,7 +62,7 @@ function Exit-Block {
 		[string]$Name = $null
 	);
 	
-	Write-Debug "$("`t" * $PvLexicon.CurrentDepth) Exiting $($Type): [$Name]";
+	Write-Debug "$(Get-DebugIndent) Exiting $($Type): [$Name]";
 	
 	try {
 		$PvLexicon.ExitBlock($Type, $Name);

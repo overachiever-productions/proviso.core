@@ -197,16 +197,34 @@ function Bind-Facet {
 				Write-Debug "$(Get-DebugIndent)Bypassing Binding of $($facetType): [$($Facet.Name) to parent, because parent is a $($facetType)s wrapper.";
 			}
 			"Aspect" {
-	Write-Host "I should be binding $($facetType): [$($Facet.Name)] to ... Aspect? "
+				$aspect = $currentAspect;
+				
+				Write-Debug "$(Get-DebugIndent) Binding $($facetType): [$($Facet.Name)] to Aspect: [$($aspect.Name)].";
+				$aspect.AddFacet($Facet);
 			}
 			"Surface" {
 				$surfaceName = $global:PvLexicon.GetParentBlockName();
-				$surface = $global:PvCatalog.GetSurfaceDefinition($surfaceName);
+				$surface = $global:PvLexicon.GetCurrentSurface();
 				Write-Debug "$(Get-DebugIndent)	Binding $($facetType): [$($Facet.Name)] to Surface: [$surfaceName].";
 				
 				$surface.AddFacet($Facet);
 			}
 		}
+	}
+}
+
+function Bind-Aspect {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Definitions.AspectDefinition]$Aspect
+	);
+	
+	process {
+		$surfaceName = $global:PvLexicon.GetParentBlockName();
+		$surface = $global:PvCatalog.GetSurfaceDefinition($surfaceName);
+		
+		Write-Debug "$(Get-DebugIndent)		Binding Aspect: [$($Aspect.Name)] to Surface: [$($surfaceName)].";
+		$surface.AddAspect($Aspect);
 	}
 }
 

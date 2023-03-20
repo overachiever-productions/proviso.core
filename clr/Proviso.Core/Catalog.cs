@@ -32,27 +32,23 @@ namespace Proviso.Core
 
     public class Catalog
     {
-        private List<EnumeratorDefinition> _enumerators = new List<EnumeratorDefinition>();
-        private List<EnumeratorAddDefinition> _enumeratorAdds = new List<EnumeratorAddDefinition>();
-        private List<EnumeratorRemoveDefinition> _enumeratorRemoves = new List<EnumeratorRemoveDefinition>();
-        private List<IteratorDefinition> _iterators = new List<IteratorDefinition>();
-        private List<IteratorAddDefinition> _iteratorAdds = new List<IteratorAddDefinition>();
-        private List<IteratorRemoveDefinition> _iteratorRemoves = new List<IteratorRemoveDefinition>();
-        private List<RunbookDefinition> _runbooks = new List<RunbookDefinition>();
-        private List<FacetDefinition> _facets = new List<FacetDefinition>();
-        private List<SurfaceDefinition> _surfaces = new List<SurfaceDefinition>();
-
-        // TODO: additional lists/collections to add: 
-        //  _surfaces 
-        //  _iterators 
-        //  TODO: PROBABLY different, but some sort of 'named' asserts (and ... provide option for 'authors' to add theirs as well. 
+        private readonly List<EnumeratorDefinition> _enumerators = new List<EnumeratorDefinition>();
+        private readonly List<EnumeratorAddDefinition> _enumeratorAdds = new List<EnumeratorAddDefinition>();
+        private readonly List<EnumeratorRemoveDefinition> _enumeratorRemoves = new List<EnumeratorRemoveDefinition>();
+        private readonly List<IteratorDefinition> _iterators = new List<IteratorDefinition>();
+        private readonly List<IteratorAddDefinition> _iteratorAdds = new List<IteratorAddDefinition>();
+        private readonly List<IteratorRemoveDefinition> _iteratorRemoves = new List<IteratorRemoveDefinition>();
+        private readonly List<RunbookDefinition> _runbooks = new List<RunbookDefinition>();
+        private readonly List<FacetDefinition> _facets = new List<FacetDefinition>();
+        private readonly List<AspectDefinition> _aspects = new List<AspectDefinition>();
+        private readonly List<SurfaceDefinition> _surfaces = new List<SurfaceDefinition>();
 
         // REFACTOR: looks like I lost my mind... cohorts and properties should ONLY BE children of their PARENT Facet... 
         //      er, well... did I ever decide to make properties|cohorts 'borrowable' from elsewhere?
         //      if so, then... they got to BOTH their parents and here... (but I'm going to need some sort of import/borrow/use syntax/func. 
         //      i THINK i was ONLY going to allow FACETS to be re-used like this (from one surface to the next)... but ... maybe I was going to do the same with props? (cohorts?)
-        private List<CohortDefinition> _cohorts = new List<CohortDefinition>();
-        private List<PropertyDefinition> _properties = new List<PropertyDefinition>();
+        private readonly List<CohortDefinition> _cohorts = new List<CohortDefinition>();
+        private readonly List<PropertyDefinition> _properties = new List<PropertyDefinition>();
 
         public static Catalog Instance => new Catalog();
 
@@ -72,8 +68,17 @@ namespace Proviso.Core
             definition.Validate(null);
 
             CatalogPredicate<SurfaceDefinition> predicate = (exists, added) => exists.Name == added.Name;
-            string errorText = $"";
+            string errorText = $"Surface: [{definition.Name}] already exists and can NOT be replaced. Ensure unique surface names and/or allow global replacement override.";
             return this._surfaces.SetDefinition(definition, predicate, allowReplace, errorText);
+        }
+
+        public bool StoreAspectDefinition(AspectDefinition definition, bool allowReplace)
+        {
+            definition.Validate(null);
+
+            CatalogPredicate<AspectDefinition> predicate = (exists, added) => (exists.Name == added.Name) && (exists.ParentName == added.ParentName);
+            string errorText = $"Aspect: [{definition.Name}] already exists within Surface: [{definition.ParentName}] and can NOT be replaced. Ensure unique Aspect names (within Surfaces) and/or allow global replacement override.";
+            return this._aspects.SetDefinition(definition, predicate, allowReplace, errorText);
         }
         
         public bool StoreFacetDefinition(FacetDefinition definition, bool allowReplace)
@@ -89,9 +94,6 @@ namespace Proviso.Core
         public bool StorePropertyDefinition(PropertyDefinition definition, bool allowReplace)
         {
             definition.Validate(null);
-
-            // could do something here about ... if the ParentPropertyType <> Properties... then bind to parent as well. 
-
 
             CatalogPredicate<PropertyDefinition> predicate = (exists, added) => exists.Name == added.Name;
             string errorText = $"[Property] with name [{definition.Name}] already exists and can NOT be replaced. Ensure unique [Property] names and/or allow global replacement override.";
@@ -263,7 +265,5 @@ namespace Proviso.Core
 
             return false;
         }
-
-
     }
 }

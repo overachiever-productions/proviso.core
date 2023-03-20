@@ -428,13 +428,30 @@ namespace Proviso.Core.Definitions
 
     public class AspectDefinition : DefinitionBase, IValidated
     {
-        public string SurfaceName { get; set; }
+        private readonly List<FacetDefinition> _facets = new List<FacetDefinition>();
 
-        public AspectDefinition(string name) : base(name) { }
+        public string ParentName { get; private set; }
+
+        public AspectDefinition(string name, string parentName) : base(name)
+        {
+            this.ParentName = parentName;
+        }
+
+        public void AddFacet(FacetDefinition added)
+        {
+            added.Validate(null);
+
+            var exists = this._facets.Find(x => x.Name == added.Name);
+            if (exists != null)
+                throw new InvalidOperationException($"Aspect [{base.Name}] already contains a Facet or Pattern with the name: [{added.Name}]. Pattern/Facet names must be UNIQUE per Aspect.");
+
+            this._facets.Add(added);
+        }
+
 
         public void Validate(object validationContext)
         {
-            throw new NotImplementedException();
+            // TODO: Implement
         }
     }
 
@@ -458,6 +475,9 @@ namespace Proviso.Core.Definitions
 
     public class SurfaceDefinition: DefinitionBase, IValidated
     {
+        private readonly List<FacetDefinition> _facets = new List<FacetDefinition>();
+        private readonly List<AspectDefinition> _aspects = new List<AspectDefinition>();
+
         public SurfaceDefinition(string name) : base(name) { }
 
         public void AddAssert(AssertDefinition added)
@@ -467,13 +487,26 @@ namespace Proviso.Core.Definitions
 
         public void AddFacet(FacetDefinition added)
         {
+            added.Validate(null);
 
+            var exists = this._facets.Find(x => x.Name == added.Name);
+            if (exists != null)
+                throw new InvalidOperationException($"Surface [{base.Name}] already contains a Facet or Pattern with the name: [{added.Name}]. Pattern/Facet names must be UNIQUE per Surface.");
+
+            this._facets.Add(added);
         }
 
-        internal Surface ToSurface()
+        public void AddAspect(AspectDefinition added)
         {
-            throw new NotImplementedException();
+            added.Validate(null);
+
+            this._aspects.Add(added);
         }
+
+        //internal Surface ToSurface()
+        //{
+        //    throw new NotImplementedException();
+        //}
 
         public void Validate(object validationContext)
         {

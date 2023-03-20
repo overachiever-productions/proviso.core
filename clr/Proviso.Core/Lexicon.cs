@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 namespace Proviso.Core
 {
+    // LEXICON: The vocabulary of a person, language, or branch of knowledge.
+    // TAXONOMY: A classification; especially, a classification in a hierarchical system.
+    //      SEEMS like I've inverted Lexicon and Taxonomy (i.e.,, my current 'taxonomy'/list-of-block-types (vocabulary) should become the lexicon... 
+    //              and this (current) lexicon class should become the taxonomy - or classification/order/rules of a hierarchical system ... 
     public class Lexicon
     {
         private List<Taxonomy> _grammar;
@@ -29,6 +33,7 @@ namespace Proviso.Core
             this._currentNode = null;
         }
 
+        // REFACTOR: each of these GetCurrentX() needs to be renamed to GetCurrentXName().
         public string GetCurrentRunbook()
         {
             return this.GetCurrentBlockNameByType("Runbook");
