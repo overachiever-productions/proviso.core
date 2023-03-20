@@ -92,6 +92,7 @@ function Facet {
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
+		$currentFacet = $definition;
 		try {
 			Bind-Facet -Facet $definition -Verbose:$xVerbose -Debug:$xDebug;
 			

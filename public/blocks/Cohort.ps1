@@ -36,6 +36,7 @@ function Cohort {
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
+		$currentCohort = $definition;
 		try {
 			Bind-Cohort -Cohort $definition -Verbose:$xVerbose -Debug:$xDebug;
 			

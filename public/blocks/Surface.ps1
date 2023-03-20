@@ -32,6 +32,7 @@ function Surface {
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $null -Extract $null -ThrowOnConfig $null `
 						-DisplayFormat $null -Verbose:$xVerbose -Debug:$xDebug;
 		
+		$currentSurface = $definition;
 		try {
 			[bool]$replaced = $global:PvCatalog.StoreSurfaceDefinition($definition, (Allow-DefinitionReplacement));
 			

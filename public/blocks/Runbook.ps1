@@ -45,11 +45,12 @@ function Runbook {
 	process {
 		Write-Verbose "Compiling Runbook [$Name].";
 		
-		[Proviso.Core.Definitions.RunbookDefinition]$runbook = New-Object Proviso.Core.Definitions.RunbookDefinition($Name);
+		[Proviso.Core.Definitions.RunbookDefinition]$definition = New-Object Proviso.Core.Definitions.RunbookDefinition($Name);
 		
+		$currentRunbook = $definition;
 		try {
 			Write-Debug "	Adding Runbook [$Name] to Catalog.";
-			[bool]$replaced = $global:PvCatalog.StoreRunbookDefinition($runbook, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvCatalog.StoreRunbookDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Runbook [$($Name)] was replaced.";
