@@ -34,6 +34,7 @@ function Pattern {
 	);
 	
 	begin {
+		$currentFacetType = "Pattern";
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		
@@ -41,11 +42,9 @@ function Pattern {
 	};
 	
 	process {
-		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, [Proviso.Core.FacetType]"Pattern");
-		
-		# Pattern-Specific Props:
-		$definition.SurfaceName = $global:PvLexicon.GetCurrentSurface();
-		$definition.AspectName = $global:PvLexicon.GetCurrentAspect();
+		$parentName = $global:PvLexicon.GetParentBlockName();
+		[Proviso.Core.FacetParentType]$parentType = Get-FacetParentType -FacetType ([Proviso.Core.FacetType]"Pattern");
+		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, [Proviso.Core.FacetType]"Pattern", $parentType, $parentName);
 		
 		$definition.SetPatternMembershipType(([Proviso.Core.Membership]$ComparisonType));
 		if ((Has-ArrayValue $Iterator) -and (Has-ArrayValue $ExplicitIterator)) {
@@ -59,8 +58,11 @@ function Pattern {
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
+		$currentPattern = $definition;
 		try {
-			[bool]$replaced = $global:PvCatalog.SetFacetDefinition($definition, (Allow-DefinitionReplacement));
+			Bind-Facet -Facet $definition -Verbose:$xVerbose -Debug:$xDebug;
+			
+			[bool]$replaced = $global:PvCatalog.StoreFacetDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Facet named [$Name] was replaced.";
@@ -69,7 +71,7 @@ function Pattern {
 			Write-Verbose "Facet [$($definition.Name)] added to PvCatalog.";
 		}
 		catch {
-			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 		
 		& $PatternBlock;

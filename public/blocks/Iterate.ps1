@@ -8,6 +8,7 @@ function Iterate {
 		[Parameter(Position = 1, ParameterSetName = 'Named')]
 		[parameter(Mandatory, Position = 0, ParameterSetName = 'Anonymous')]
 		[ScriptBlock]$IterateBlock,
+		
 		# TODO: this might not even make sense. It's implemented as a STRING for now.
 		[string]$OrderBy = $null
 	);
@@ -26,11 +27,9 @@ function Iterate {
 	};
 	
 	process {
-		$definition = New-Object Proviso.Core.Definitions.IteratorDefinition($Name, $isGlobal);
+		$parentName = $global:PvLexicon.GetParentBlockName();
+		$definition = New-Object Proviso.Core.Definitions.IteratorDefinition($Name, $isGlobal, [Proviso.Core.IteratorParentType]"Pattern", $parentName);
 		
-		$definition.SurfaceName = $global:PvLexicon.GetCurrentSurface();
-		$definition.AspectName = $global:PvLexicon.GetCurrentAspect();
-		$definition.PatternName = $global:PvLexicon.GetCurrentPattern();
 		if (Has-Value $OrderBy) {
 			$definition.OrderBy = $OrderBy;
 		}
@@ -38,7 +37,10 @@ function Iterate {
 		$definition.Iterate = $IterateBlock;
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetIteratorDefinition($definition, (Allow-DefinitionReplacement));
+			Bind-Iterate -Iterate $definition -Verbose:$xVerbose -Debug:$xDebug;
+			
+			# TODO: only goes in catalog if there's a name, right?
+			[bool]$replaced = $global:PvCatalog.StoreIteratorDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				$replacedName = "for Pattern [$Name]";
@@ -49,7 +51,7 @@ function Iterate {
 			}
 		}
 		catch {
-			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 	};
 	

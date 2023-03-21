@@ -21,7 +21,8 @@ function Enumerator {
 	};
 	
 	process {
-		$definition = New-Object Proviso.Core.Definitions.EnumeratorDefinition($Name, $true);
+		$parentName = $global:PvLexicon.GetParentBlockName(); # note, this CAN be empty... 
+		$definition = New-Object Proviso.Core.Definitions.EnumeratorDefinition($Name, $true, [Proviso.Core.EnumeratorParentType]"Enumerators", $parentName);
 		
 		if (Has-Value $OrderBy) {
 			$definition.OrderBy = $OrderBy;
@@ -30,7 +31,8 @@ function Enumerator {
 		$definition.Enumerate = $EnumeratorBlock;
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetEnumeratorDefinition($definition, (Allow-DefinitionReplacement));
+			# NOTE: EnumeratORs do NOT get bound (at compile time) to their parent (they'll get bound during discovery).
+			[bool]$replaced = $global:PvCatalog.StoreEnumeratorDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Enumerator block named [$Name] was replaced.";

@@ -28,16 +28,20 @@ function Cohort {
 	};
 	
 	process {
-		$definition = New-Object Proviso.Core.Definitions.CohortDefinition($Name);
-		
-		$definition.FacetName = $global:PvLexicon.GetCurrentFacet();
+		$parentBlockType = $global:PvLexicon.GetParentBlockType();
+		$parentName = $global:PvLexicon.GetParentBlockName();
+		$definition = New-Object Proviso.Core.Definitions.CohortDefinition($Name, [Proviso.Core.PropertyParentType]$parentBlockType, $parentName);
 		
 		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
+		$currentCohort = $definition;
 		try {
-			[bool]$replaced = $global:PvCatalog.SetCohortDefinition($definition, (Allow-DefinitionReplacement));
+			Bind-Cohort -Cohort $definition -Verbose:$xVerbose -Debug:$xDebug;
+			
+			# TODO: verify that cohorts are stored in catalog via name + PARENT-name
+			[bool]$replaced = $global:PvCatalog.StoreCohortDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Cohort named [$Name] (within Facet [$($global:PvLexicon.GetCurrentFacet())]) was replaced.";
@@ -51,8 +55,6 @@ function Cohort {
 	};
 	
 	end {
-
-		
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

@@ -18,7 +18,7 @@ public class LexiconTests
     public void Valid_BlockTypes_Accepted()
     {
         Lexicon.Instance.EnterBlock("Surface", "My Surface");
-        Lexicon.Instance.EnterBlock("Facet", "My Facet");
+        Lexicon.Instance.EnterBlock("Runbook", "My Runbook");
     }
 
     [Test]
@@ -125,20 +125,22 @@ public class LexiconTests
         var prop2Name = "Default XE Directory";
         var prop3Name = "Blocked Processes Threshold";
 
+        sut.EnterBlock("Facets", null);
         sut.EnterBlock("Facet", "Test Facet");
-        Assert.AreEqual(1, sut.CurrentDepth);
+        Assert.AreEqual(2, sut.CurrentDepth);
 
         sut.EnterBlock("Property", prop1Name);
-        Assert.AreEqual(2, sut.CurrentDepth);
+        Assert.AreEqual(3, sut.CurrentDepth);
         sut.ExitBlock("Property", prop1Name);
-        Assert.AreEqual(1, sut.CurrentDepth);
+        Assert.AreEqual(2, sut.CurrentDepth);
 
         sut.EnterBlock("Property", prop2Name);
         sut.ExitBlock("Property", prop2Name);
 
         sut.EnterBlock("Property", prop3Name);
         sut.ExitBlock("Property", prop3Name);
-        Assert.AreEqual(1, sut.CurrentDepth);
+
+        Assert.AreEqual(2, sut.CurrentDepth);
     }
 
     [Test]
@@ -200,6 +202,7 @@ public class LexiconTests
         var facetName = "My Facet";
         var cohortName = "Test Cohort";
 
+        sut.EnterBlock("Facets", "");
         sut.EnterBlock("Facet", facetName);
         sut.EnterBlock("Cohort", cohortName);
 
@@ -214,6 +217,7 @@ public class LexiconTests
         var facetName = "My Facet";
         var cohortName = "Test Cohort";
 
+        sut.EnterBlock("Facets", "");
         sut.EnterBlock("Facet", facetName);
         sut.EnterBlock("Cohort", cohortName);
         sut.EnterBlock("Enumerate", "");
@@ -226,8 +230,7 @@ public class LexiconTests
     {
         var sut = Lexicon.Instance;
 
-        var facetName = "My Facet";
-        sut.EnterBlock("Facet", facetName);
+        sut.EnterBlock("Facets", "");
 
         var blockType = sut.GetParentBlockType();
         StringAssert.AreEqualIgnoringCase("", blockType);
@@ -241,6 +244,7 @@ public class LexiconTests
         var facetName = "My Facet";
         var cohortName = "Test Cohort";
 
+        sut.EnterBlock("Facets", "");
         sut.EnterBlock("Facet", facetName);
         sut.EnterBlock("Cohort", cohortName);
 
@@ -256,6 +260,7 @@ public class LexiconTests
 
         var facetName = "My Facet";
         var cohortName = "Test Cohort";
+        sut.EnterBlock("Facets", "");
         sut.EnterBlock("Facet", facetName);
         sut.EnterBlock("Cohort", cohortName);
 

@@ -5,26 +5,48 @@
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 
 	$global:DebugPreference = "Continue";
-	$global:VerbosePreference = "Continue";
+	#$global:VerbosePreference = "Continue";
 
-	Facet "My First Facet" { }
-	Read-Facet "My First Facet";
+#	Facets {
+#		Facet "My First Facet" { }
+#	}
+#
+#	#Read-Facet "My First Facet";
 
 write-host "--------------------------------------------------"
 
 	Surface "Extended Events" {
-		Facet "ANOTHER My First Facet" { }
+		Aspect "Named Aspect" {
+			Facet "ANOTHER My First Facet" { }
 
-		Pattern "My first Pattern" { 
-			Iterate {}
-			Add {}
-			Remove {}
+			Pattern "My first Pattern" { 
+				Iterate {}
+				Add {}
+				Remove {}
 
-			Property "Do I need wrappers around Properties?" {}
+				Property "Do I need wrappers around Properties?" {}
+				Property "No I don't need a parent wrapper" {}
+
+				Cohort "Members Test" {
+					Enumerate {
+						return @("Piggly","Wiggly");
+					}
+					Add {
+						# set some global array to $array + some new value or whatever... 
+					}
+					Remove {}
+					Property "Cohort Property 1" {
+						Expect {}
+					}
+					Property "Cohort Property 2" {}
+				}
+			}
 		}
 	}
 
-	Facet "My Second Facet" { }
+	Facets {
+		Facet "My Second Facet" { }
+	}
 
 	Read-Facet "ANOTHER My First Facet" { } 
 	
@@ -55,6 +77,7 @@ function Read-Facet {
 		[Parameter(ValueFromPipelineByPropertyName)]
 		[Alias("FacetName", "PatternName")]
 		[string]$Name,
+		[string]$ParentName = $null,
 		[Alias("Targets")]
 		[object]$Target = $null,
 		[object]$Extract = $null,
@@ -79,7 +102,7 @@ function Read-Facet {
 		# Validate Operation:
 		[Proviso.Core.Definitions.FacetDefinition]$facet = $null;
 		try {
-			$facet = $global:PvCatalog.GetFacetByName($Name);
+			$facet = $global:PvCatalog.GetFacetDefinitionByName($Name, $ParentName);
 		}
 		catch {
 			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";

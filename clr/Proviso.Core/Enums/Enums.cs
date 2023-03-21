@@ -1,5 +1,19 @@
 ﻿namespace Proviso.Core
 {
+    public enum EnumeratorParentType
+    {
+        Enumerators,
+        Cohort
+    }
+
+    public enum FacetParentType
+    {
+        Facets, 
+        Patterns, 
+        Aspect, 
+        Surface
+    }
+
     public enum FacetType
     {
         Scalar,
@@ -13,6 +27,12 @@
         Low,
         Medium,
         High
+    }
+
+    public enum IteratorParentType
+    {
+        Iterators,
+        Pattern
     }
 
     public enum Membership
@@ -34,12 +54,15 @@
         Runbook
     }
 
-    public enum PropertyType
+    public enum PropertyParentType
     {
-        CohortProperty,
-        FacetProperty, 
-        PatternProperty
+        Properties, 
+        Cohorts,
+        Cohort, 
+        Facet, 
+        Pattern
     }
+
 
     public enum RunbookOrSurface
     {

@@ -1,9 +1,18 @@
 ﻿Set-StrictMode -Version 1.0;
 
+<#
+
+#>
+
 function Add {
 	[CmdletBinding()]
 	param (
-		[string]$Name = $null,
+		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Named')]
+		[Parameter(ParameterSetName = 'Anonymous')]
+		[Alias('Name')]
+		[string]$AddName = $null,
+		[Parameter(Mandatory, Position = 1, ParameterSetName = 'Named')]
+		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Anonymous')]
 		[ScriptBlock]$AddBlock
 	);
 	
@@ -15,56 +24,66 @@ function Add {
 		[string]$parentBlockType = $global:PvLexicon.GetCurrentBlockType();
 		[string]$parentBlockName = $global:PvLexicon.GetCurrentBlockName();
 		
-		Enter-Block ($MyInvocation.MyCommand) -Name (Collapse-Arguments -Arg1 $Name -Arg2 $parentBlockName -IgnoreEmptyStrings) -Verbose:$xVerbose -Debug:$xDebug;
+		# TODO: bug/error here... this shouldn't be passing in the name of the parent... 
+		Enter-Block ($MyInvocation.MyCommand) -Name (Collapse-Arguments -Arg1 $AddName -Arg2 $parentBlockName -IgnoreEmptyStrings) -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	process {
-		
 		Write-Verbose "Processing Add Block for [$parentBlockType]: [$parentBlockName].";
 		
+		$addType = "Enumerator";
 		switch ($parentBlockType) {
 			"Pattern" {
 				Write-Debug "				Processing Add Block for Pattern: [$parentBlockName].";
-				$addDefinition = New-Object Proviso.Core.Definitions.IteratorAddDefinition($Name, $AddBlock);
+				$addDefinition = New-Object Proviso.Core.Definitions.IteratorAddDefinition($AddName, $AddBlock);
+				$addType = "Iterator";
 			}
 			"Cohort" {
 				Write-Debug "				Processing Add Block for Cohort: [$parentBlockName].";
-				$addDefinition = New-Object Proviso.Core.Definitions.EnumeratorAddDefinition($Name, $AddBlock);
+				$addDefinition = New-Object Proviso.Core.Definitions.EnumeratorAddDefinition($AddName, $AddBlock);
 			}
 			"Iterators" {
-				if (Is-Empty $Name) {
+				if (Is-Empty $AddName) {
 					throw "Syntax Error. Globally defined Add blocks for Iterators MUST have a -Name (and the -Name must match the -Name for the associated Iterator).";
 				}
 				
-				Write-Debug "				Processing Add Block for Global Iterator: [$Name].";
-				$addDefinition = New-Object Proviso.Core.Definitions.IteratorAddDefinition($Name, $AddBlock);
+				Write-Debug "				Processing Add Block for Global Iterator: [$AddName].";
+				$addDefinition = New-Object Proviso.Core.Definitions.IteratorAddDefinition($AddName, $AddBlock);
+				$addType = "Iterator";
 			}
 			"Enumerators" {
-				if (Is-Empty $Name) {
+				if (Is-Empty $AddName) {
 					throw "Syntax Error. Globally defined Add blocks for Enumerators MUST have a -Name (and the -Name must match the -Name for the associated Enumerator).";
 				}
 				
-				Write-Debug "				Processing Add Block for Global Enumerator [$Name]";
-				$addDefinition = New-Object Proviso.Core.Definitions.EnumeratorAddDefinition($Name, $AddBlock);
+				Write-Debug "				Processing Add Block for Global Enumerator [$AddName]";
+				$addDefinition = New-Object Proviso.Core.Definitions.EnumeratorAddDefinition($AddName, $AddBlock);
 			}
 			default {
-				throw 
+				throw "Proviso Framework Error. Invalid Parent-Block-Type for Enumerate|Enumerator.";
 			}
 		}
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetAddDefinition($addDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
+			if ("Enumerator" -eq $addType) {
+				Bind-EnumeratorAdd -Add $addDefinition -Verbose:$xVerbose -Debug:$xDebug;
+			}
+			else {
+				Bind-IteratorAdd -Add $addDefinition -Verbose:$xVerbose -Debug:$xDebug;
+			}
+			
+			[bool]$replaced = $global:PvCatalog.StoreAddDefinition($addDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Add block replaced.";
 			}
 		}
 		catch {
-			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 	};
 	
 	end {
-		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
+		Exit-Block $MyInvocation.MyCommand -Name $AddName -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

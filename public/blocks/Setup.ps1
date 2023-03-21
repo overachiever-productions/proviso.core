@@ -27,13 +27,13 @@ function Setup {
 			switch ($parentBlockType) {
 				"Runbook" {
 					$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Runbook, $type, $parentBlockName);
-					$runbook.Setup = $definition;
+					$currentRunbook.Setup = $definition;
 					
 					Write-Debug "		Added Setup{ } to Runbook: [$parentBlockName].";
 				}
 				"Surface" {
 					$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Surface, $type, $parentBlockName);
-					$surface.Setup = $definition;
+					$currentSurface.Setup = $definition;
 					
 					Write-Debug "		Added Setup{ } to Surface: [$parentBlockName].";
 				}

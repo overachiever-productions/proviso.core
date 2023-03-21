@@ -27,10 +27,8 @@ function Enumerate {
 	};
 	
 	process {
-		$definition = New-Object Proviso.Core.Definitions.EnumeratorDefinition($Name, $isGlobal);
-		
-		$definition.CohortName = $global:PvLexicon.GetCurrentCohort();
-		$definition.FacetName = $global:PvLexicon.GetCurrentFacet();
+		$parentName = $global:PvLexicon.GetParentBlockName();
+		$definition = New-Object Proviso.Core.Definitions.EnumeratorDefinition($Name, $isGlobal, [Proviso.Core.EnumeratorParentType]"Cohort" ,$parentName);
 		
 		if (Has-Value $OrderBy) {
 			$definition.OrderBy = $OrderBy;
@@ -39,7 +37,10 @@ function Enumerate {
 		$definition.Enumerate = $EnumerateBlock;
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetEnumeratorDefinition($definition, (Allow-DefinitionReplacement));
+			Bind-Enumerate -Enumerate $definition -Verbose:$xVerbose -Debug:$xDebug;
+			
+			# TODO: only goes in catalog if there's a name, right?
+			[bool]$replaced = $global:PvCatalog.StoreEnumeratorDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				$replacedName = "for Cohort [$Name]";
@@ -50,7 +51,7 @@ function Enumerate {
 			}
 		}
 		catch {
-			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 	};
 	
