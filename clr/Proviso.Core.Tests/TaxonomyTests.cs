@@ -11,11 +11,25 @@ namespace Proviso.Core.Tests;
 public class TaxonomyTests
 {
     [Test]
-    public void Facet_Can_StandAlone()
+    public void Facet_Can_Not_StandAlone()
     {
         var sut = Lexicon.Instance;
 
-        sut.EnterBlock("Facet", "A Facet");
+        Assert.That(
+            () => sut.EnterBlock("Facet", "A Facet"),
+            Throws.TypeOf<InvalidOperationException>()
+        );
+    }
+
+    [Test]
+    public void StandAlone_Facet_Exception_Explains_Why()
+    {
+        var sut = Lexicon.Instance;
+
+        var ex = Assert.Throws<InvalidOperationException>(
+            () => sut.EnterBlock("Facet", "A Facet"));
+
+        StringAssert.Contains("can NOT be a stand-alone", ex.Message);
     }
 
     [Test]

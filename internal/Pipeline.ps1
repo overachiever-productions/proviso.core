@@ -40,7 +40,7 @@ function Execute-Pipeline {
 		try {
 			switch ($OperationType) {
 				"Facet" {
-					[Proviso.Core.Definitions.FacetDefinition]$targetFacet = $Catalog.GetFacetByName($Name);
+					[Proviso.Core.Definitions.FacetDefinition]$targetFacet = $Catalog.GetFacetDefinitionByName($Name);
 					if ($null -eq $targetFacet) {
 						throw "Could not find [Facet] with name: [$Name].";
 					}
@@ -49,7 +49,7 @@ function Execute-Pipeline {
 					Write-Debug "		Processing Pipeline: Target is Facet with name: [$Name].";
 				}
 				"Surface" {
-					[Proviso.Core.Definitions.SurfaceDefinition]$targetSurface = $Catalog.GetSurface($Name);
+					[Proviso.Core.Definitions.SurfaceDefinition]$targetSurface = $Catalog.GetSurfaceDefinition($Name);
 					
 					if ($null -eq $targetSurface) {
 						throw "Could not find [Surface] with name: [$Name].";
@@ -59,7 +59,7 @@ function Execute-Pipeline {
 					Write-Debug "		Processing Pipeline: Target is Surface with name: [$Name]";
 				}
 				"Runbook" {
-					[Proviso.Core.Definitions.RunbookDefinition]$targetRunbook = $Catalog.GetRunbook($Name);
+					[Proviso.Core.Definitions.RunbookDefinition]$targetRunbook = $Catalog.GetRunbookDefinition($Name);
 					
 					if ($null -eq $targetSurface) {
 						throw "Could not find [Runbook] with name: [$Name].";
@@ -111,7 +111,7 @@ function Execute-Pipeline {
 			switch ($OperationType) {
 				"Runbook" {
 					Write-Debug "			Processing Pipeline: Validation and Binding for Runbook: [$Name].";
-					[Proviso.Core.Definitions.RunbookDefinition]$runbookDef = $Catalog.GetRunbook($Name);
+					[Proviso.Core.Definitions.RunbookDefinition]$runbookDef = $Catalog.GetRunbookDefinition($Name);
 					if ($null -eq $runbookDef) {
 						throw "Proviso Framework Error. Runbook [$Name] not found in PVCatalog.";
 					}
@@ -123,7 +123,7 @@ function Execute-Pipeline {
 					}
 					
 					foreach ($implementDefinition in $runbookDef.Implements) {
-						$surfaceDefinition = $Catalog.GetSurface($implementDefinition.SurfaceName);
+						$surfaceDefinition = $Catalog.GetSurfaceDefinition($implementDefinition.SurfaceName);
 						if ($null -eq $surfaceDefinition) {
 							throw "Proviso Framework Error. A Surface with the name of [$($implementDefinition.SurfaceName)] could not be found in the PvCatalog.";
 						}
@@ -144,7 +144,7 @@ function Execute-Pipeline {
 				}
 				"Facet" {
 					Write-Debug "			Processing Pipeline: Validation and Binding for Facet: [$Name].";
-					[Proviso.Core.Definitions.FacetDefinition]$facetDef = $Catalog.GetFacetByName($Name);
+					[Proviso.Core.Definitions.FacetDefinition]$facetDef = $Catalog.GetFacetDefinitionByName($Name);
 					if ($null -eq $facetDef) {
 						throw "Proviso Framework Error. Facet [$Name] not found in PVCatalog.";
 					}

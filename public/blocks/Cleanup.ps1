@@ -27,13 +27,13 @@ function Cleanup {
 			switch ($parentBlockType) {
 				"Runbook" {
 					$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Runbook, $type, $parentBlockName);
-					$runbook.Cleanup = $definition;
+					$currentRunbook.Cleanup = $definition;
 					
 					Write-Debug "		Added Cleanup{ } to Runbook: [$parentBlockName].";
 				}
 				"Surface" {
 					$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Surface, $type, $parentBlockName);
-					$surface.Cleanup = $definition;
+					$currentSurface.Cleanup = $definition;
 					
 					Write-Debug "		Added Cleanup{ } to Surface: [$parentBlockName].";
 				}

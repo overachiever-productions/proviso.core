@@ -23,10 +23,12 @@ function Remove {
 	process {
 		Write-Verbose "Processing Remove Block for [$parentBlockType]: [$parentBlockName].";
 		
+		$removeType = "Enumerator";
 		switch ($parentBlockType) {
 			"Pattern" {
 				Write-Debug "				Processing Remove Block for Pattern: [$parentBlockName].";
 				$removeDefinition = New-Object Proviso.Core.Definitions.IteratorRemoveDefinition($Name, $Impact, $RemoveBlock);
+				$removeType = "Iterator";
 			}
 			"Cohort" {
 				Write-Debug "				Processing Remove Block for Cohort: [$parentBlockName].";
@@ -39,6 +41,7 @@ function Remove {
 				
 				Write-Debug "				Processing Remove Block for Global Iterator: [$Name].";
 				$removeDefinition = New-Object Proviso.Core.Definitions.IteratorRemoveDefinition($Name, $Impact, $RemoveBlock);
+				$removeType = "Iterator";
 			}
 			"Enumerators" {
 				if (Is-Empty $Name) {
@@ -54,14 +57,22 @@ function Remove {
 		}
 		
 		try {
-			[bool]$replaced = $global:PvCatalog.SetRemoveDefinition($removeDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
+			if ("Enumerator" -eq $removeType) {
+				Bind-EnumeratorRemove -Remove $removeDefinition -Verbose:$xVerbose -Debug:$xDebug;
+			}
+			else {
+				Bind-IteratorRemove -Remove $removeDefinition -Verbose:$xVerbose -Debug:$xDebug;
+			}
+			
+			# TODO: only goes in catalog if there's a name, right?
+			[bool]$replaced = $global:PvCatalog.StoreRemoveDefinition($removeDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Remove block replaced.";
 			}
 		}
 		catch {
-			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 	};
 	

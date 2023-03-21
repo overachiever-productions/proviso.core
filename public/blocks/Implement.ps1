@@ -53,7 +53,7 @@ function Implement {
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		try{
-			$runbook.AddFacetImplementationReference($definition);
+			$currentRunbook.AddFacetImplementationReference($definition);
 		}
 		catch {
 			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";

@@ -8,7 +8,7 @@ public class FakeEnumeratorDefinition : EnumeratorDefinition
     public new DateTime Created { get; internal set; }
 
     public FakeEnumeratorDefinition(string name, bool isGlobal) 
-        : base(name, isGlobal)
+        : base(name, isGlobal, EnumeratorParentType.Cohort, "Faked_Cohort")
     {
     }
 }
