@@ -2,6 +2,7 @@
 
 function Test-Facet {
 	[CmdletBinding()]
+	[Alias('Compare-Facet')]
 	param (
 
 	);

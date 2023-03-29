@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace Proviso.Core
 {
+    // REFACTOR: BuildContext + Includes all of the 'build stuff' currently in the Catalog.
+
+
     // LEXICON: The vocabulary of a person, language, or branch of knowledge.
     // TAXONOMY: A classification; especially, a classification in a hierarchical system.
     //      SEEMS like I've inverted Lexicon and Taxonomy (i.e.,, my current 'taxonomy'/list-of-block-types (vocabulary) should become the lexicon... 
