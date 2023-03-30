@@ -21,8 +21,8 @@ function Add {
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		
 		# NOTE: a BIT confusing to call 'current'; but we HAVEN'T YET 'entered' this Add block yet.
-		[string]$parentBlockType = $global:PvLexicon.GetCurrentBlockType();
-		[string]$parentBlockName = $global:PvLexicon.GetCurrentBlockName();
+		[string]$parentBlockType = $global:PvOrthography.GetCurrentBlockType();
+		[string]$parentBlockName = $global:PvOrthography.GetCurrentBlockName();
 		
 		# TODO: bug/error here... this shouldn't be passing in the name of the parent... 
 		Enter-Block ($MyInvocation.MyCommand) -Name (Collapse-Arguments -Arg1 $AddName -Arg2 $parentBlockName -IgnoreEmptyStrings) -Verbose:$xVerbose -Debug:$xDebug;
@@ -72,7 +72,7 @@ function Add {
 				Bind-IteratorAdd -Add $addDefinition -Verbose:$xVerbose -Debug:$xDebug;
 			}
 			
-			[bool]$replaced = $global:PvCatalog.StoreAddDefinition($addDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvOrthography.StoreAddDefinition($addDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Add block replaced.";

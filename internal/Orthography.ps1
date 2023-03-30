@@ -1,5 +1,78 @@
 ﻿Set-StrictMode -Version 1.0;
 
+<#
+	Runbook
+		[Setup]
+		[Assertions]
+			[Assert]
+		Operations
+			Implement 
+			Implement
+			Implement
+		[Cleanup]
+
+	Surface
+		[Setup]
+		[Assertions]
+			[Assert]
+		[Aspect]
+			Facet | Pattern | [Import] -Pattern|Facet
+				[Iterate] (for Pattern)
+				[Add]	(Pattern)  - Install?
+				[Remove] (Pattern) - Uninstall?
+				Property | Cohort 
+					Enumerate
+					Add
+					Remove
+					Property (of Cohort - and... recurses)
+					[Inclusion] (of Property | Cohort)
+					Expect
+					Extract
+					[Compare]
+					Configure
+
+		[Cleanup]
+#>
+
+
+$global:PvOrthography = [Proviso.Core.Orthography]::Instance;
+
+function Enter-Block {
+	[CmdletBinding()]
+	param (
+		[Parameter(Mandatory)]
+		[string]$Type,
+		[string]$Name = $null
+	);
+	
+	try {
+		$PvOrthography.EnterBlock($Type, $Name);
+	}
+	catch {
+		throw "Proviso Exception: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+	}
+	
+	Write-Debug "$(Get-DebugIndent)Entered $($Type): [$Name]";
+}
+
+function Exit-Block {
+	[CmdletBinding()]
+	param (
+		[Parameter(Mandatory)]
+		[string]$Type,
+		[string]$Name = $null
+	);
+	
+	Write-Debug "$(Get-DebugIndent) Exiting $($Type): [$Name]";
+	
+	try {
+		$PvOrthography.ExitBlock($Type, $Name);
+	}
+	catch {
+		throw "Proviso Exception: $($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
+	}
+}
+
 function Bind-Property {
 	[CmdletBinding()]
 	param (
@@ -12,17 +85,19 @@ function Bind-Property {
 				Write-Debug "$(Get-DebugIndent)	NOT Binding Property: [$($Property.Name)] to parent, because parent is a Properties wrapper.";
 			}
 			"Cohort" {
-				$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
-				$parent = $global:PvCatalog.GetCohortDefinition($Property.ParentName, $grandParentName);
+				$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+				$parent = $global:PvOrthography.GetCohortDefinition($Property.ParentName, $grandParentName);
 				
 				Write-Debug "$(Get-DebugIndent)	Binding Property [$($Property.Name)] to parent Cohort, named: [$($Property.ParentName)], with grandparent named: [$grandParentName].";
 				
 				$parent.AddChildProperty($Property);
 			}
-			{ $_ -in @("Facet", "Pattern") } {
-				$parentType = $global:PvLexicon.GetParentBlockType();
-				$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
-				$parent = $global:PvCatalog.GetFacetDefinitionByName($Property.ParentName, $grandParentName);
+			{
+				$_ -in @("Facet", "Pattern")
+			} {
+				$parentType = $global:PvOrthography.GetParentBlockType();
+				$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+				$parent = $global:PvOrthography.GetFacetDefinitionByName($Property.ParentName, $grandParentName);
 				
 				Write-Debug "$(Get-DebugIndent)	Binding Property [$($Property.Name)] to Parent [$parentType], named: [$($Property.ParentName)], with grandparent named: [$grandParentName].";
 				
@@ -46,10 +121,12 @@ function Bind-Cohort {
 			"Cohorts" {
 				Write-Debug "$(Get-DebugIndent)	NOT Binding Cohort: [$($Cohort.Name)] to parent, because parent is a Cohorts wrapper.";
 			}
-			{ $_ -in @("Facet", "Pattern") } {
-				$parentType = $global:PvLexicon.GetParentBlockType();
-				$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
-				$parent = $global:PvCatalog.GetFacetDefinitionByName($Cohort.ParentName, $grandParentName);
+			{
+				$_ -in @("Facet", "Pattern")
+			} {
+				$parentType = $global:PvOrthography.GetParentBlockType();
+				$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+				$parent = $global:PvOrthography.GetFacetDefinitionByName($Cohort.ParentName, $grandParentName);
 				
 				Write-Debug "$(Get-DebugIndent)	Binding Cohort [$($Cohort.Name)] to Parent of Type [$parentType], named: [$($Cohort.ParentName)], with a grandparent named: [$grandParentName].";
 				
@@ -69,8 +146,8 @@ function Bind-Enumerate {
 	);
 	
 	process {
-		$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
-		$cohort = $global:PvCatalog.GetCohortDefinition($Enumerate.ParentName, $grandParentName);
+		$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+		$cohort = $global:PvOrthography.GetCohortDefinition($Enumerate.ParentName, $grandParentName);
 		
 		Write-Debug "$(Get-DebugIndent)	Binding Enumrate to Cohort: [$($Enumerate.ParentName)].";
 		
@@ -85,12 +162,12 @@ function Bind-EnumeratorAdd {
 	);
 	
 	process {
-		$parentBlockType = $global:PvLexicon.GetParentBlockType();
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
 		
 		if ("Cohort" -eq $parentBlockType) {
-			$parentName = $global:PvLexicon.GetParentBlockName();
-			$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
-			$parent = $global:PvCatalog.GetCohortDefinition($parentName, $grandParentName);
+			$parentName = $global:PvOrthography.GetParentBlockName();
+			$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+			$parent = $global:PvOrthography.GetCohortDefinition($parentName, $grandParentName);
 			
 			Write-Debug "$(Get-DebugIndent)	Binding Enumerate-Add to Cohort: [$($parentName)].";
 			
@@ -106,12 +183,12 @@ function Bind-EnumeratorRemove {
 	);
 	
 	process {
-		$parentBlockType = $global:PvLexicon.GetParentBlockType();
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
 		
 		if ("Cohort" -eq $parentBlockType) {
-			$parentName = $global:PvLexicon.GetParentBlockName();
-			$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
-			$parent = $global:PvCatalog.GetCohortDefinition($parentName, $grandParentName);
+			$parentName = $global:PvOrthography.GetParentBlockName();
+			$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+			$parent = $global:PvOrthography.GetCohortDefinition($parentName, $grandParentName);
 			
 			Write-Debug "$(Get-DebugIndent)	Binding Enumerate-Remove to Cohort: [$($parentName)].";
 			
@@ -127,8 +204,8 @@ function Bind-Iterate {
 	);
 	
 	process {
-		$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
-		$pattern = $global:PvCatalog.GetFacetDefinitionByName($Iterate.ParentName, $grandParentName);
+		$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+		$pattern = $global:PvOrthography.GetFacetDefinitionByName($Iterate.ParentName, $grandParentName);
 		
 		Write-Debug "$(Get-DebugIndent)	Binding Iterate to Pattern: [$($pattern.Name)].";
 		
@@ -143,12 +220,12 @@ function Bind-IteratorAdd {
 	);
 	
 	process {
-		$parentBlockType = $global:PvLexicon.GetParentBlockType();
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
 		
 		if ("Pattern" -eq $parentBlockType) {
-			$parentName = $global:PvLexicon.GetParentBlockName();
-			$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
-			$parent = $global:PvCatalog.GetFacetDefinitionByName($parentName, $grandParentName);
+			$parentName = $global:PvOrthography.GetParentBlockName();
+			$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+			$parent = $global:PvOrthography.GetFacetDefinitionByName($parentName, $grandParentName);
 			
 			Write-Debug "$(Get-DebugIndent)		Binding Iterator-Add to parent Pattern: [$parentName] -> GrandParent: [$grandParentName]";
 			
@@ -164,11 +241,11 @@ function Bind-IteratorRemove {
 	);
 	
 	process {
-		$parentBlockType = $global:PvLexicon.GetParentBlockType();
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
 		if ("Pattern" -eq $parentBlockType) {
-			$parentName = $global:PvLexicon.GetParentBlockName();
-			$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
-			$parent = $global:PvCatalog.GetFacetDefinitionByName($parentName, $grandParentName);
+			$parentName = $global:PvOrthography.GetParentBlockName();
+			$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+			$parent = $global:PvOrthography.GetFacetDefinitionByName($parentName, $grandParentName);
 			
 			Write-Debug "$(Get-DebugIndent)		Binding Iterator-Remove to parent Pattern: [$parentName] -> GrandParent: [$grandParentName]";
 			
@@ -184,7 +261,7 @@ function Bind-Facet {
 	);
 	
 	process {
-		$parentBlockType = $global:PvLexicon.GetParentBlockType();
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
 		
 		# TODO: Assess debug text for $facetType of Import... Or... is that done at discovery time? 
 		
@@ -197,7 +274,7 @@ function Bind-Facet {
 				$currentAspect.AddFacet($Facet);
 			}
 			"Surface" {
-				$surfaceName = $global:PvLexicon.GetParentBlockName();
+				$surfaceName = $global:PvOrthography.GetParentBlockName();
 				
 				Write-Debug "$(Get-DebugIndent)	Binding $($currentFacetType): [$($Facet.Name)] to Surface: [$surfaceName].";
 				$currentSurface.AddFacet($Facet);
@@ -213,8 +290,8 @@ function Bind-Aspect {
 	);
 	
 	process {
-		$surfaceName = $global:PvLexicon.GetParentBlockName();
-		$surface = $global:PvCatalog.GetSurfaceDefinition($surfaceName);
+		$surfaceName = $global:PvOrthography.GetParentBlockName();
+		$surface = $global:PvOrthography.GetSurfaceDefinition($surfaceName);
 		
 		Write-Debug "$(Get-DebugIndent)		Binding Aspect: [$($Aspect.Name)] to Surface: [$($surfaceName)].";
 		$surface.AddAspect($Aspect);
@@ -228,16 +305,16 @@ function Bind-Expect {
 	);
 	
 	process {
-		$parentBlockType = $global:PvLexicon.GetParentBlockType();
-		$parentName = $global:PvLexicon.GetParentBlockName();
-		$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
+		$parentName = $global:PvOrthography.GetParentBlockName();
+		$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
 		
 		switch ($parentBlockType) {
 			"Inclusion" {
 				throw "Inclusion BINDING not yet implemented";
 			}
 			"Property" {
-				$parentProperty = $global:PvCatalog.GetPropertyDefinition($parentName, $grandParentName);
+				$parentProperty = $global:PvOrthography.GetPropertyDefinition($parentName, $grandParentName);
 				
 				Write-Debug "$(Get-DebugIndent)		Binding Expect to Property: [$($parentName)].";
 				
@@ -257,16 +334,16 @@ function Bind-Extract {
 	);
 	
 	process {
-		$parentBlockType = $global:PvLexicon.GetParentBlockType();
-		$parentName = $global:PvLexicon.GetParentBlockName();
-		$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
+		$parentName = $global:PvOrthography.GetParentBlockName();
+		$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
 		
 		switch ($parentBlockType) {
 			"Inclusion" {
 				throw "Inclusiong BINDING not yet implemented";
 			}
 			"Property" {
-				$parentProperty = $global:PvCatalog.GetPropertyDefinition($parentName, $grandParentName);
+				$parentProperty = $global:PvOrthography.GetPropertyDefinition($parentName, $grandParentName);
 				
 				Write-Debug "$(Get-DebugIndent)		Binding Extract to Property: [$($parentName)].";
 				$parentProperty.Extract = $ExtractBlock;
@@ -285,16 +362,16 @@ function Bind-Compare {
 	);
 	
 	process {
-		$parentBlockType = $global:PvLexicon.GetParentBlockType();
-		$parentName = $global:PvLexicon.GetParentBlockName();
-		$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
+		$parentName = $global:PvOrthography.GetParentBlockName();
+		$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
 		
 		switch ($parentBlockType) {
 			"Inclusion" {
 				throw "Inclusiong BINDING not yet implemented";
 			}
 			"Property" {
-				$parentProperty = $global:PvCatalog.GetPropertyDefinition($parentName, $grandParentName);
+				$parentProperty = $global:PvOrthography.GetPropertyDefinition($parentName, $grandParentName);
 				
 				Write-Debug "$(Get-DebugIndent)		Binding Compare to Property: [$($parentName)].";
 				$parentProperty.Compare = $CompareBlock;
@@ -313,16 +390,16 @@ function Bind-Configure {
 	);
 	
 	process {
-		$parentBlockType = $global:PvLexicon.GetParentBlockType();
-		$parentName = $global:PvLexicon.GetParentBlockName();
-		$grandParentName = $global:PvLexicon.GetGrandParentBlockName();
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
+		$parentName = $global:PvOrthography.GetParentBlockName();
+		$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
 		
 		switch ($parentBlockType) {
 			"Inclusion" {
 				throw "Inclusiong BINDING not yet implemented";
 			}
 			"Property" {
-				$parentProperty = $global:PvCatalog.GetPropertyDefinition($parentName, $grandParentName);
+				$parentProperty = $global:PvOrthography.GetPropertyDefinition($parentName, $grandParentName);
 				
 				Write-Debug "$(Get-DebugIndent)		Binding Configure to Property: [$($parentName)].";
 				$parentProperty.Configure = $ConfigureBlock;
@@ -334,8 +411,32 @@ function Bind-Configure {
 	}
 }
 
+filter Get-CurrentBlockType {
+	return $PvOrthography.GetCurrentBlockType();
+}
+
+filter Get-ParentBlockType {
+	return $PvOrthography.GetParentBlockType();
+}
+
+filter Get-ParentBlockName {
+	return $PvOrthography.GetParentBlockName();
+}
+
+filter Get-GrandParentBlockType {
+	return $PvOrthography.GetGrandParentBlockType();
+}
+
+filter Get-GrandParentBlockName {
+	return $PvOrthography.GetGrandParentBlockName();
+}
+
+filter Get-DebugIndent {
+	return "`t" * $PvOrthography.CurrentDepth;
+}
+
 filter Get-FacetParentType {
-	$ParentBlockType = $global:PvLexicon.GetParentBlockType();
+	$ParentBlockType = $global:PvOrthography.GetParentBlockType();
 	try {
 		return [Proviso.Core.FacetParentType]$ParentBlockType;
 	}

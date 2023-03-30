@@ -14,8 +14,8 @@ function Remove {
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		
 		# NOTE: a BIT confusing to call 'current' but we HAVEN'T YET 'entered' this Remove block yet.
-		[string]$parentBlockType = $global:PvLexicon.GetCurrentBlockType();
-		[string]$parentBlockName = $global:PvLexicon.GetCurrentBlockName();
+		[string]$parentBlockType = $global:PvOrthography.GetCurrentBlockType();
+		[string]$parentBlockName = $global:PvOrthography.GetCurrentBlockName();
 		
 		Enter-Block ($MyInvocation.MyCommand) -Name (Collapse-Arguments -Arg1 $Name -Arg2 $parentBlockName -IgnoreEmptyStrings) -Verbose:$xVerbose -Debug:$xDebug;
 	};
@@ -65,7 +65,7 @@ function Remove {
 			}
 			
 			# TODO: only goes in catalog if there's a name, right?
-			[bool]$replaced = $global:PvCatalog.StoreRemoveDefinition($removeDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvOrthography.StoreRemoveDefinition($removeDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Remove block replaced.";

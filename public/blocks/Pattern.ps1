@@ -42,7 +42,7 @@ function Pattern {
 	};
 	
 	process {
-		$parentName = $global:PvLexicon.GetParentBlockName();
+		$parentName = $global:PvOrthography.GetParentBlockName();
 		[Proviso.Core.FacetParentType]$parentType = Get-FacetParentType -FacetType ([Proviso.Core.FacetType]"Pattern");
 		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, [Proviso.Core.FacetType]"Pattern", $parentType, $parentName);
 		
@@ -62,7 +62,7 @@ function Pattern {
 		try {
 			Bind-Facet -Facet $definition -Verbose:$xVerbose -Debug:$xDebug;
 			
-			[bool]$replaced = $global:PvCatalog.StoreFacetDefinition($definition, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvOrthography.StoreFacetDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Facet named [$Name] was replaced.";

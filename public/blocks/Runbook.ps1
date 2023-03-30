@@ -50,7 +50,7 @@ function Runbook {
 		$currentRunbook = $definition;
 		try {
 			Write-Debug "	Adding Runbook [$Name] to Catalog.";
-			[bool]$replaced = $global:PvCatalog.StoreRunbookDefinition($definition, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvOrthography.StoreRunbookDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Runbook [$($Name)] was replaced.";

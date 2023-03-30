@@ -9,9 +9,10 @@ filter Import-Types {
 	$classFiles = @(
 		"$ScriptRoot\clr\Proviso.Core\Enums\Enums.cs"
 		
+		"$ScriptRoot\clr\Proviso.Core\Orthography.cs"
+		
 		"$ScriptRoot\clr\Proviso.Core\Formatter.cs"
 		"$ScriptRoot\clr\Proviso.Core\Taxonomy.cs"
-		"$ScriptRoot\clr\Proviso.Core\Lexicon.cs"
 		"$ScriptRoot\clr\Proviso.Core\Catalog.cs"
 		
 		"$ScriptRoot\clr\Proviso.Core\Definitions\BlockDefinitions.cs"

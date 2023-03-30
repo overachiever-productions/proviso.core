@@ -28,8 +28,8 @@ function Property {
 	};
 	
 	process {
-		$parentBlockType = $global:PvLexicon.GetParentBlockType();
-		$parentName = $global:PvLexicon.GetParentBlockName();
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
+		$parentName = $global:PvOrthography.GetParentBlockName();
 		$definition = New-Object Proviso.Core.Definitions.PropertyDefinition($Name, [Proviso.Core.PropertyParentType]$parentBlockType, $parentName);
 		
 		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
@@ -39,7 +39,7 @@ function Property {
 		try {
 			Bind-Property -Property $definition -Verbose:$xVerbose -Debug:$xDebug;
 			
-			[bool]$replaced = $global:PvCatalog.StorePropertyDefinition($definition, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvOrthography.StorePropertyDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Property: [$Name] (within $($definition.PropertyParentType) [$($definition.ParentName)]) was replaced.";

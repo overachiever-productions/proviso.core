@@ -34,7 +34,7 @@ function Surface {
 		
 		$currentSurface = $definition;
 		try {
-			[bool]$replaced = $global:PvCatalog.StoreSurfaceDefinition($definition, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvOrthography.StoreSurfaceDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
 				Write-Verbose "Surface: [$Name] was replaced.";

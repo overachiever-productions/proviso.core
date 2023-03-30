@@ -28,8 +28,8 @@ function Cohort {
 	};
 	
 	process {
-		$parentBlockType = $global:PvLexicon.GetParentBlockType();
-		$parentName = $global:PvLexicon.GetParentBlockName();
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
+		$parentName = $global:PvOrthography.GetParentBlockName();
 		$definition = New-Object Proviso.Core.Definitions.CohortDefinition($Name, [Proviso.Core.PropertyParentType]$parentBlockType, $parentName);
 		
 		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
@@ -41,10 +41,10 @@ function Cohort {
 			Bind-Cohort -Cohort $definition -Verbose:$xVerbose -Debug:$xDebug;
 			
 			# TODO: verify that cohorts are stored in catalog via name + PARENT-name
-			[bool]$replaced = $global:PvCatalog.StoreCohortDefinition($definition, (Allow-DefinitionReplacement));
+			[bool]$replaced = $global:PvOrthography.StoreCohortDefinition($definition, (Allow-DefinitionReplacement));
 			
 			if ($replaced) {
-				Write-Verbose "Cohort named [$Name] (within Facet [$($global:PvLexicon.GetCurrentFacet())]) was replaced.";
+				Write-Verbose "Cohort named [$Name] (within Facet [$($global:PvOrthography.GetCurrentFacet())]) was replaced.";
 			}
 		}
 		catch {
