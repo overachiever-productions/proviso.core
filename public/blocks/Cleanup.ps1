@@ -19,23 +19,24 @@ function Cleanup {
 		$parentBlockType = Get-ParentBlockType;
 		$parentBlockName = Get-ParentBlockName;
 		
-		Write-Verbose "Compiling .Cleanup{} for $parentBlockType named [$parentBlockName].";
+		Write-Verbose "$(Get-DebugIndent)Compiling .Cleanup{} for $parentBlockType named [$parentBlockName].";
 		
 		$type = [Proviso.Core.SetupOrCleanup]::Cleanup;
 		
+		# TODO: move this logic into Bind-Cleanup (even though we won't be 'binding' to orthography... we're still binding to parent... and the logic should be encapsulated)
 		try {
 			switch ($parentBlockType) {
 				"Runbook" {
 					$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Runbook, $type, $parentBlockName);
 					$currentRunbook.Cleanup = $definition;
 					
-					Write-Debug "		Added Cleanup{ } to Runbook: [$parentBlockName].";
+					Write-Debug "$(Get-DebugIndent)	Added Cleanup{ } to Runbook: [$parentBlockName].";
 				}
 				"Surface" {
 					$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Surface, $type, $parentBlockName);
 					$currentSurface.Cleanup = $definition;
 					
-					Write-Debug "		Added Cleanup{ } to Surface: [$parentBlockName].";
+					Write-Debug "$(Get-DebugIndent)	Added Cleanup{ } to Surface: [$parentBlockName].";
 				}
 				default {
 					throw "Syntax Error. Cleanup can ONLY be a member of Runbooks and Surfaces.";

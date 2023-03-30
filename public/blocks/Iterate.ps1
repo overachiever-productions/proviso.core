@@ -35,27 +35,40 @@ function Iterate {
 		}
 		
 		$definition.Iterate = $IterateBlock;
-		
+		Bind-Iterate -Iterate $definition -Verbose:$xVerbose -Debug:$xDebug;
+	};
+	
+	end {
+		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
+	};
+}
+
+function Bind-Iterate {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Definitions.IteratorDefinition]$Iterate
+	);
+	
+	process {
 		try {
-			Bind-Iterate -Iterate $definition -Verbose:$xVerbose -Debug:$xDebug;
+			$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+			$pattern = $global:PvOrthography.GetFacetDefinitionByName($Iterate.ParentName, $grandParentName);
 			
-			# TODO: only goes in catalog if there's a name, right?
-			[bool]$replaced = $global:PvOrthography.StoreIteratorDefinition($definition, (Allow-DefinitionReplacement));
+			Write-Debug "$(Get-DebugIndent)	Binding Iterate to Pattern: [$($pattern.Name)].";
 			
-			if ($replaced) {
+			$pattern.AddIterate($Iterate);
+			
+			if ($global:PvOrthography.StoreIteratorDefinition($Iterate, (Allow-DefinitionReplacement))) {
 				$replacedName = "for Pattern [$Name]";
-				if ($isGlobal) {
+				# TODO: $isGlobal ACCIDENTALLY works here ... cuz it's declared in the previous (Iterate) scope... 
+				if ($isGlobal) { 
 					$replacedName = "named [$Name]";
 				}
 				Write-Verbose "Iterate block $replacedName was replaced.";
 			}
 		}
 		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+			throw "Exception in Bind-Iterate: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
-	};
-	
-	end {
-		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
-	};
+	}
 }

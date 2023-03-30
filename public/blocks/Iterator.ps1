@@ -28,20 +28,30 @@ function Iterator {
 		}
 		
 		$definition.Iterate = $IteratorBlock;
-		
-		try {
-			[bool]$replaced = $global:PvOrthography.StoreIteratorDefinition($definition, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "Iterator block named [$Name] was replaced.";
-			}
-		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
+		Bind-Iterator -Iterator $definition -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
+}
+
+function Bind-Iterator {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Definitions.IteratorDefinition]$Iterator
+	);
+	
+	process {
+		try {
+			# NOTE: Iterators do NOT get bound (at compile time) to their parent (they'll get bound during discovery).
+			# 	TODO: verify the above... 
+			if ($global:PvOrthography.StoreIteratorDefinition($Iterator, (Allow-DefinitionReplacement))) {
+				Write-Verbose "Iterator block: [$($Iterator.Name)] was replaced.";
+			}
+		}
+		catch {
+			throw "Exception in Bind-Iterator: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		}
+	}
 }

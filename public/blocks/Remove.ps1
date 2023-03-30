@@ -56,27 +56,77 @@ function Remove {
 			}
 		}
 		
-		try {
-			if ("Enumerator" -eq $removeType) {
-				Bind-EnumeratorRemove -Remove $removeDefinition -Verbose:$xVerbose -Debug:$xDebug;
-			}
-			else {
-				Bind-IteratorRemove -Remove $removeDefinition -Verbose:$xVerbose -Debug:$xDebug;
-			}
-			
-			# TODO: only goes in catalog if there's a name, right?
-			[bool]$replaced = $global:PvOrthography.StoreRemoveDefinition($removeDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "Remove block replaced.";
-			}
+		$removeDefinition.ScriptBlock = $RemoveBlock;
+		
+		if ("Enumerator" -eq $removeType) {
+			Bind-EnumeratorRemove -Remove $removeDefinition -Verbose:$xVerbose -Debug:$xDebug;
 		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		else {
+			Bind-IteratorRemove -Remove $removeDefinition -Verbose:$xVerbose -Debug:$xDebug;
 		}
 	};
 	
 	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
+}
+
+function Bind-EnumeratorRemove {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Definitions.EnumeratorRemoveDefinition]$Remove
+	);
+	
+	process {
+		try {
+			$parentBlockType = $global:PvOrthography.GetParentBlockType();
+			
+			if ("Cohort" -eq $parentBlockType) {
+				$parentName = $global:PvOrthography.GetParentBlockName();
+				$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+				$parent = $global:PvOrthography.GetCohortDefinition($parentName, $grandParentName);
+				
+				Write-Debug "$(Get-DebugIndent)	Binding Enumerate-Remove to Cohort: [$($parentName)].";
+				
+				$parent.Remove = $Remove;
+			}
+			
+			if ($global:PvOrthography.StoreRemoveDefinition($Remove, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement))) {
+				Write-Verbose "Remove block replaced.";
+			}
+		}
+		catch {
+			throw "Exception in Bind-EnumeratorRemove: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		}
+	}
+}
+
+function Bind-IteratorRemove {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Definitions.IteratorRemoveDefinition]$Remove
+	);
+	
+	process {
+		try {
+			$parentBlockType = $global:PvOrthography.GetParentBlockType();
+			if ("Pattern" -eq $parentBlockType) {
+				$parentName = $global:PvOrthography.GetParentBlockName();
+				$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+				$parent = $global:PvOrthography.GetFacetDefinitionByName($parentName, $grandParentName);
+				
+				Write-Debug "$(Get-DebugIndent)		Binding Iterator-Remove to parent Pattern: [$parentName] -> GrandParent: [$grandParentName]";
+				
+				$parent.AddIterateRemove($Remove);
+			}
+			
+			if ($global:PvOrthography.StoreRemoveDefinition($Remove, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement))) {
+				Write-Verbose "Remove block replaced.";
+			}
+		}
+		catch {
+			throw "Exception in Bind-IteratorRemove: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		}
+		
+	}
 }

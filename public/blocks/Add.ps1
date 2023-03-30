@@ -20,11 +20,11 @@ function Add {
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		
-		# NOTE: a BIT confusing to call 'current'; but we HAVEN'T YET 'entered' this Add block yet.
+		# NOTE: a BIT confusing to call 'current'; but we HAVEN'T 'entered' this Add block YET.
 		[string]$parentBlockType = $global:PvOrthography.GetCurrentBlockType();
 		[string]$parentBlockName = $global:PvOrthography.GetCurrentBlockName();
 		
-		# TODO: bug/error here... this shouldn't be passing in the name of the parent... 
+		# NOTE: For both iterate/enumerate blocks, if non-named (i.e., anonymous), we use the name of the PARENT block (hence the logic below for -Name)
 		Enter-Block ($MyInvocation.MyCommand) -Name (Collapse-Arguments -Arg1 $AddName -Arg2 $parentBlockName -IgnoreEmptyStrings) -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
@@ -60,30 +60,82 @@ function Add {
 				$addDefinition = New-Object Proviso.Core.Definitions.EnumeratorAddDefinition($AddName, $AddBlock);
 			}
 			default {
-				throw "Proviso Framework Error. Invalid Parent-Block-Type for Enumerate|Enumerator.";
+				throw "Proviso Framework Error. Invalid Parent for Add block.";
 			}
 		}
 		
-		try {
-			if ("Enumerator" -eq $addType) {
-				Bind-EnumeratorAdd -Add $addDefinition -Verbose:$xVerbose -Debug:$xDebug;
-			}
-			else {
-				Bind-IteratorAdd -Add $addDefinition -Verbose:$xVerbose -Debug:$xDebug;
-			}
-			
-			[bool]$replaced = $global:PvOrthography.StoreAddDefinition($addDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "Add block replaced.";
-			}
+		if ("Enumerator" -eq $addType) {
+			Bind-EnumeratorAdd -Add $addDefinition -Verbose:$xVerbose -Debug:$xDebug;
 		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		else {
+			Bind-IteratorAdd -Add $addDefinition -Verbose:$xVerbose -Debug:$xDebug;
 		}
 	};
 	
 	end {
 		Exit-Block $MyInvocation.MyCommand -Name $AddName -Verbose:$xVerbose -Debug:$xDebug;
 	};
+}
+
+function Bind-EnumeratorAdd {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Definitions.EnumeratorAddDefinition]$Add
+	);
+	
+	process {
+		try {
+			$parentBlockType = $global:PvOrthography.GetParentBlockType();
+			
+			if ("Cohort" -eq $parentBlockType) {
+				$parentName = $global:PvOrthography.GetParentBlockName();
+				$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+				$parent = $global:PvOrthography.GetCohortDefinition($parentName, $grandParentName);
+				
+				Write-Debug "$(Get-DebugIndent)	Binding Enumerate-Add to Cohort: [$($parentName)].";
+				
+				$parent.Add = $Add;
+			}
+			
+			# TODO: i don't need to pass in parentBlock name - should be able to GET that fro the the $Add itself, right? 
+			# TODO: ONLY store Adds if they're non-anonymous?
+			if ($global:PvOrthography.StoreAddDefinition($Add, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement))) {
+				Write-Verbose "Add block replaced.";
+			}
+			
+		}
+		catch {
+			throw "Exception in Bind-EnumeratorAdd: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		}
+	}
+}
+
+function Bind-IteratorAdd {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Definitions.IteratorAddDefinition]$Add
+	);
+	
+	process {
+		try {
+			$parentBlockType = $global:PvOrthography.GetParentBlockType();
+			
+			if ("Pattern" -eq $parentBlockType) {
+				$parentName = $global:PvOrthography.GetParentBlockName();
+				$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+				$parent = $global:PvOrthography.GetFacetDefinitionByName($parentName, $grandParentName);
+				
+				Write-Debug "$(Get-DebugIndent)		Binding Iterator-Add to parent Pattern: [$parentName] -> GrandParent: [$grandParentName]";
+				
+				$parent.AddIterateAdd($Add);
+				
+				if ($global:PvOrthography.StoreAddDefinition($Add, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement))) {
+					Write-Verbose "Add block replaced.";
+				}
+			}
+		}
+		catch {
+			throw "Exception in Bind-IteratorAdd: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		}
+	}
 }

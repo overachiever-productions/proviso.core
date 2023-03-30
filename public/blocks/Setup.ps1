@@ -23,6 +23,7 @@ function Setup {
 		
 		$type = [Proviso.Core.SetupOrCleanup]::Setup;
 		
+		# TODO: move this logic into Bind-Setup (even though we won't be 'binding' to orthography... we're still binding to parent... and the logic should be encapsulated)
 		try {
 			switch ($parentBlockType) {
 				"Runbook" {

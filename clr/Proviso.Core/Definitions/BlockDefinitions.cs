@@ -215,7 +215,7 @@ namespace Proviso.Core.Definitions
         public ModalityType Modality { get; private set; }
         public Visibility Visibility { get; private set; }
         public Impact Impact { get; private set; }
-        public ScriptBlock ScriptBlock { get; private set; }
+        public ScriptBlock ScriptBlock { get; set; }
 
         internal RemoveDefinitionBase(string name, Impact impact, ScriptBlock block, ModalityType modality)
         {

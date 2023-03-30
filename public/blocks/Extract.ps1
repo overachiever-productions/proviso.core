@@ -21,3 +21,28 @@ function Extract {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }
+
+function Bind-Extract {
+	[CmdletBinding()]
+	param (
+		[ScriptBlock]$ExtractBlock
+	);
+	
+	process {
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
+		$parentName = $global:PvOrthography.GetParentBlockName();
+		
+		switch ($parentBlockType) {
+			"Inclusion" {
+				throw "Inclusiong BINDING not yet implemented";
+			}
+			"Property" {
+				Write-Debug "$(Get-DebugIndent)		Binding Extract to Property: [$($parentName)].";
+				$currentProperty.Extract = $ExtractBlock;
+			}
+			default {
+				throw "Proviso Framework Error. Invalid Parent Block Type: [$($parentBlockType)] specified for Extract Block.";
+			}
+		}
+	}
+}

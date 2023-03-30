@@ -63,6 +63,7 @@ function Import {
 			# 	so, these (like Facets|Patterns) HAVE to be added to the parent surface. period. 
 			# 		Facets|Patterns ALSO have to be added to the $PvCatalog as well.
 			
+			throw "Import Logic NOT yet implemented.";
 			
 			Write-Verbose "Facet [$($definition.Name)] added to xxx.";
 		}

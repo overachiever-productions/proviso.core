@@ -95,20 +95,7 @@ function Facet {
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		$currentFacet = $definition;
-		try {
-			Bind-Facet -Facet $definition -Verbose:$xVerbose -Debug:$xDebug;
-			
-			[bool]$replaced = $global:PvOrthography.StoreFacetDefinition($definition, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "Facet: [$Name] was replaced.";
-			}
-			
-			Write-Verbose "Facet: [$($definition.Name)] added to PvCatalog.";
-		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
+		Bind-Facet -Facet $definition -Verbose:$xVerbose -Debug:$xDebug;
 		
 		& $FacetBlock;
 	};

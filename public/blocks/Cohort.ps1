@@ -37,24 +37,50 @@ function Cohort {
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		$currentCohort = $definition;
-		try {
-			Bind-Cohort -Cohort $definition -Verbose:$xVerbose -Debug:$xDebug;
+		Bind-Cohort -Cohort $definition -Verbose:$xVerbose -Debug:$xDebug;
 			
-			# TODO: verify that cohorts are stored in catalog via name + PARENT-name
-			[bool]$replaced = $global:PvOrthography.StoreCohortDefinition($definition, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "Cohort named [$Name] (within Facet [$($global:PvOrthography.GetCurrentFacet())]) was replaced.";
-			}
-		}
-		catch {
-			throw "$($_.Exception.InnerException.Message) `r`t$($_.ScriptStackTrace) ";
-		}
-		
 		& $CohortBlock;
 	};
 	
 	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
+}
+
+function Bind-Cohort {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Definitions.CohortDefinition]$Cohort
+	);
+	
+	process {
+		try {
+			switch ($Cohort.ParentType) {
+				"Cohorts" {
+					Write-Debug "$(Get-DebugIndent)	NOT Binding Cohort: [$($Cohort.Name)] to parent, because parent is a Cohorts wrapper.";
+				}
+				{
+					$_ -in @("Facet", "Pattern")
+				} {
+					$parentType = $global:PvOrthography.GetParentBlockType();
+					$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+					$parent = $global:PvOrthography.GetFacetDefinitionByName($Cohort.ParentName, $grandParentName);
+					
+					Write-Debug "$(Get-DebugIndent)	Binding Cohort [$($Cohort.Name)] to Parent of Type [$parentType], named: [$($Cohort.ParentName)], with a grandparent named: [$grandParentName].";
+					
+					$parent.AddChildCohort($Cohort);
+				}
+				default {
+					throw "Proviso Framework Error. Invalid Cohort Parent: [$($Cohort.ParentType)] specified.";
+				}
+			}
+			
+			if ($global:PvOrthography.StoreCohortDefinition($definition, (Allow-DefinitionReplacement))) {
+				Write-Verbose "Cohort named [$Name] (within Facet [$($global:PvOrthography.GetCurrentFacet())]) was replaced.";
+			}
+		}
+		catch {
+			throw "Exception in Bind-Cohort: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		}
+	}
 }

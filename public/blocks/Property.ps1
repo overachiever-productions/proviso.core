@@ -36,18 +36,8 @@ function Property {
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
-		try {
-			Bind-Property -Property $definition -Verbose:$xVerbose -Debug:$xDebug;
-			
-			[bool]$replaced = $global:PvOrthography.StorePropertyDefinition($definition, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "Property: [$Name] (within $($definition.PropertyParentType) [$($definition.ParentName)]) was replaced.";
-			}
-		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
+		$currentProperty = $definition;
+		Bind-Property -Property $definition -Verbose:$xVerbose -Debug:$xDebug;
 		
 		& $PropertyBlock;
 	};
@@ -55,4 +45,50 @@ function Property {
 	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
+}
+
+function Bind-Property {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Definitions.PropertyDefinition]$Property
+	);
+	
+	process {
+		try {
+			switch ($Property.ParentType) {
+				"Properties" {
+					Write-Debug "$(Get-DebugIndent)	NOT Binding Property: [$($Property.Name)] to parent, because parent is a Properties wrapper.";
+				}
+				"Cohort" {
+					$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+					$parent = $global:PvOrthography.GetCohortDefinition($Property.ParentName, $grandParentName);
+					
+					Write-Debug "$(Get-DebugIndent)	Binding Property [$($Property.Name)] to parent Cohort, named: [$($Property.ParentName)], with grandparent named: [$grandParentName].";
+					
+					$parent.AddChildProperty($Property);
+				}
+				{
+					$_ -in @("Facet", "Pattern")
+				} {
+					$parentType = $global:PvOrthography.GetParentBlockType();
+					$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+					$parent = $global:PvOrthography.GetFacetDefinitionByName($Property.ParentName, $grandParentName);
+					
+					Write-Debug "$(Get-DebugIndent)	Binding Property [$($Property.Name)] to Parent [$parentType], named: [$($Property.ParentName)], with grandparent named: [$grandParentName].";
+					
+					$parent.AddChildProperty($Property);
+				}
+				default {
+					throw "Proviso Framework Error. Invalid Property Parent: [$($Property.ParentType)] specified.";
+				}
+			}
+			
+			if ($global:PvOrthography.StorePropertyDefinition($Property, (Allow-DefinitionReplacement))) {
+				Write-Verbose "Property: [$Name] (within $($Property.PropertyParentType) [$($Property.ParentName)]) was replaced.";
+			}
+		}
+		catch {
+			throw "Exception in Bind-Property: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		}
+	}
 }

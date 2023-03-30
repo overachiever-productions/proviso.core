@@ -48,17 +48,7 @@ function Runbook {
 		[Proviso.Core.Definitions.RunbookDefinition]$definition = New-Object Proviso.Core.Definitions.RunbookDefinition($Name);
 		
 		$currentRunbook = $definition;
-		try {
-			Write-Debug "	Adding Runbook [$Name] to Catalog.";
-			[bool]$replaced = $global:PvOrthography.StoreRunbookDefinition($definition, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "Runbook [$($Name)] was replaced.";
-			}
-		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
+		Store-Runbook -Runbook $definition -Verbose:$xVerbose -Debug:$xDebug;
 		
 		& $RunbookBlock;
 	};
@@ -66,4 +56,23 @@ function Runbook {
 	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
+}
+
+function Store-Runbook {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Definitions.RunbookDefinition]$Runbook
+	);
+	
+	process {
+		try {
+			Write-Debug "	Adding Runbook [$($Runbook.Name)] to Catalog.";
+			if ($global:PvOrthography.StoreRunbookDefinition($Runbook, (Allow-DefinitionReplacement))) {
+				Write-Verbose "Runbook [$($Runbook.Name)] was replaced.";
+			}
+		}
+		catch {
+			throw "Exception storing Runbook: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		}
+	}
 }

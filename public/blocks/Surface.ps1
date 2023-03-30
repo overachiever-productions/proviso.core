@@ -33,18 +33,9 @@ function Surface {
 						-DisplayFormat $null -Verbose:$xVerbose -Debug:$xDebug;
 		
 		$currentSurface = $definition;
-		try {
-			[bool]$replaced = $global:PvOrthography.StoreSurfaceDefinition($definition, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "Surface: [$Name] was replaced.";
-			}
-			
-			Write-Verbose "Surface: [$($definition.Name)] added to PvCatalog.";
-		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
+		
+		Store-Surface -Surface $definition -Verbose:$xVerbose -Debug:$xDebug;
+		
 		
 		& $SurfaceBlock;
 	};
@@ -52,4 +43,22 @@ function Surface {
 	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
+}
+
+function Store-Surface {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Definitions.SurfaceDefinition]$Surface
+	);
+	
+	process {
+		try {
+			if ($global:PvOrthography.StoreSurfaceDefinition($Surface, (Allow-DefinitionReplacement))) {
+				Write-Verbose "Surface: [$($Surface.Name)] was replaced.";
+			}
+		}
+		catch {
+			throw "Exception storing Surface: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		}
+	}
 }

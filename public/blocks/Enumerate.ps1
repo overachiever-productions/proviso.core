@@ -35,14 +35,27 @@ function Enumerate {
 		}
 		
 		$definition.Enumerate = $EnumerateBlock;
-		
+		Bind-Enumerate -Enumerate $definition -Verbose:$xVerbose -Debug:$xDebug;
+	};
+	
+	end {
+		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
+	};
+}
+
+function Bind-Enumerate {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Definitions.EnumeratorDefinition]$Enumerate
+	);
+	
+	process {
 		try {
-			Bind-Enumerate -Enumerate $definition -Verbose:$xVerbose -Debug:$xDebug;
+			Write-Debug "$(Get-DebugIndent)	Binding Enumrate to Cohort: [$($Enumerate.ParentName)].";
+			$currentCohort.AddEnumerate($Enumerate);
 			
 			# TODO: only goes in catalog if there's a name, right?
-			[bool]$replaced = $global:PvOrthography.StoreEnumeratorDefinition($definition, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
+			if ($global:PvOrthography.StoreEnumeratorDefinition($definition, (Allow-DefinitionReplacement))) {
 				$replacedName = "for Cohort [$Name]";
 				if ($isGlobal) {
 					$replacedName = "named [$Name]";
@@ -51,11 +64,7 @@ function Enumerate {
 			}
 		}
 		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+			throw "Exception in Bind-Enumerate: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
-	};
-	
-	end {
-		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
-	};
+	}
 }

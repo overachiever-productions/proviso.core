@@ -73,187 +73,6 @@ function Exit-Block {
 	}
 }
 
-function Bind-Property {
-	[CmdletBinding()]
-	param (
-		[Proviso.Core.Definitions.PropertyDefinition]$Property
-	);
-	
-	process {
-		switch ($Property.ParentType) {
-			"Properties" {
-				Write-Debug "$(Get-DebugIndent)	NOT Binding Property: [$($Property.Name)] to parent, because parent is a Properties wrapper.";
-			}
-			"Cohort" {
-				$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-				$parent = $global:PvOrthography.GetCohortDefinition($Property.ParentName, $grandParentName);
-				
-				Write-Debug "$(Get-DebugIndent)	Binding Property [$($Property.Name)] to parent Cohort, named: [$($Property.ParentName)], with grandparent named: [$grandParentName].";
-				
-				$parent.AddChildProperty($Property);
-			}
-			{
-				$_ -in @("Facet", "Pattern")
-			} {
-				$parentType = $global:PvOrthography.GetParentBlockType();
-				$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-				$parent = $global:PvOrthography.GetFacetDefinitionByName($Property.ParentName, $grandParentName);
-				
-				Write-Debug "$(Get-DebugIndent)	Binding Property [$($Property.Name)] to Parent [$parentType], named: [$($Property.ParentName)], with grandparent named: [$grandParentName].";
-				
-				$parent.AddChildProperty($Property);
-			}
-			default {
-				throw "Proviso Framework Error. Invalid Property Parent: [$($Property.ParentType)] specified.";
-			}
-		}
-	}
-}
-
-function Bind-Cohort {
-	[CmdletBinding()]
-	param (
-		[Proviso.Core.Definitions.CohortDefinition]$Cohort
-	);
-	
-	process {
-		switch ($Cohort.ParentType) {
-			"Cohorts" {
-				Write-Debug "$(Get-DebugIndent)	NOT Binding Cohort: [$($Cohort.Name)] to parent, because parent is a Cohorts wrapper.";
-			}
-			{
-				$_ -in @("Facet", "Pattern")
-			} {
-				$parentType = $global:PvOrthography.GetParentBlockType();
-				$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-				$parent = $global:PvOrthography.GetFacetDefinitionByName($Cohort.ParentName, $grandParentName);
-				
-				Write-Debug "$(Get-DebugIndent)	Binding Cohort [$($Cohort.Name)] to Parent of Type [$parentType], named: [$($Cohort.ParentName)], with a grandparent named: [$grandParentName].";
-				
-				$parent.AddChildCohort($Cohort);
-			}
-			default {
-				throw "Proviso Framework Error. Invalid Cohort Parent: [$($Cohort.ParentType)] specified.";
-			}
-		}
-	}
-}
-
-function Bind-Enumerate {
-	[CmdletBinding()]
-	param (
-		[Proviso.Core.Definitions.EnumeratorDefinition]$Enumerate
-	);
-	
-	process {
-		$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-		$cohort = $global:PvOrthography.GetCohortDefinition($Enumerate.ParentName, $grandParentName);
-		
-		Write-Debug "$(Get-DebugIndent)	Binding Enumrate to Cohort: [$($Enumerate.ParentName)].";
-		
-		$cohort.AddEnumerate($Enumerate);
-	}
-}
-
-function Bind-EnumeratorAdd {
-	[CmdletBinding()]
-	param (
-		[Proviso.Core.Definitions.EnumeratorAddDefinition]$Add
-	);
-	
-	process {
-		$parentBlockType = $global:PvOrthography.GetParentBlockType();
-		
-		if ("Cohort" -eq $parentBlockType) {
-			$parentName = $global:PvOrthography.GetParentBlockName();
-			$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-			$parent = $global:PvOrthography.GetCohortDefinition($parentName, $grandParentName);
-			
-			Write-Debug "$(Get-DebugIndent)	Binding Enumerate-Add to Cohort: [$($parentName)].";
-			
-			$parent.Add = $Add;
-		}
-	}
-}
-
-function Bind-EnumeratorRemove {
-	[CmdletBinding()]
-	param (
-		[Proviso.Core.Definitions.EnumeratorRemoveDefinition]$Remove
-	);
-	
-	process {
-		$parentBlockType = $global:PvOrthography.GetParentBlockType();
-		
-		if ("Cohort" -eq $parentBlockType) {
-			$parentName = $global:PvOrthography.GetParentBlockName();
-			$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-			$parent = $global:PvOrthography.GetCohortDefinition($parentName, $grandParentName);
-			
-			Write-Debug "$(Get-DebugIndent)	Binding Enumerate-Remove to Cohort: [$($parentName)].";
-			
-			$parent.Remove = $Remove;
-		}
-	}
-}
-
-function Bind-Iterate {
-	[CmdletBinding()]
-	param (
-		[Proviso.Core.Definitions.IteratorDefinition]$Iterate
-	);
-	
-	process {
-		$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-		$pattern = $global:PvOrthography.GetFacetDefinitionByName($Iterate.ParentName, $grandParentName);
-		
-		Write-Debug "$(Get-DebugIndent)	Binding Iterate to Pattern: [$($pattern.Name)].";
-		
-		$pattern.AddIterate($Iterate);
-	}
-}
-
-function Bind-IteratorAdd {
-	[CmdletBinding()]
-	param (
-		[Proviso.Core.Definitions.IteratorAddDefinition]$Add
-	);
-	
-	process {
-		$parentBlockType = $global:PvOrthography.GetParentBlockType();
-		
-		if ("Pattern" -eq $parentBlockType) {
-			$parentName = $global:PvOrthography.GetParentBlockName();
-			$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-			$parent = $global:PvOrthography.GetFacetDefinitionByName($parentName, $grandParentName);
-			
-			Write-Debug "$(Get-DebugIndent)		Binding Iterator-Add to parent Pattern: [$parentName] -> GrandParent: [$grandParentName]";
-			
-			$parent.AddIterateAdd($Add);
-		}
-	}
-}
-
-function Bind-IteratorRemove {
-	[CmdletBinding()]
-	param (
-		[Proviso.Core.Definitions.IteratorRemoveDefinition]$Remove
-	);
-	
-	process {
-		$parentBlockType = $global:PvOrthography.GetParentBlockType();
-		if ("Pattern" -eq $parentBlockType) {
-			$parentName = $global:PvOrthography.GetParentBlockName();
-			$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-			$parent = $global:PvOrthography.GetFacetDefinitionByName($parentName, $grandParentName);
-			
-			Write-Debug "$(Get-DebugIndent)		Binding Iterator-Remove to parent Pattern: [$parentName] -> GrandParent: [$grandParentName]";
-			
-			$parent.AddIterateRemove($Remove);
-		}
-	}
-}
-
 function Bind-Facet {
 	[CmdletBinding()]
 	param (
@@ -261,152 +80,32 @@ function Bind-Facet {
 	);
 	
 	process {
-		$parentBlockType = $global:PvOrthography.GetParentBlockType();
-		
-		# TODO: Assess debug text for $facetType of Import... Or... is that done at discovery time? 
-		
-		switch ($parentBlockType) {
-			"Facets" {
-				Write-Debug "$(Get-DebugIndent)Bypassing Binding of $($currentFacetType): [$($Facet.Name) to parent, because parent is a $($currentFacetType)s wrapper.";
+		try {
+			$parentBlockType = $global:PvOrthography.GetParentBlockType();
+			
+			# TODO: Assess debug text for $facetType of Import... Or... is that done at discovery time? 
+			switch ($parentBlockType) {
+				"Facets" {
+					Write-Debug "$(Get-DebugIndent)Bypassing Binding of $($currentFacetType): [$($Facet.Name) to parent, because parent is a $($currentFacetType)s wrapper.";
+				}
+				"Aspect" {
+					Write-Debug "$(Get-DebugIndent) Binding $($currentFacetType): [$($Facet.Name)] to Aspect: [$($currentAspect.Name)].";
+					$currentAspect.AddFacet($Facet);
+				}
+				"Surface" {
+					$surfaceName = $global:PvOrthography.GetParentBlockName();
+					
+					Write-Debug "$(Get-DebugIndent)	Binding $($currentFacetType): [$($Facet.Name)] to Surface: [$surfaceName].";
+					$currentSurface.AddFacet($Facet);
+				}
 			}
-			"Aspect" {
-				Write-Debug "$(Get-DebugIndent) Binding $($currentFacetType): [$($Facet.Name)] to Aspect: [$($currentAspect.Name)].";
-				$currentAspect.AddFacet($Facet);
-			}
-			"Surface" {
-				$surfaceName = $global:PvOrthography.GetParentBlockName();
-				
-				Write-Debug "$(Get-DebugIndent)	Binding $($currentFacetType): [$($Facet.Name)] to Surface: [$surfaceName].";
-				$currentSurface.AddFacet($Facet);
-			}
-		}
-	}
-}
-
-function Bind-Aspect {
-	[CmdletBinding()]
-	param (
-		[Proviso.Core.Definitions.AspectDefinition]$Aspect
-	);
-	
-	process {
-		$surfaceName = $global:PvOrthography.GetParentBlockName();
-		$surface = $global:PvOrthography.GetSurfaceDefinition($surfaceName);
-		
-		Write-Debug "$(Get-DebugIndent)		Binding Aspect: [$($Aspect.Name)] to Surface: [$($surfaceName)].";
-		$surface.AddAspect($Aspect);
-	}
-}
-
-function Bind-Expect {
-	[CmdletBinding()]
-	param (
-		[ScriptBlock]$ExpectBlock
-	);
-	
-	process {
-		$parentBlockType = $global:PvOrthography.GetParentBlockType();
-		$parentName = $global:PvOrthography.GetParentBlockName();
-		$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-		
-		switch ($parentBlockType) {
-			"Inclusion" {
-				throw "Inclusion BINDING not yet implemented";
-			}
-			"Property" {
-				$parentProperty = $global:PvOrthography.GetPropertyDefinition($parentName, $grandParentName);
-				
-				Write-Debug "$(Get-DebugIndent)		Binding Expect to Property: [$($parentName)].";
-				
-				$parentProperty.Expect = $ExpectBlock;
-			}
-			default {
-				throw "Proviso Framework Error. Invalid Parent Block Type: [$($parentBlockType)] specified for Expect Block.";
+			
+			if ($global:PvOrthography.StoreFacetDefinition($Facet, (Allow-DefinitionReplacement))) {
+				Write-Verbose "Facet: [$Name] was replaced.";
 			}
 		}
-	}
-}
-
-function Bind-Extract {
-	[CmdletBinding()]
-	param (
-		[ScriptBlock]$ExtractBlock
-	);
-	
-	process {
-		$parentBlockType = $global:PvOrthography.GetParentBlockType();
-		$parentName = $global:PvOrthography.GetParentBlockName();
-		$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-		
-		switch ($parentBlockType) {
-			"Inclusion" {
-				throw "Inclusiong BINDING not yet implemented";
-			}
-			"Property" {
-				$parentProperty = $global:PvOrthography.GetPropertyDefinition($parentName, $grandParentName);
-				
-				Write-Debug "$(Get-DebugIndent)		Binding Extract to Property: [$($parentName)].";
-				$parentProperty.Extract = $ExtractBlock;
-			}
-			default {
-				throw "Proviso Framework Error. Invalid Parent Block Type: [$($parentBlockType)] specified for Extract Block.";
-			}
-		}
-	}
-}
-
-function Bind-Compare {
-	[CmdletBinding()]
-	param (
-		[ScriptBlock]$CompareBlock
-	);
-	
-	process {
-		$parentBlockType = $global:PvOrthography.GetParentBlockType();
-		$parentName = $global:PvOrthography.GetParentBlockName();
-		$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-		
-		switch ($parentBlockType) {
-			"Inclusion" {
-				throw "Inclusiong BINDING not yet implemented";
-			}
-			"Property" {
-				$parentProperty = $global:PvOrthography.GetPropertyDefinition($parentName, $grandParentName);
-				
-				Write-Debug "$(Get-DebugIndent)		Binding Compare to Property: [$($parentName)].";
-				$parentProperty.Compare = $CompareBlock;
-			}
-			default {
-				throw "Proviso Framework Error. Invalid Parent Block Type: [$($parentBlockType)] specified for Compare Block.";
-			}
-		}
-	}
-}
-
-function Bind-Configure {
-	[CmdletBinding()]
-	param (
-		[ScriptBlock]$ConfigureBlock
-	);
-	
-	process {
-		$parentBlockType = $global:PvOrthography.GetParentBlockType();
-		$parentName = $global:PvOrthography.GetParentBlockName();
-		$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-		
-		switch ($parentBlockType) {
-			"Inclusion" {
-				throw "Inclusiong BINDING not yet implemented";
-			}
-			"Property" {
-				$parentProperty = $global:PvOrthography.GetPropertyDefinition($parentName, $grandParentName);
-				
-				Write-Debug "$(Get-DebugIndent)		Binding Configure to Property: [$($parentName)].";
-				$parentProperty.Configure = $ConfigureBlock;
-			}
-			default {
-				throw "Proviso Framework Error. Invalid Parent Block Type: [$($parentBlockType)] specified for Configure Block.";
-			}
+		catch {
+			throw "Exception in Bind-Facet: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 	}
 }
