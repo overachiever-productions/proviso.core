@@ -2,13 +2,26 @@
 
 <#
 
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+
+	$global:DebugPreference = "Continue";
+	#$global:VerbosePreference = "Continue";
+
+	Cohorts {
+		Cohort "Global Property - Add Test 3 " -Path "/something/{widget}/etc" {
+			Enumerate "widget" { }
+			Add "widget" {
+				# code for Add implementation
+			}
+		}
+	}
+
 #>
 
 function Add {
 	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Named')]
-		[Parameter(ParameterSetName = 'Anonymous')]
 		[Alias('Name')]
 		[string]$AddName = $null,
 		[Parameter(Mandatory, Position = 1, ParameterSetName = 'Named')]
@@ -64,78 +77,28 @@ function Add {
 			}
 		}
 		
+		 # BIND:
 		if ("Enumerator" -eq $addType) {
-			Bind-EnumeratorAdd -Add $addDefinition -Verbose:$xVerbose -Debug:$xDebug;
+			Write-Debug "$(Get-DebugIndent)	Binding Enumerate-Add to Cohort: [$($addDefinition.ParentName)].";
+			
+			$currentCohort.Add = $addDefinition;
 		}
 		else {
-			Bind-IteratorAdd -Add $addDefinition -Verbose:$xVerbose -Debug:$xDebug;
+			$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+			Write-Debug "$(Get-DebugIndent)		Binding Iterator-Add to parent Pattern: [$parentBlockName] -> GrandParent: [$grandParentName]";
+			
+			$currentPattern.AddIterateAdd($addDefinition);
+		}
+		
+		# STORE:
+		if (Has-Value $AddName) {
+			if ($global:PvOrthography.StoreAddDefinition($addDefinition, (Allow-DefinitionReplacement))) {
+				Write-Verbose "Add block replaced.";
+			}
 		}
 	};
 	
 	end {
 		Exit-Block $MyInvocation.MyCommand -Name $AddName -Verbose:$xVerbose -Debug:$xDebug;
 	};
-}
-
-function Bind-EnumeratorAdd {
-	[CmdletBinding()]
-	param (
-		[Proviso.Core.Definitions.EnumeratorAddDefinition]$Add
-	);
-	
-	process {
-		try {
-			$parentBlockType = $global:PvOrthography.GetParentBlockType();
-			
-			if ("Cohort" -eq $parentBlockType) {
-				$parentName = $global:PvOrthography.GetParentBlockName();
-				$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-				$parent = $global:PvOrthography.GetCohortDefinition($parentName, $grandParentName);
-				
-				Write-Debug "$(Get-DebugIndent)	Binding Enumerate-Add to Cohort: [$($parentName)].";
-				
-				$parent.Add = $Add;
-			}
-			
-			# TODO: i don't need to pass in parentBlock name - should be able to GET that fro the the $Add itself, right? 
-			# TODO: ONLY store Adds if they're non-anonymous?
-			if ($global:PvOrthography.StoreAddDefinition($Add, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement))) {
-				Write-Verbose "Add block replaced.";
-			}
-			
-		}
-		catch {
-			throw "Exception in Bind-EnumeratorAdd: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
-	}
-}
-
-function Bind-IteratorAdd {
-	[CmdletBinding()]
-	param (
-		[Proviso.Core.Definitions.IteratorAddDefinition]$Add
-	);
-	
-	process {
-		try {
-			$parentBlockType = $global:PvOrthography.GetParentBlockType();
-			
-			if ("Pattern" -eq $parentBlockType) {
-				$parentName = $global:PvOrthography.GetParentBlockName();
-				$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-				$parent = $global:PvOrthography.GetFacetDefinitionByName($parentName, $grandParentName);
-				
-				Write-Debug "$(Get-DebugIndent)		Binding Iterator-Add to parent Pattern: [$parentName] -> GrandParent: [$grandParentName]";
-				
-				$parent.AddIterateAdd($Add);
-				
-				if ($global:PvOrthography.StoreAddDefinition($Add, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement))) {
-					Write-Verbose "Add block replaced.";
-				}
-			}
-		}
-		catch {
-			throw "Exception in Bind-IteratorAdd: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
-	}
 }
