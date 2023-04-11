@@ -91,7 +91,7 @@ function Bind-EnumeratorRemove {
 				$parent.Remove = $Remove;
 			}
 			
-			if ($global:PvOrthography.StoreRemoveDefinition($Remove, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement))) {
+			if ($global:PvOrthography.StoreRemoveDefinition($Remove, (Allow-DefinitionReplacement))) {
 				Write-Verbose "Remove block replaced.";
 			}
 		}
@@ -120,7 +120,7 @@ function Bind-IteratorRemove {
 				$parent.AddIterateRemove($Remove);
 			}
 			
-			if ($global:PvOrthography.StoreRemoveDefinition($Remove, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement))) {
+			if ($global:PvOrthography.StoreRemoveDefinition($Remove, (Allow-DefinitionReplacement))) {
 				Write-Verbose "Remove block replaced.";
 			}
 		}

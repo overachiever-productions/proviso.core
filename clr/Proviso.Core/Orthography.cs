@@ -15,7 +15,7 @@ namespace Proviso.Core
         private readonly List<IteratorRemoveDefinition> _iteratorRemoves = new List<IteratorRemoveDefinition>();
         private readonly List<RunbookDefinition> _runbooks = new List<RunbookDefinition>();
         private readonly List<FacetDefinition> _facets = new List<FacetDefinition>();
-        private readonly List<AspectDefinition> _aspects = new List<AspectDefinition>();
+        //private readonly List<AspectDefinition> _aspects = new List<AspectDefinition>();
         private readonly List<SurfaceDefinition> _surfaces = new List<SurfaceDefinition>();
 
         // REFACTOR: looks like I lost my mind... cohorts and properties should ONLY BE children of their PARENT Facet... 
@@ -242,14 +242,14 @@ namespace Proviso.Core
             return this._surfaces.SetDefinition(definition, predicate, allowReplace, errorText);
         }
 
-        public bool StoreAspectDefinition(AspectDefinition definition, bool allowReplace)
-        {
-            definition.Validate(null);
+        //public bool StoreAspectDefinition(AspectDefinition definition, bool allowReplace)
+        //{
+        //    definition.Validate(null);
 
-            CatalogPredicate<AspectDefinition> predicate = (exists, added) => (exists.Name == added.Name) && (exists.ParentName == added.ParentName);
-            string errorText = $"Aspect: [{definition.Name}] already exists within Surface: [{definition.ParentName}] and can NOT be replaced. Ensure unique Aspect names (within Surfaces) and/or allow global replacement override.";
-            return this._aspects.SetDefinition(definition, predicate, allowReplace, errorText);
-        }
+        //    CatalogPredicate<AspectDefinition> predicate = (exists, added) => (exists.Name == added.Name) && (exists.ParentName == added.ParentName);
+        //    string errorText = $"Aspect: [{definition.Name}] already exists within Surface: [{definition.ParentName}] and can NOT be replaced. Ensure unique Aspect names (within Surfaces) and/or allow global replacement override.";
+        //    return this._aspects.SetDefinition(definition, predicate, allowReplace, errorText);
+        //}
 
         public bool StoreFacetDefinition(FacetDefinition definition, bool allowReplace)
         {
@@ -299,27 +299,27 @@ namespace Proviso.Core
             return this._iterators.SetDefinition(definition, predicate, allowReplace, errorText);
         }
 
-        public bool StoreAddDefinition(IAddDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
+        public bool StoreAddDefinition(IAddDefinition definition, bool allowReplace)
         {
             switch (definition.Modality)
             {
                 case ModalityType.Enumerator:
-                    return this.SetEnumeratorAddDefinition((EnumeratorAddDefinition)definition, parentBlockName, allowReplace);
+                    return this.SetEnumeratorAddDefinition((EnumeratorAddDefinition)definition, allowReplace);
                 case ModalityType.Iterator:
-                    return this.SetIteratorAddDefinition((IteratorAddDefinition)definition, parentBlockName, allowReplace);
+                    return this.SetIteratorAddDefinition((IteratorAddDefinition)definition, allowReplace);
                 default:
                     throw new Exception("Proviso Framework Error. Invalid Modality Specified for StoreAddDefinition().");
             }
         }
 
-        public bool StoreRemoveDefinition(IRemoveDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
+        public bool StoreRemoveDefinition(IRemoveDefinition definition, bool allowReplace)
         {
             switch (definition.Modality)
             {
                 case ModalityType.Enumerator:
-                    return this.SetEnumeratorRemoveDefinition((EnumeratorRemoveDefinition)definition, parentBlockType, parentBlockName, allowReplace);
+                    return this.SetEnumeratorRemoveDefinition((EnumeratorRemoveDefinition)definition, allowReplace);
                 case ModalityType.Iterator:
-                    return this.SetIteratorRemoveDefinition((IteratorRemoveDefinition)definition, parentBlockType, parentBlockName, allowReplace);
+                    return this.SetIteratorRemoveDefinition((IteratorRemoveDefinition)definition, allowReplace);
                 default:
                     throw new Exception("Proviso Framework Error. Invalid Modality Specified for StoreAddDefinition().");
             }
@@ -360,15 +360,13 @@ namespace Proviso.Core
             return this._enumerators.Find(x => x.Name == name);
         }
 
-        private bool SetEnumeratorAddDefinition(EnumeratorAddDefinition definition, string parentBlockName, bool allowReplace)
+        public EnumeratorAddDefinition GetEnumeratorAddDefinition(string name)
         {
-            //CohortDefinition parent = this._cohorts.Find(x => x.Name == parentBlockName);
-            //if (parent == null)
-            //{
-            //    throw new Exception($"Parent Cohort: [{parentBlockName}] not found in PvCatalog.");
-            //}
-            //parent.Add = definition;
+            return this._enumeratorAdds.Find(x => x.Name == name);
+        }
 
+        private bool SetEnumeratorAddDefinition(EnumeratorAddDefinition definition, bool allowReplace)
+        {
             if (definition.Visibility == Visibility.Global)
             {
                 CatalogPredicate<EnumeratorAddDefinition> predicate = (exists, added) => exists.Name == added.Name;
@@ -379,15 +377,8 @@ namespace Proviso.Core
             return false;
         }
 
-        private bool SetEnumeratorRemoveDefinition(EnumeratorRemoveDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
+        private bool SetEnumeratorRemoveDefinition(EnumeratorRemoveDefinition definition, bool allowReplace)
         {
-            //CohortDefinition parent = this._cohorts.Find(x => x.Name == parentBlockName);
-            //if (parent == null)
-            //{
-            //    throw new Exception();
-            //}
-            //parent.Remove = definition;
-
             if (definition.Visibility == Visibility.Global)
             {
                 CatalogPredicate<EnumeratorRemoveDefinition> predicate = (exists, added) => exists.Name == added.Name;
@@ -398,15 +389,8 @@ namespace Proviso.Core
             return false;
         }
 
-        private bool SetIteratorAddDefinition(IteratorAddDefinition definition, string parentBlockName, bool allowReplace)
+        private bool SetIteratorAddDefinition(IteratorAddDefinition definition, bool allowReplace)
         {
-            //FacetDefinition parent = this._facets.Find(x => (x.FacetType == FacetType.Pattern) && (x.Name == parentBlockName));
-            //if (parent == null)
-            //{
-            //    throw new Exception($"Parent Pattern: [{parentBlockName}] not found in PvCatalog.");
-            //}
-            //parent.Add = definition;
-
             if (definition.Visibility == Visibility.Global)
             {
                 CatalogPredicate<IteratorAddDefinition> predicate = (exists, added) => exists.Name == added.Name;
@@ -417,15 +401,8 @@ namespace Proviso.Core
             return false;
         }
 
-        private bool SetIteratorRemoveDefinition(IteratorRemoveDefinition definition, string parentBlockType, string parentBlockName, bool allowReplace)
+        private bool SetIteratorRemoveDefinition(IteratorRemoveDefinition definition, bool allowReplace)
         {
-            //FacetDefinition parent = this._facets.Find(x => (x.FacetType == FacetType.Pattern) && (x.Name == parentBlockName));
-            //if (parent == null)
-            //{
-            //    throw new Exception();
-            //}
-            //parent.Remove = definition;
-
             if (definition.Visibility == Visibility.Global)
             {
                 CatalogPredicate<IteratorRemoveDefinition> predicate = (exists, added) => exists.Name == added.Name;
