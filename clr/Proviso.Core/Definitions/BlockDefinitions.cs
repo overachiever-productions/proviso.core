@@ -478,6 +478,9 @@ namespace Proviso.Core.Definitions
         private readonly List<FacetDefinition> _facets = new List<FacetDefinition>();
         private readonly List<AspectDefinition> _aspects = new List<AspectDefinition>();
 
+        public SetupOrCleanupDefinition Setup { get; set; }
+        public SetupOrCleanupDefinition Cleanup { get; set; }
+
         public SurfaceDefinition(string name) : base(name) { }
 
         public void AddAssert(AssertDefinition added)

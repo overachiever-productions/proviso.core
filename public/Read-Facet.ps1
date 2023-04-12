@@ -19,6 +19,7 @@ write-host "--------------------------------------------------"
 write-host "--------------------------------------------------"
 
 	Surface "Extended Events" {
+		Setup { }
 		Aspect "Named Aspect" {
 			Facet "ANOTHER My First Facet" { }
 
@@ -45,6 +46,7 @@ write-host "--------------------------------------------------"
 				}
 			}
 		}
+		Cleanup { }
 	}
 
 	Facets {
