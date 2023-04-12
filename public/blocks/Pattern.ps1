@@ -59,7 +59,15 @@ function Pattern {
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		$currentPattern = $definition;
+		
+		# BIND: 
 		Bind-Facet -Facet $definition -Verbose:$xVerbose -Debug:$xDebug;
+		
+		# STORE:
+		# TODO: spilt off distinct methods for Patterns vs Facets ... this is getting lame... 
+		if ($global:PvOrthography.StoreFacetDefinition($definition, (Allow-DefinitionReplacement))) {
+			Write-Verbose "Facet: [$Name] was replaced.";
+		}
 		
 		& $PatternBlock;
 	};

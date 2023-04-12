@@ -29,30 +29,21 @@ function Enumerator {
 		}
 		
 		$definition.Enumerate = $EnumeratorBlock;
-		Bind-Enumerator -Enumerator $definition -Verbose:$xVerbose -Debug:$xDebug;
+		
+		# BIND: 
+		# NOTE: Enumerators (not Enumerates) do NOT get bound to any kind of parent at this point - they are 'applied' during discovery.
+		
+		# STORE: 
+		if ($global:PvOrthography.StoreEnumeratorDefinition($definition, (Allow-DefinitionReplacement))) {
+			$replacedName = "for Enumerator [$Name]";
+			if ($isGlobal) {
+				$replacedName = "named [$Name]";
+			}
+			Write-Verbose "Enumerate block $replacedName was replaced.";
+		}
 	};
 	
 	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
-}
-
-function Bind-Enumerator {
-	[CmdletBinding()]
-	param (
-		[Proviso.Core.Definitions.EnumeratorDefinition]$Enumerator
-	);
-	
-	process {
-		try {
-			# NOTE: EnumeratORs do NOT get bound (at compile time) to their parent (they'll get bound during discovery).
-			# 	TODO: verify the above... 
-			if ($global:PvOrthography.StoreEnumeratorDefinition($definition, (Allow-DefinitionReplacement))) {
-				Write-Verbose "Enumerator block named [$Name] was replaced.";
-			}
-		}
-		catch {
-			throw "Exception in Bind-Enumerator: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
-	}
 }

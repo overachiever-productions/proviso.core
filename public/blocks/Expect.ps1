@@ -14,21 +14,8 @@ function Expect {
 	};
 	
 	process {
-		Bind-Expect -ExpectBlock $ExpectBlock -Verbose:$xVerbose -Debug:$xDebug;
-	};
-	
-	end {
-		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
-	};
-}
-
-function Bind-Expect {
-	[CmdletBinding()]
-	param (
-		[ScriptBlock]$ExpectBlock
-	);
-	
-	process {
+		
+		# BIND: 
 		$parentBlockType = $global:PvOrthography.GetParentBlockType();
 		$parentName = $global:PvOrthography.GetParentBlockName();
 		
@@ -44,5 +31,9 @@ function Bind-Expect {
 				throw "Proviso Framework Error. Invalid Parent Block Type: [$($parentBlockType)] specified for Expect Block.";
 			}
 		}
-	}
+	};
+	
+	end {
+		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
+	};
 }

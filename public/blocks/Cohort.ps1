@@ -37,50 +37,36 @@ function Cohort {
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		$currentCohort = $definition;
-		Bind-Cohort -Cohort $definition -Verbose:$xVerbose -Debug:$xDebug;
-			
+		
+		# BIND: 
+		switch ($definition.ParentType) {
+			"Cohorts" {
+				Write-Debug "$(Get-DebugIndent)	NOT Binding Cohort: [$($definition.Name)] to parent, because parent is a Cohorts wrapper.";
+			}
+			"Facet" {
+				Write-Debug "$(Get-DebugIndent)	Binding Cohort [$($definition.Name)] to Parent of Type [$parentType], named: [$($definition.ParentName)], with a grandparent named: [$($currentFacet.ParentName)].";
+				
+				$currentFacet.AddChildCohort($definition);
+			}
+			"Pattern" {
+				Write-Debug "$(Get-DebugIndent)	Binding Cohort [$($definition.Name)] to Parent of Type [$parentType], named: [$($definition.ParentName)], with a grandparent named: [$($currentPattern.ParentName)].";
+				
+				$currentPattern.AddChildCohort($definition);
+			}
+			default {
+				throw "Proviso Framework Error. Invalid Cohort Parent: [$($definition.ParentType)] specified.";
+			}
+		}
+		
+		# STORE: 
+		if ($global:PvOrthography.StoreCohortDefinition($definition, (Allow-DefinitionReplacement))) {
+			Write-Verbose "Cohort named [$Name] (within Facet [$($global:PvOrthography.GetCurrentFacet())]) was replaced.";
+		}
+		
 		& $CohortBlock;
 	};
 	
 	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
-}
-
-function Bind-Cohort {
-	[CmdletBinding()]
-	param (
-		[Proviso.Core.Definitions.CohortDefinition]$Cohort
-	);
-	
-	process {
-		try {
-			switch ($Cohort.ParentType) {
-				"Cohorts" {
-					Write-Debug "$(Get-DebugIndent)	NOT Binding Cohort: [$($Cohort.Name)] to parent, because parent is a Cohorts wrapper.";
-				}
-				{
-					$_ -in @("Facet", "Pattern")
-				} {
-					$parentType = $global:PvOrthography.GetParentBlockType();
-					$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-					$parent = $global:PvOrthography.GetFacetDefinitionByName($Cohort.ParentName, $grandParentName);
-					
-					Write-Debug "$(Get-DebugIndent)	Binding Cohort [$($Cohort.Name)] to Parent of Type [$parentType], named: [$($Cohort.ParentName)], with a grandparent named: [$grandParentName].";
-					
-					$parent.AddChildCohort($Cohort);
-				}
-				default {
-					throw "Proviso Framework Error. Invalid Cohort Parent: [$($Cohort.ParentType)] specified.";
-				}
-			}
-			
-			if ($global:PvOrthography.StoreCohortDefinition($definition, (Allow-DefinitionReplacement))) {
-				Write-Verbose "Cohort named [$Name] (within Facet [$($global:PvOrthography.GetCurrentFacet())]) was replaced.";
-			}
-		}
-		catch {
-			throw "Exception in Bind-Cohort: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
-	}
 }

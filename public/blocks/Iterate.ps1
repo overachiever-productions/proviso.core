@@ -35,40 +35,20 @@ function Iterate {
 		}
 		
 		$definition.Iterate = $IterateBlock;
-		Bind-Iterate -Iterate $definition -Verbose:$xVerbose -Debug:$xDebug;
+		
+		# BIND: 
+		Write-Debug "$(Get-DebugIndent)	Binding Iterate to Pattern: [$($currentPattern.Name)].";
+		$currentPattern.AddIterate($definition);
+		
+		# STORE: 
+		if (Has-Value $Name) {
+			if ($global:PvOrthography.StoreIteratorDefinition($definition, (Allow-DefinitionReplacement))) {
+				Write-Verbose "Iterate block [$Name] was replaced.";
+			}
+		}
 	};
 	
 	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
-}
-
-function Bind-Iterate {
-	[CmdletBinding()]
-	param (
-		[Proviso.Core.Definitions.IteratorDefinition]$Iterate
-	);
-	
-	process {
-		try {
-			$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
-			$pattern = $global:PvOrthography.GetFacetDefinitionByName($Iterate.ParentName, $grandParentName);
-			
-			Write-Debug "$(Get-DebugIndent)	Binding Iterate to Pattern: [$($pattern.Name)].";
-			
-			$pattern.AddIterate($Iterate);
-			
-			if ($global:PvOrthography.StoreIteratorDefinition($Iterate, (Allow-DefinitionReplacement))) {
-				$replacedName = "for Pattern [$Name]";
-				# TODO: $isGlobal ACCIDENTALLY works here ... cuz it's declared in the previous (Iterate) scope... 
-				if ($isGlobal) { 
-					$replacedName = "named [$Name]";
-				}
-				Write-Verbose "Iterate block $replacedName was replaced.";
-			}
-		}
-		catch {
-			throw "Exception in Bind-Iterate: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
-	}
 }

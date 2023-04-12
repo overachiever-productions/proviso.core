@@ -14,21 +14,8 @@ function Extract {
 	};
 	
 	process {
-		Bind-Extract -ExtractBlock $ExtractBlock -Verbose:$xVerbose -Debug:$xDebug;
-	};
-	
-	end {
-		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
-	};
-}
-
-function Bind-Extract {
-	[CmdletBinding()]
-	param (
-		[ScriptBlock]$ExtractBlock
-	);
-	
-	process {
+		
+		# BIND: 
 		$parentBlockType = $global:PvOrthography.GetParentBlockType();
 		$parentName = $global:PvOrthography.GetParentBlockName();
 		
@@ -44,5 +31,9 @@ function Bind-Extract {
 				throw "Proviso Framework Error. Invalid Parent Block Type: [$($parentBlockType)] specified for Extract Block.";
 			}
 		}
-	}
+	};
+	
+	end {
+		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
+	};
 }

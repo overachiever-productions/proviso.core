@@ -23,35 +23,30 @@ function Cleanup {
 		
 		$type = [Proviso.Core.SetupOrCleanup]::Cleanup;
 		
-		# TODO: move this logic into Bind-Cleanup (even though we won't be 'binding' to orthography... we're still binding to parent... and the logic should be encapsulated)
-		try {
-			switch ($parentBlockType) {
-				"Runbook" {
-					$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Runbook, $type, $parentBlockName);
-					$currentRunbook.Cleanup = $definition;
-					
-					Write-Debug "$(Get-DebugIndent)	Added Cleanup{ } to Runbook: [$parentBlockName].";
-				}
-				"Surface" {
-					$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Surface, $type, $parentBlockName);
-					$currentSurface.Cleanup = $definition;
-					
-					Write-Debug "$(Get-DebugIndent)	Added Cleanup{ } to Surface: [$parentBlockName].";
-				}
-				default {
-					throw "Syntax Error. Cleanup can ONLY be a member of Runbooks and Surfaces.";
-				}
+		# BIND (and build/define):
+		switch ($parentBlockType) {
+			"Runbook" {
+				$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Runbook, $type, $parentBlockName);
+				
+				Write-Debug "$(Get-DebugIndent)	Adding Cleanup to Runbook: [$parentBlockName].";
+				$currentRunbook.Cleanup = $definition;
 			}
-			
-			# set 'common properties':
-			$definition.ScriptBlock = $CleanupBlock;
-			
-			if ((Is-Skipped -ObjectType ($MyInvocation.MyCommand) -Name "_Cleanup_" -Skip:$Skip -Ignore $Ignore)) {
-				$definition.SetSkipped($Ignore);
+			"Surface" {
+				$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Surface, $type, $parentBlockName);
+				
+				Write-Debug "$(Get-DebugIndent)	Adding Cleanup to Surface: [$parentBlockName].";
+				$currentSurface.Cleanup = $definition;
+			}
+			default {
+				throw "Syntax Error. Cleanup can ONLY be a member of Runbooks and Surfaces.";
 			}
 		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		
+		# set 'common properties':
+		$definition.ScriptBlock = $CleanupBlock;
+		
+		if ((Is-Skipped -ObjectType ($MyInvocation.MyCommand) -Name "_Cleanup_" -Skip:$Skip -Ignore $Ignore)) {
+			$definition.SetSkipped($Ignore);
 		}
 	};
 		

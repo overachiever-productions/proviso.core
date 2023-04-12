@@ -95,7 +95,14 @@ function Facet {
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		$currentFacet = $definition;
+		
+		# BIND:
 		Bind-Facet -Facet $definition -Verbose:$xVerbose -Debug:$xDebug;
+		
+		# STORE: 
+		if ($global:PvOrthography.StoreFacetDefinition($definition, (Allow-DefinitionReplacement))) {
+			Write-Verbose "Facet: [$Name] was replaced.";
+		}
 		
 		& $FacetBlock;
 	};

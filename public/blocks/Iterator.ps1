@@ -28,30 +28,17 @@ function Iterator {
 		}
 		
 		$definition.Iterate = $IteratorBlock;
-		Bind-Iterator -Iterator $definition -Verbose:$xVerbose -Debug:$xDebug;
+		
+		# BIND:
+		# NOTE: EnumeraTORs (vs EnumeraTEs) do NOT get bound to parents during build - they're applied/imported during discovery. 
+		
+		# STORE: 
+		if ($global:PvOrthography.StoreIteratorDefinition($definition, (Allow-DefinitionReplacement))) {
+			Write-Verbose "Iterator block: [$($definition.Name)] was replaced.";
+		}
 	};
 	
 	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
-}
-
-function Bind-Iterator {
-	[CmdletBinding()]
-	param (
-		[Proviso.Core.Definitions.IteratorDefinition]$Iterator
-	);
-	
-	process {
-		try {
-			# NOTE: Iterators do NOT get bound (at compile time) to their parent (they'll get bound during discovery).
-			# 	TODO: verify the above... 
-			if ($global:PvOrthography.StoreIteratorDefinition($Iterator, (Allow-DefinitionReplacement))) {
-				Write-Verbose "Iterator block: [$($Iterator.Name)] was replaced.";
-			}
-		}
-		catch {
-			throw "Exception in Bind-Iterator: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
-	}
 }

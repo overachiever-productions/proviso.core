@@ -14,24 +14,9 @@ function Compare {
 	};
 	
 	process {
-		Bind-Compare -CompareBlock $CompareBlock -Verbose:$xVerbose -Debug:$xDebug;
-	};
-	
-	end {
-		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
-	};
-}
-
-function Bind-Compare {
-	[CmdletBinding()]
-	param (
-		[ScriptBlock]$CompareBlock
-	);
-	
-	process {
+		# BIND: 
 		$parentBlockType = $global:PvOrthography.GetParentBlockType();
 		$parentName = $global:PvOrthography.GetParentBlockName();
-		
 		switch ($parentBlockType) {
 			"Inclusion" {
 				throw "Inclusiong BINDING not yet implemented";
@@ -44,5 +29,9 @@ function Bind-Compare {
 				throw "Proviso Framework Error. Invalid Parent Block Type: [$($parentBlockType)] specified for Compare Block.";
 			}
 		}
-	}
+	};
+	
+	end {
+		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
+	};
 }

@@ -33,9 +33,10 @@ function Bind-Configure {
 		$parentName = $global:PvOrthography.GetParentBlockName();
 		$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
 		
+		# BIND: 
 		switch ($parentBlockType) {
 			"Inclusion" {
-				throw "Inclusiong BINDING not yet implemented";
+				throw "Inclusion BINDING not yet implemented";
 			}
 			"Property" {
 				Write-Debug "$(Get-DebugIndent)		Binding Configure to Property: [$($parentName)].";

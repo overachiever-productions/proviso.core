@@ -34,8 +34,10 @@ function Surface {
 		
 		$currentSurface = $definition;
 		
-		Store-Surface -Surface $definition -Verbose:$xVerbose -Debug:$xDebug;
-		
+		# STORE:
+		if ($global:PvOrthography.StoreSurfaceDefinition($definition, (Allow-DefinitionReplacement))) {
+			Write-Verbose "Surface: [$($definition.Name)] was replaced.";
+		}
 		
 		& $SurfaceBlock;
 	};
@@ -43,22 +45,4 @@ function Surface {
 	end {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
-}
-
-function Store-Surface {
-	[CmdletBinding()]
-	param (
-		[Proviso.Core.Definitions.SurfaceDefinition]$Surface
-	);
-	
-	process {
-		try {
-			if ($global:PvOrthography.StoreSurfaceDefinition($Surface, (Allow-DefinitionReplacement))) {
-				Write-Verbose "Surface: [$($Surface.Name)] was replaced.";
-			}
-		}
-		catch {
-			throw "Exception storing Surface: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
-	}
 }

@@ -82,11 +82,12 @@ function Bind-Facet {
 	process {
 		try {
 			$parentBlockType = $global:PvOrthography.GetParentBlockType();
+			$currentFacetType = $global:PvOrthography.GetCurrentBlockType();
 			
 			# TODO: Assess debug text for $facetType of Import... Or... is that done at discovery time? 
 			switch ($parentBlockType) {
 				"Facets" {
-					Write-Debug "$(Get-DebugIndent)Bypassing Binding of $($currentFacetType): [$($Facet.Name) to parent, because parent is a $($currentFacetType)s wrapper.";
+					Write-Debug "$(Get-DebugIndent)Bypassing Binding of $($currentFacetType): [$($Facet.Name) to Parent, because Parent is a $($currentFacetType)s wrapper.";
 				}
 				"Aspect" {
 					Write-Debug "$(Get-DebugIndent) Binding $($currentFacetType): [$($Facet.Name)] to Aspect: [$($currentAspect.Name)].";
@@ -98,10 +99,6 @@ function Bind-Facet {
 					Write-Debug "$(Get-DebugIndent)	Binding $($currentFacetType): [$($Facet.Name)] to Surface: [$surfaceName].";
 					$currentSurface.AddFacet($Facet);
 				}
-			}
-			
-			if ($global:PvOrthography.StoreFacetDefinition($Facet, (Allow-DefinitionReplacement))) {
-				Write-Verbose "Facet: [$Name] was replaced.";
 			}
 		}
 		catch {

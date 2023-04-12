@@ -14,7 +14,7 @@ write-host "--------------------------------------------------"
 		Facet "My First Facet" { }
 	}
 
-	#Read-Facet "My First Facet";
+	Read-Facet "My First Facet";
 
 write-host "--------------------------------------------------"
 
@@ -110,6 +110,19 @@ function Read-Facet {
 	begin {
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
+		
+		
+		# workflow here will be: Get-Facet (or surface or runbook)
+		# where Get-XXXX is ... private/internal (never exposed to end-users? i mean... maybe? )
+		# 	and ... where Get-XXX will do the following: 
+		# 		try to pull it back from the catalog. 
+		# 			if the XXX is there, great - it's compiled + validated and ... good to go. 
+		# 			if XXX wasn't in the catalog, will check the $Ortho-cache or whatever and ... 
+		# 				if it finds it, will try to register it ... 
+		# 					meaning, that if it compiles, and passes registration-checks and such... 
+		# 				we'll add it to the Catalog ... 
+		# 				and then return it... 
+		
 		
 		# Retrieve from Catalog + Validate (Discovery-Phase):
 		[Proviso.Core.Definitions.FacetDefinition]$definition = $null;
