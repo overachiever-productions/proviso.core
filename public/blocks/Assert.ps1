@@ -30,6 +30,8 @@ function Assert {
 		[bool]$negated = $ThatNot;
 		[Proviso.Core.Definitions.AssertDefinition]$assert = New-Object Proviso.Core.Definitions.AssertDefinition($Name, $FailureMessage, $negated, $ConfigureOnly);
 		
+		# TODO: implement 'negated' logic (i.e., -IsNot and such... )
+		
 		# TODO: Address Ignore/Skip. As in: 1) do I simply 'skip' adding to Runbook/Surface if 'skipped' or do I add as .Disabled (probably the latter) 
 		# 			and 2) what's the best way to avoid DRY violations with the above... 
 		
@@ -39,20 +41,21 @@ function Assert {
 		# 		hmmm. but, if not... then... a) we won't hit this code (i.e., the "Assert" func (this) won't be called and ... b) how to fix that? 
 		# 			maybe some sort of Import-Assert or Assert-That? which takes in NAMED/existing 'asserts'?
 		
+		# BIND: 
+		if ("Runbook" -eq $grandParentBlockType) {
+			$currentRunbook.AddAssert($assert);
+			Write-Debug "				Adding Assert [$Name] to Runbook: [$grandParentBlockName].";
+		}
+		else {
+			$currentSurface.AddAssert($assert);
+			Write-Debug "				Added Assert [$Name] to Surface: [$grandParentBlockName].";
+		}
 		
-		try {
-			if ("Runbook" -eq $grandParentBlockType) {
-				$currentRunbook.AddAssert($assert);
-				Write-Debug "				Adding Assert [$Name] to Runbook: [$grandParentBlockName].";
-			}
-			else {
-				$currentSurface.AddAssert($assert);
-				Write-Debug "				Added Assert [$Name] to Surface: [$grandParentBlockName].";
-			}
+		# STORE: 
+		if (Has-Value $Name) {
+			Write-Host "TODO: need to add Assert: [$Name] to Ortho-cache/catalog... ";
 		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
+		
 	};
 	
 	end {

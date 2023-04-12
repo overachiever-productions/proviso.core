@@ -26,7 +26,7 @@ function Aspect {
 	};
 	
 	process {
-		$parentName = $global:PvLexicon.GetParentBlockName();
+		$parentName = $global:PvOrthography.GetParentBlockName();
 		$definition = New-Object Proviso.Core.Definitions.AspectDefinition($Name, $parentName);
 		
 		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
@@ -34,20 +34,10 @@ function Aspect {
 						-DisplayFormat $null -Verbose:$xVerbose -Debug:$xDebug;
 		
 		$currentAspect = $definition;
-		try {
-			Bind-Aspect -Aspect $definition -Verbose:$xVerbose -Debug:$xDebug;
-			
-			[bool]$replaced = $global:PvCatalog.StoreAspectDefinition($definition, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "Aspect: [$Name] was replaced.";
-			}
-			
-			Write-Verbose "Aspect: [$($definition.Name)] added to PvCatalog.";
-		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
+		
+		# BIND: 
+		Write-Debug "$(Get-DebugIndent)		Binding Aspect: [$($definition.Name)] to Surface: [$($currentSurface.Name)].";
+		$currentSurface.AddAspect($definition);
 		
 		& $ScriptBlock;
 	};

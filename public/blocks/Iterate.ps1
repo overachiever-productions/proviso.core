@@ -19,7 +19,7 @@ function Iterate {
 		
 		[bool]$isGlobal = $true;
 		if (Is-Empty $Name) {
-			$Name = $global:PvLexicon.GetCurrentPattern();
+			$Name = $global:PvOrthography.GetCurrentPattern();
 			$isGlobal = $false; # name is inherited, i.e., this is equivalent of 'anonymous' (non-global).
 		}
 		
@@ -27,7 +27,7 @@ function Iterate {
 	};
 	
 	process {
-		$parentName = $global:PvLexicon.GetParentBlockName();
+		$parentName = $global:PvOrthography.GetParentBlockName();
 		$definition = New-Object Proviso.Core.Definitions.IteratorDefinition($Name, $isGlobal, [Proviso.Core.IteratorParentType]"Pattern", $parentName);
 		
 		if (Has-Value $OrderBy) {
@@ -36,22 +36,15 @@ function Iterate {
 		
 		$definition.Iterate = $IterateBlock;
 		
-		try {
-			Bind-Iterate -Iterate $definition -Verbose:$xVerbose -Debug:$xDebug;
-			
-			# TODO: only goes in catalog if there's a name, right?
-			[bool]$replaced = $global:PvCatalog.StoreIteratorDefinition($definition, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				$replacedName = "for Pattern [$Name]";
-				if ($isGlobal) {
-					$replacedName = "named [$Name]";
-				}
-				Write-Verbose "Iterate block $replacedName was replaced.";
+		# BIND: 
+		Write-Debug "$(Get-DebugIndent)	Binding Iterate to Pattern: [$($currentPattern.Name)].";
+		$currentPattern.AddIterate($definition);
+		
+		# STORE: 
+		if (Has-Value $Name) {
+			if ($global:PvOrthography.StoreIteratorDefinition($definition, (Allow-DefinitionReplacement))) {
+				Write-Verbose "Iterate block [$Name] was replaced.";
 			}
-		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 	};
 	

@@ -2,13 +2,26 @@
 
 <#
 
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+
+	$global:DebugPreference = "Continue";
+	#$global:VerbosePreference = "Continue";
+
+	Cohorts {
+		Cohort "Global Property - Add Test 3 " -Path "/something/{widget}/etc" {
+			Enumerate "widget" { }
+			Add "widget" {
+				# code for Add implementation
+			}
+		}
+	}
+
 #>
 
 function Add {
 	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Named')]
-		[Parameter(ParameterSetName = 'Anonymous')]
 		[Alias('Name')]
 		[string]$AddName = $null,
 		[Parameter(Mandatory, Position = 1, ParameterSetName = 'Named')]
@@ -20,11 +33,11 @@ function Add {
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		
-		# NOTE: a BIT confusing to call 'current'; but we HAVEN'T YET 'entered' this Add block yet.
-		[string]$parentBlockType = $global:PvLexicon.GetCurrentBlockType();
-		[string]$parentBlockName = $global:PvLexicon.GetCurrentBlockName();
+		# NOTE: a BIT confusing to call 'current'; but we HAVEN'T 'entered' this Add block YET.
+		[string]$parentBlockType = $global:PvOrthography.GetCurrentBlockType();
+		[string]$parentBlockName = $global:PvOrthography.GetCurrentBlockName();
 		
-		# TODO: bug/error here... this shouldn't be passing in the name of the parent... 
+		# NOTE: For both iterate/enumerate blocks, if non-named (i.e., anonymous), we use the name of the PARENT block (hence the logic below for -Name)
 		Enter-Block ($MyInvocation.MyCommand) -Name (Collapse-Arguments -Arg1 $AddName -Arg2 $parentBlockName -IgnoreEmptyStrings) -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
@@ -60,26 +73,28 @@ function Add {
 				$addDefinition = New-Object Proviso.Core.Definitions.EnumeratorAddDefinition($AddName, $AddBlock);
 			}
 			default {
-				throw "Proviso Framework Error. Invalid Parent-Block-Type for Enumerate|Enumerator.";
+				throw "Proviso Framework Error. Invalid Parent for Add block.";
 			}
 		}
 		
-		try {
-			if ("Enumerator" -eq $addType) {
-				Bind-EnumeratorAdd -Add $addDefinition -Verbose:$xVerbose -Debug:$xDebug;
-			}
-			else {
-				Bind-IteratorAdd -Add $addDefinition -Verbose:$xVerbose -Debug:$xDebug;
-			}
+		 # BIND:
+		if ("Enumerator" -eq $addType) {
+			Write-Debug "$(Get-DebugIndent)	Binding Enumerate-Add to Cohort: [$($addDefinition.ParentName)].";
 			
-			[bool]$replaced = $global:PvCatalog.StoreAddDefinition($addDefinition, $parentBlockType, $parentBlockName, (Allow-DefinitionReplacement));
+			$currentCohort.Add = $addDefinition;
+		}
+		else {
+			$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+			Write-Debug "$(Get-DebugIndent)		Binding Iterator-Add to parent Pattern: [$parentBlockName] -> GrandParent: [$grandParentName]";
 			
-			if ($replaced) {
+			$currentPattern.AddIterateAdd($addDefinition);
+		}
+		
+		# STORE:
+		if (Has-Value $AddName) {
+			if ($global:PvOrthography.StoreAddDefinition($addDefinition, (Allow-DefinitionReplacement))) {
 				Write-Verbose "Add block replaced.";
 			}
-		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 	};
 	

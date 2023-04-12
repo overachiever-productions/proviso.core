@@ -11,7 +11,10 @@ function Cohorts {
 	[CmdletBinding()]
 	param (
 		[Alias('CohortsSetName')]
+		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Named')]
 		[string]$Name,
+		[Parameter(Mandatory, Position = 1, ParameterSetName = 'Named')]
+		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Anonymous')]
 		[ScriptBlock]$CohortsBlock
 	);
 	
@@ -24,7 +27,7 @@ function Cohorts {
 	
 	process {
 		
-		$CohortsBlock;
+		& $CohortsBlock;
 	};
 	
 	end {

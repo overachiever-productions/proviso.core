@@ -5,7 +5,7 @@
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 
 	$global:DebugPreference = "Continue";
-	$global:VerbosePreference = "Continue";
+#	$global:VerbosePreference = "Continue";
 
 	Runbook "Firewall Stuff" { 
 		Setup {} 
@@ -48,16 +48,10 @@ function Runbook {
 		[Proviso.Core.Definitions.RunbookDefinition]$definition = New-Object Proviso.Core.Definitions.RunbookDefinition($Name);
 		
 		$currentRunbook = $definition;
-		try {
-			Write-Debug "	Adding Runbook [$Name] to Catalog.";
-			[bool]$replaced = $global:PvCatalog.StoreRunbookDefinition($definition, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "Runbook [$($Name)] was replaced.";
-			}
-		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		
+		# STORE:
+		if ($global:PvOrthography.StoreRunbookDefinition($definition, (Allow-DefinitionReplacement))) {
+			Write-Verbose "Runbook [$($definition.Name)] was replaced.";
 		}
 		
 		& $RunbookBlock;

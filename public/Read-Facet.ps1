@@ -7,15 +7,19 @@
 	$global:DebugPreference = "Continue";
 	#$global:VerbosePreference = "Continue";
 
-#	Facets {
-#		Facet "My First Facet" { }
-#	}
-#
-#	#Read-Facet "My First Facet";
+write-host "--------------------------------------------------"
+
+
+	Facets {
+		Facet "My First Facet" { }
+	}
+
+	Read-Facet "My First Facet";
 
 write-host "--------------------------------------------------"
 
 	Surface "Extended Events" {
+		Setup { }
 		Aspect "Named Aspect" {
 			Facet "ANOTHER My First Facet" { }
 
@@ -42,13 +46,14 @@ write-host "--------------------------------------------------"
 				}
 			}
 		}
+		Cleanup { }
 	}
 
 	Facets {
 		Facet "My Second Facet" { }
 	}
 
-	Read-Facet "ANOTHER My First Facet" { } 
+	#Read-Facet "ANOTHER My First Facet" { } 
 	
 
 write-host "--------------------------------------------------"
@@ -60,7 +65,7 @@ write-host "--------------------------------------------------"
 		[PSCustomObject]@{ Name = "My first Pattern" }
 	)
 
-	$facets | Read-Facet;
+	#$facets | Read-Facet;
 
 write-host "--------------------------------------------------"
 
@@ -68,54 +73,144 @@ write-host "--------------------------------------------------"
 
 #>
 
-
 function Read-Facet {
-	[CmdletBinding()]
+	[CmdletBinding(DefaultParameterSetName = 'Default')]
 	[Alias("Read-Pattern")]
 	param (
-		#[ValidateNotNullOrEmpty()]
-		[Parameter(ValueFromPipelineByPropertyName)]
-		[Alias("FacetName", "PatternName")]
+		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Default')]
+		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Targets')]
+		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Servers')]
+		[Alias('FacetName', 'PatternName')]
 		[string]$Name,
-		[string]$ParentName = $null,
-		[Alias("Targets")]
+		[Parameter(ParameterSetName = 'Default')]
+		[Parameter(ParameterSetName = 'Targets')]
+		[Parameter(ParameterSetName = 'Servers')]
+		[Alias('SurfaceName', 'AspectName')]
+		[string]$ParentName,
+		[Parameter(Mandatory, ValueFromPipeline, ParameterSetName = 'Targets')]
+		[Parameter(ParameterSetName = 'Default')]
+		[Parameter(ParameterSetName = 'Servers')]
+		[Alias('Target')]
+		[object[]]$Targets,
+		[Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'Servers')]
+		[Parameter(ParameterSetName = 'Default')]
+		[Parameter(ParameterSetName = 'Targets')]
+		[Alias('Host', 'Hosts', 'Server', 'Computer', 'Computers', 'ComputerName', 'ComputerNames')]
+		[string[]]$Servers = $null,
+		[Parameter(ParameterSetName = 'Default')]
+		[Parameter(ParameterSetName = 'Targets')]
+		[Parameter(ParameterSetName = 'Servers')]
+		[switch]$AsPSON = $false,
+		[Parameter(ParameterSetName = 'Default')]
+		[Parameter(ParameterSetName = 'Targets')]
+		[Parameter(ParameterSetName = 'Servers')]
+		[PSCredential]$Credential
+	);
+	
+	begin {
+		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
+		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
+		
+		
+		# workflow here will be: Get-Facet (or surface or runbook)
+		# where Get-XXXX is ... private/internal (never exposed to end-users? i mean... maybe? )
+		# 	and ... where Get-XXX will do the following: 
+		# 		try to pull it back from the catalog. 
+		# 			if the XXX is there, great - it's compiled + validated and ... good to go. 
+		# 			if XXX wasn't in the catalog, will check the $Ortho-cache or whatever and ... 
+		# 				if it finds it, will try to register it ... 
+		# 					meaning, that if it compiles, and passes registration-checks and such... 
+		# 				we'll add it to the Catalog ... 
+		# 				and then return it... 
+		
+		
+		# Retrieve from Catalog + Validate (Discovery-Phase):
+		[Proviso.Core.Definitions.FacetDefinition]$definition = $null;
+		$definition = $global:PvCatalog.GetFacetDefinitionByName($Name, $ParentName);
+		if ($null -eq $definition) {
+			throw "Processing Error. Pattern or Facet: [$Name] was NOT found.";
+		}
+		
+		[Proviso.Core.Models.Facet]$facetOrPattern = $null;
+		try {
+
+Write-Host "herro?"
+			$facetOrPattern = Register-Facet -Facet $Name -Parent $ParentName -Verbose:$xVerbose -Debug:$xDebug;
+		}
+		catch {
+			throw "Proviso Validation Error. Facet or Pattern: [$Name] failed validation: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		}
+		
+		if ($null -eq $facetOrPattern) {
+			throw "Could not find Pattern or Facet: [$Name].";
+		}
+		
+		$results = @();  # MUST be declared here to be able to be in scope for all pipeline'd operations... 
+	};
+	
+	process {
+		if (Has-ArrayValue $Servers) {
+			foreach ($s in $Servers) {
+				if (Has-ArrayValue $Targets) {
+					foreach ($t in $Targets) {
+						$results += Process-ReadFacet -Facet $facetOrPattern -ServerName $s -Target $t -Credential $Credential -Verbose:$xVerbose -Debug:$xDebug;
+					}
+				}
+				else {
+					$results += Process-ReadFacet -Facet $facetOrPattern -ServerName $s -Credential $Credential -Verbose:$xVerbose -Debug:$xDebug;
+				}
+			}
+		}
+		else {
+			if (Has-ArrayValue $Targets) {
+				foreach ($t in $Targets) {
+					$results += Process-ReadFacet -Facet $facetOrPattern -Target $t -Verbose:$xVerbose -Debug:$xDebug;
+				}
+			}
+			else {
+				$results += Process-ReadFacet -Facet $facetOrPattern -Verbose:$xVerbose -Debug:$xDebug;
+			}
+		}
+	};
+	
+	end {
+		if ($AsPSON) {
+			
+			throw "-AsPSON is not yet implemented.";
+		}
+		
+		return $results;  # TODO: might need to declare this (early on/initially) as an array of ... FacetProcessingResults of whatever ... 
+	};
+}
+
+# NOTE: No -Config or -Model for Read operations (just -Targets as an option):
+function Process-ReadFacet {
+	[CmdletBinding()]
+	param (
+		[Parameter(Mandatory)]
+		[Proviso.Core.Models.Facet]$Facet,
+		[string]$ServerName = $null,
 		[object]$Target = $null,
-		[object]$Extract = $null,
-		[string]$Servers = $null,
-		[switch]$AsPSON = $false
+		[PSCredential]$Credential
 	);
 	
 	begin {
 		
-		# TODO: address $Targets (array)
-		# 		So, in terms of -Target(s) being an array:
-		# 				what if I want to actually 'target' a single array of values - to tackle my READ operation. i.e., MAYBE -Extract is simply $Target.Count ??? right?
-		# 				how can i tell the difference between the above, and, say... a scenario where I want to get $Target.Length() - but I want to do it against MULTIPLE targets?
-		# 					I don't think i CAN actually differentiate between the two. 
-		# 				the ONLY thing I can think of would be something like -Target and -[Multiple]Targets
-		
-		# TODO: address -Servers. # See PowerShell in Action - 3rd Edition - Chapter/Section 20.5 - on remote runspaces. Great stuff in there. 
-		
+		if (Has-Value $ServerName) {
+			
+			# NOTE: attempt to use Creds if/as supplied? 
+			
+			Write-Host "need to validate server: $ServerName";
+			# as in, make sure that a) we can connect to it (resolve it), b) it has same version of Proviso.Core on it. 
+			
+			# also, it MIGHT make sense to look into caching whether a server is accessible or not? 
+		}
 	};
 	
 	process {
-		# Validate Operation:
-		[Proviso.Core.Definitions.FacetDefinition]$facet = $null;
-		try {
-			$facet = $global:PvCatalog.GetFacetDefinitionByName($Name, $ParentName);
-		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
 		
-		if ($null -eq $facet) {
-			throw "Error. No Facet or Pattern with the name [$Name] was found.";
-		}
 		
-		# TODO: Make sure to proxy for -Target_S_ and -Servers... 
-		
-		# NOTE: No -Config or -Models for this operation:
-		$result = Execute-Pipeline -Verb "Read" -OperationType "Facet" -Name $Name -Model $null -Target $Target;
+		# $result = Execute-Pipeline -Verb "Read" -OperationType "Facet" -Name $Name -Model $null -Target $Target;
 	};
 	
 	end {

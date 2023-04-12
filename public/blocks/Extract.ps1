@@ -14,7 +14,23 @@ function Extract {
 	};
 	
 	process {
-		Bind-Extract -ExtractBlock $ExtractBlock -Verbose:$xVerbose -Debug:$xDebug;
+		
+		# BIND: 
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
+		$parentName = $global:PvOrthography.GetParentBlockName();
+		
+		switch ($parentBlockType) {
+			"Inclusion" {
+				throw "Inclusiong BINDING not yet implemented";
+			}
+			"Property" {
+				Write-Debug "$(Get-DebugIndent)		Binding Extract to Property: [$($parentName)].";
+				$currentProperty.Extract = $ExtractBlock;
+			}
+			default {
+				throw "Proviso Framework Error. Invalid Parent Block Type: [$($parentBlockType)] specified for Extract Block.";
+			}
+		}
 	};
 	
 	end {

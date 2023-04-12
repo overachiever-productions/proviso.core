@@ -85,7 +85,7 @@ function Facet {
 	};
 	
 	process {
-		$parentName = $global:PvLexicon.GetParentBlockName();
+		$parentName = $global:PvOrthography.GetParentBlockName();
 
 		[Proviso.Core.FacetParentType]$parentType = Get-FacetParentType;
 		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, [Proviso.Core.FacetType]"Scalar", $parentType, $parentName);
@@ -95,19 +95,13 @@ function Facet {
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		$currentFacet = $definition;
-		try {
-			Bind-Facet -Facet $definition -Verbose:$xVerbose -Debug:$xDebug;
-			
-			[bool]$replaced = $global:PvCatalog.StoreFacetDefinition($definition, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "Facet: [$Name] was replaced.";
-			}
-			
-			Write-Verbose "Facet: [$($definition.Name)] added to PvCatalog.";
-		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		
+		# BIND:
+		Bind-Facet -Facet $definition -Verbose:$xVerbose -Debug:$xDebug;
+		
+		# STORE: 
+		if ($global:PvOrthography.StoreFacetDefinition($definition, (Allow-DefinitionReplacement))) {
+			Write-Verbose "Facet: [$Name] was replaced.";
 		}
 		
 		& $FacetBlock;

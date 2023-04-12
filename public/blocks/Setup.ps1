@@ -23,34 +23,30 @@ function Setup {
 		
 		$type = [Proviso.Core.SetupOrCleanup]::Setup;
 		
-		try {
-			switch ($parentBlockType) {
-				"Runbook" {
-					$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Runbook, $type, $parentBlockName);
-					$currentRunbook.Setup = $definition;
-					
-					Write-Debug "		Added Setup{ } to Runbook: [$parentBlockName].";
-				}
-				"Surface" {
-					$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Surface, $type, $parentBlockName);
-					$currentSurface.Setup = $definition;
-					
-					Write-Debug "		Added Setup{ } to Surface: [$parentBlockName].";
-				}
-				default {
-					throw "Syntax Error. Setup can ONLY be a member of Runbooks and Surfaces.";
-				}
+		# BIND (and build/define):
+		switch ($parentBlockType) {
+			"Runbook" {
+				$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Runbook, $type, $parentBlockName);
+				
+				Write-Debug "$(Get-DebugIndent)	Adding Setup to Runbook: [$parentBlockName].";
+				$currentRunbook.Setup = $definition;
 			}
-			
-			# set 'common properties':
-			$definition.ScriptBlock = $SetupBlock;
-			
-			if ((Is-Skipped -ObjectType ($MyInvocation.MyCommand) -Name "_Setup_" -Skip:$Skip -Ignore $Ignore)) {
-				$definition.SetSkipped($Ignore);
+			"Surface" {
+				$definition = New-Object Proviso.Core.Definitions.SetupOrCleanupDefinition([Proviso.Core.RunbookOrSurface]::Surface, $type, $parentBlockName);
+				
+				Write-Debug "$(Get-DebugIndent)	Adding Setup to Surface: [$parentBlockName].";
+				$currentSurface.Setup = $definition;
+			}
+			default {
+				throw "Syntax Error. Setup can ONLY be a member of Runbooks and Surfaces.";
 			}
 		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		
+		# set 'common properties':
+		$definition.ScriptBlock = $SetupBlock;
+		
+		if ((Is-Skipped -ObjectType ($MyInvocation.MyCommand) -Name "_Setup_" -Skip:$Skip -Ignore $Ignore)) {
+			$definition.SetSkipped($Ignore);
 		}
 	};
 	

@@ -215,7 +215,7 @@ namespace Proviso.Core.Definitions
         public ModalityType Modality { get; private set; }
         public Visibility Visibility { get; private set; }
         public Impact Impact { get; private set; }
-        public ScriptBlock ScriptBlock { get; private set; }
+        public ScriptBlock ScriptBlock { get; set; }
 
         internal RemoveDefinitionBase(string name, Impact impact, ScriptBlock block, ModalityType modality)
         {
@@ -477,6 +477,9 @@ namespace Proviso.Core.Definitions
     {
         private readonly List<FacetDefinition> _facets = new List<FacetDefinition>();
         private readonly List<AspectDefinition> _aspects = new List<AspectDefinition>();
+
+        public SetupOrCleanupDefinition Setup { get; set; }
+        public SetupOrCleanupDefinition Cleanup { get; set; }
 
         public SurfaceDefinition(string name) : base(name) { }
 

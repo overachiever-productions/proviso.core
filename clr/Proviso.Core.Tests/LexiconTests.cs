@@ -9,7 +9,7 @@ public class LexiconTests
     public void Invalid_BlockType_Throws()
     {
         Assert.That(
-            () => Lexicon.Instance.EnterBlock("Pizza", "Pepperoni"),
+            () => Orthography.Instance.EnterBlock("Pizza", "Pepperoni"),
             Throws.TypeOf<InvalidOperationException>()
         );
     }
@@ -17,14 +17,14 @@ public class LexiconTests
     [Test]
     public void Valid_BlockTypes_Accepted()
     {
-        Lexicon.Instance.EnterBlock("Surface", "My Surface");
-        Lexicon.Instance.EnterBlock("Runbook", "My Runbook");
+        Orthography.Instance.EnterBlock("Surface", "My Surface");
+        Orthography.Instance.EnterBlock("Runbook", "My Runbook");
     }
 
     [Test]
     public void RootNode_Increments_Depth()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
 
         Assert.AreEqual(0, sut.CurrentDepth);
         sut.EnterBlock("Surface", "My Surface");
@@ -35,7 +35,7 @@ public class LexiconTests
     [Test]
     public void RootNode_And_ValidChild_Increment_Depth()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
         sut.EnterBlock("Surface", "My Surface");
         sut.EnterBlock("Facet", "A Facet");
 
@@ -45,7 +45,7 @@ public class LexiconTests
     [Test]
     public void RootNode_And_ValidChildren_Increment_Depth()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
         sut.EnterBlock("Surface", "My Surface");
         sut.EnterBlock("Facet", "A Facet");
         sut.EnterBlock("Cohort", "Members Of SysAdmin");
@@ -56,7 +56,7 @@ public class LexiconTests
     [Test]
     public void Exiting_RootNode_Resets_Depth()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
 
         sut.EnterBlock("Surface", "My Surface");
         Assert.AreEqual(1, sut.CurrentDepth);
@@ -68,7 +68,7 @@ public class LexiconTests
     [Test]
     public void Exiting_ChildNode_Decrements_Depth()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
 
         sut.EnterBlock("Surface", "My Surface");
         sut.EnterBlock("Facet", "A Facet");
@@ -82,7 +82,7 @@ public class LexiconTests
     [Test]
     public void Existing_All_Nodes_Resets_Depth()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
         sut.EnterBlock("Surface", "My Surface");
         sut.EnterBlock("Facet", "A Facet");
         sut.EnterBlock("Cohort", "Members Of SysAdmin");
@@ -97,7 +97,7 @@ public class LexiconTests
     [Test]
     public void Trackable_Taxonomy_Is_Tracked()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
         var surfaceName = "My Surface";
         sut.EnterBlock("Surface", surfaceName);
 
@@ -107,7 +107,7 @@ public class LexiconTests
     [Test]
     public void Trackable_Taxonomies_Are_Tracked()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
         var surfaceName = "My Surface";
         var facetName = "A Facet";
         sut.EnterBlock("Surface", surfaceName);
@@ -120,7 +120,7 @@ public class LexiconTests
     [Test]
     public void Peer_Nodes_Are_Allowed()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
         var prop1Name = "Disable Telemetry";
         var prop2Name = "Default XE Directory";
         var prop3Name = "Blocked Processes Threshold";
@@ -146,7 +146,7 @@ public class LexiconTests
     [Test]
     public void ScriptBlocks_Do_Not_Leak()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
         var surfaceName = "My Surface";
         var facetName = "Test Facet";
 
@@ -167,7 +167,7 @@ public class LexiconTests
     [Test]
     public void Lexicon_Tracks_Current_Function_Name()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
 
         var surfaceName = "My Surface";
         var facetName = "My Facet";
@@ -197,7 +197,7 @@ public class LexiconTests
     [Test]
     public void Cohort_Tracks_Parent_Facet()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
 
         var facetName = "My Facet";
         var cohortName = "Test Cohort";
@@ -212,7 +212,7 @@ public class LexiconTests
     [Test]
     public void Enumerate_Tracks_Parent_Cohort()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
 
         var facetName = "My Facet";
         var cohortName = "Test Cohort";
@@ -228,7 +228,7 @@ public class LexiconTests
     [Test]
     public void GetParent_Returns_Null_When_No_Parent()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
 
         sut.EnterBlock("Facets", "");
 
@@ -239,7 +239,7 @@ public class LexiconTests
     [Test]
     public void GetParent_Returns_Parent_When_Present()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
 
         var facetName = "My Facet";
         var cohortName = "Test Cohort";
@@ -256,7 +256,7 @@ public class LexiconTests
     public void GetParent_Does_Not_Cause_Leaks()
     {
         // arguably NOT needed ... but just want to verify that _stack.Skip(1).First() doesn't ... pop (i.e., only does .peek.peek)
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
 
         var facetName = "My Facet";
         var cohortName = "Test Cohort";

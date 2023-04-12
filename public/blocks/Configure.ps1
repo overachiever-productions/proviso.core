@@ -21,3 +21,30 @@ function Configure {
 		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }
+
+function Bind-Configure {
+	[CmdletBinding()]
+	param (
+		[ScriptBlock]$ConfigureBlock
+	);
+	
+	process {
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
+		$parentName = $global:PvOrthography.GetParentBlockName();
+		$grandParentName = $global:PvOrthography.GetGrandParentBlockName();
+		
+		# BIND: 
+		switch ($parentBlockType) {
+			"Inclusion" {
+				throw "Inclusion BINDING not yet implemented";
+			}
+			"Property" {
+				Write-Debug "$(Get-DebugIndent)		Binding Configure to Property: [$($parentName)].";
+				$currentProperty.Configure = $ConfigureBlock;
+			}
+			default {
+				throw "Proviso Framework Error. Invalid Parent Block Type: [$($parentBlockType)] specified for Configure Block.";
+			}
+		}
+	}
+}
