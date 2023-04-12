@@ -29,15 +29,12 @@ function Iterator {
 		
 		$definition.Iterate = $IteratorBlock;
 		
-		try {
-			[bool]$replaced = $global:PvCatalog.StoreIteratorDefinition($definition, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "Iterator block named [$Name] was replaced.";
-			}
-		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		# BIND:
+		# NOTE: EnumeraTORs (vs EnumeraTEs) do NOT get bound to parents during build - they're applied/imported during discovery. 
+		
+		# STORE: 
+		if ($global:PvOrthography.StoreIteratorDefinition($definition, (Allow-DefinitionReplacement))) {
+			Write-Verbose "Iterator block: [$($definition.Name)] was replaced.";
 		}
 	};
 	

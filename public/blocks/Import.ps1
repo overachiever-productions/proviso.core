@@ -41,8 +41,8 @@ function Import {
 	process {
 		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, [Proviso.Core.FacetType]"Import");
 		
-		$definition.SurfaceName = $global:PvLexicon.GetCurrentSurface();
-		$definition.AspectName = $global:PvLexicon.GetCurrentAspect();
+		$definition.SurfaceName = $global:PvOrthography.GetCurrentSurface();
+		$definition.AspectName = $global:PvOrthography.GetCurrentAspect();
 		
 		if ((Has-ArrayValue $Iterator) -or (Has-ArrayValue $ExplicitIterator)) {
 			$definition.SetPatternMembershipType(([Proviso.Core.Membership]$ComparisonType));
@@ -63,6 +63,7 @@ function Import {
 			# 	so, these (like Facets|Patterns) HAVE to be added to the parent surface. period. 
 			# 		Facets|Patterns ALSO have to be added to the $PvCatalog as well.
 			
+			throw "Import Logic NOT yet implemented.";
 			
 			Write-Verbose "Facet [$($definition.Name)] added to xxx.";
 		}

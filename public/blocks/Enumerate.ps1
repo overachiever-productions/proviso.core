@@ -19,7 +19,7 @@ function Enumerate {
 		
 		[bool]$isGlobal = $true;
 		if (Is-Empty $Name) {
-			$Name = $global:PvLexicon.GetCurrentCohort();
+			$Name = $global:PvOrthography.GetCurrentCohort();
 			$isGlobal = $false;  # name is inherited, i.e., this is equivalent of 'anonymous' (non-global).
 		}
 		
@@ -27,7 +27,7 @@ function Enumerate {
 	};
 	
 	process {
-		$parentName = $global:PvLexicon.GetParentBlockName();
+		$parentName = $global:PvOrthography.GetParentBlockName();
 		$definition = New-Object Proviso.Core.Definitions.EnumeratorDefinition($Name, $isGlobal, [Proviso.Core.EnumeratorParentType]"Cohort" ,$parentName);
 		
 		if (Has-Value $OrderBy) {
@@ -36,22 +36,19 @@ function Enumerate {
 		
 		$definition.Enumerate = $EnumerateBlock;
 		
-		try {
-			Bind-Enumerate -Enumerate $definition -Verbose:$xVerbose -Debug:$xDebug;
-			
-			# TODO: only goes in catalog if there's a name, right?
-			[bool]$replaced = $global:PvCatalog.StoreEnumeratorDefinition($definition, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
+		# BIND: 
+		Write-Debug "$(Get-DebugIndent)	Binding Enumrate to Cohort: [$($definition.ParentName)].";
+		$currentCohort.AddEnumerate($definition);
+		
+		# STORE: 
+		if (Has-Value $Name) {
+			if ($global:PvOrthography.StoreEnumeratorDefinition($definition, (Allow-DefinitionReplacement))) {
 				$replacedName = "for Cohort [$Name]";
 				if ($isGlobal) {
 					$replacedName = "named [$Name]";
 				}
 				Write-Verbose "Enumerate block $replacedName was replaced.";
 			}
-		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
 		}
 	};
 	

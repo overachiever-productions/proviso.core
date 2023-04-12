@@ -14,7 +14,21 @@ function Compare {
 	};
 	
 	process {
-		Bind-Compare -CompareBlock $CompareBlock -Verbose:$xVerbose -Debug:$xDebug;
+		# BIND: 
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
+		$parentName = $global:PvOrthography.GetParentBlockName();
+		switch ($parentBlockType) {
+			"Inclusion" {
+				throw "Inclusiong BINDING not yet implemented";
+			}
+			"Property" {
+				Write-Debug "$(Get-DebugIndent)		Binding Compare to Property: [$($parentName)].";
+				$currentProperty.Compare = $CompareBlock;
+			}
+			default {
+				throw "Proviso Framework Error. Invalid Parent Block Type: [$($parentBlockType)] specified for Compare Block.";
+			}
+		}
 	};
 	
 	end {

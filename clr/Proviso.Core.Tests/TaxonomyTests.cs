@@ -4,7 +4,7 @@ namespace Proviso.Core.Tests;
 
 // NOTE: The Taxonomy object is so simple it doesn't NEED tests. 
 //  Instead, this set of tests is where actual LANGUAGE/Taxonomy-combos are tested. 
-//      i.e., LexiconTests covers tests for basic functionality of the Lexicon itself. 
+//      i.e., LexiconTests covers tests for basic functionality of the Orthography itself. 
 //      This set of tests validates 'business' rules about what is allowed within Proviso.
 
 [TestFixture]
@@ -13,7 +13,7 @@ public class TaxonomyTests
     [Test]
     public void Facet_Can_Not_StandAlone()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
 
         Assert.That(
             () => sut.EnterBlock("Facet", "A Facet"),
@@ -24,7 +24,7 @@ public class TaxonomyTests
     [Test]
     public void StandAlone_Facet_Exception_Explains_Why()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
 
         var ex = Assert.Throws<InvalidOperationException>(
             () => sut.EnterBlock("Facet", "A Facet"));
@@ -35,7 +35,7 @@ public class TaxonomyTests
     [Test]
     public void Facet_Can_Be_In_Surface()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
 
         sut.EnterBlock("Surface", "My Surface");
         sut.EnterBlock("Facet", "A Facet");
@@ -44,7 +44,7 @@ public class TaxonomyTests
     [Test]
     public void Facet_Can_Be_In_Aspect()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
 
         sut.EnterBlock("Surface", "My Surface");
         sut.EnterBlock("Aspect", "Some Grouping");
@@ -54,7 +54,7 @@ public class TaxonomyTests
     [Test]
     public void Runbook_with_Named_Setup_Throws()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
         sut.EnterBlock("Runbook", "Firewall Settings");
 
         Assert.That(
@@ -66,7 +66,7 @@ public class TaxonomyTests
     [Test]
     public void Runbook_with_Named_AssertionsBlock_Throws()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
         sut.EnterBlock("Runbook", "Firewall Settings");
 
         Assert.That(
@@ -78,7 +78,7 @@ public class TaxonomyTests
     [Test]
     public void Surface_with_Named_Setup_Throws()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
         sut.EnterBlock("Surface", "Tiddlywinks");
 
         Assert.That(
@@ -90,7 +90,7 @@ public class TaxonomyTests
     [Test]
     public void Surface_with_Named_AssertionsBlock_Throws()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
         sut.EnterBlock("Surface", "Tiddlywinks");
 
         Assert.That(
@@ -102,7 +102,7 @@ public class TaxonomyTests
     [Test]
     public void Runbook_Can_Have_Setup()
     {
-        var sut = Lexicon.Instance;
+        var sut = Orthography.Instance;
 
         sut.EnterBlock("Runbook", "Firewall Settings");
         sut.EnterBlock("Setup", "");

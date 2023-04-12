@@ -14,7 +14,23 @@ function Expect {
 	};
 	
 	process {
-		Bind-Expect -ExpectBlock $ExpectBlock -Verbose:$xVerbose -Debug:$xDebug;
+		
+		# BIND: 
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
+		$parentName = $global:PvOrthography.GetParentBlockName();
+		
+		switch ($parentBlockType) {
+			"Inclusion" {
+				throw "Inclusion BINDING not yet implemented";
+			}
+			"Property" {
+				Write-Debug "$(Get-DebugIndent)		Binding Expect to Property: [$($parentName)].";
+				$currentProperty.Expect = $ExpectBlock;
+			}
+			default {
+				throw "Proviso Framework Error. Invalid Parent Block Type: [$($parentBlockType)] specified for Expect Block.";
+			}
+		}
 	};
 	
 	end {

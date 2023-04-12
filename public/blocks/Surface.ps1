@@ -33,17 +33,10 @@ function Surface {
 						-DisplayFormat $null -Verbose:$xVerbose -Debug:$xDebug;
 		
 		$currentSurface = $definition;
-		try {
-			[bool]$replaced = $global:PvCatalog.StoreSurfaceDefinition($definition, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "Surface: [$Name] was replaced.";
-			}
-			
-			Write-Verbose "Surface: [$($definition.Name)] added to PvCatalog.";
-		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		
+		# STORE:
+		if ($global:PvOrthography.StoreSurfaceDefinition($definition, (Allow-DefinitionReplacement))) {
+			Write-Verbose "Surface: [$($definition.Name)] was replaced.";
 		}
 		
 		& $SurfaceBlock;

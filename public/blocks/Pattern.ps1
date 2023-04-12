@@ -42,7 +42,7 @@ function Pattern {
 	};
 	
 	process {
-		$parentName = $global:PvLexicon.GetParentBlockName();
+		$parentName = $global:PvOrthography.GetParentBlockName();
 		[Proviso.Core.FacetParentType]$parentType = Get-FacetParentType -FacetType ([Proviso.Core.FacetType]"Pattern");
 		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, [Proviso.Core.FacetType]"Pattern", $parentType, $parentName);
 		
@@ -59,19 +59,14 @@ function Pattern {
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		$currentPattern = $definition;
-		try {
-			Bind-Facet -Facet $definition -Verbose:$xVerbose -Debug:$xDebug;
-			
-			[bool]$replaced = $global:PvCatalog.StoreFacetDefinition($definition, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "Facet named [$Name] was replaced.";
-			}
-			
-			Write-Verbose "Facet [$($definition.Name)] added to PvCatalog.";
-		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		
+		# BIND: 
+		Bind-Facet -Facet $definition -Verbose:$xVerbose -Debug:$xDebug;
+		
+		# STORE:
+		# TODO: spilt off distinct methods for Patterns vs Facets ... this is getting lame... 
+		if ($global:PvOrthography.StoreFacetDefinition($definition, (Allow-DefinitionReplacement))) {
+			Write-Verbose "Facet: [$Name] was replaced.";
 		}
 		
 		& $PatternBlock;

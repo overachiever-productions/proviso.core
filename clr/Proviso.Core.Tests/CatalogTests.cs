@@ -11,7 +11,7 @@ public class CatalogTests
     [Test]
     public void False_For_Replace_Enumerator_Definition_Throws()
     {
-        var sut = Catalog.Instance;
+        var sut = Orthography.Instance;
 
         var old = new EnumeratorDefinition("Test Enumerator", true, EnumeratorParentType.Cohort, "FakeCohort");
         var newer = new EnumeratorDefinition("Test Enumerator", true, EnumeratorParentType.Cohort, "FakeCohort");
@@ -27,7 +27,7 @@ public class CatalogTests
     [Test]
     public void Enumerator_Definitions_Can_Be_Replaced()
     {
-        var sut = Catalog.Instance;
+        var sut = Orthography.Instance;
 
         var old = new FakeEnumeratorDefinition("Test Enumerator", true);
         var newer = new EnumeratorDefinition("Test Enumerator", true, EnumeratorParentType.Cohort, "FakeCohort");
@@ -42,7 +42,7 @@ public class CatalogTests
     public void Replaced_Enumerator_Definitions_Are_Replaced()
     {
         // verify that the definition that COULD be replaced ACTUALLY _was_ replaced).
-        var sut = Catalog.Instance;
+        var sut = Orthography.Instance;
 
         var old = new FakeEnumeratorDefinition("Test Enumerator", true);
         old.OrderBy = "I'm Idaho!";

@@ -57,7 +57,7 @@ Describe "$UnitName Tests" -Tag "UnitTests" {
 				}
 			}
 			
-			$enumerate = $global:PvCatalog.GetEnumeratorDefinition("Another Test Cohort");
+			$enumerate = $global:PvOrthography.GetEnumeratorDefinition("Another Test Cohort");
 			
 			$enumerate | Should -Not -BeNullOrEmpty;
 			$enumerate.Name | Should -Be "Another Test Cohort";
@@ -97,7 +97,7 @@ Describe "$UnitName Tests" -Tag "UnitTests" {
 				}
 			}
 			
-			$extracted = $global:PvCatalog.GetEnumeratorDefinition("Enumerate Members of SysAdmin");
+			$extracted = $global:PvOrthography.GetEnumeratorDefinition("Enumerate Members of SysAdmin");
 			$extracted.IsGlobal | Should -Be $true;
 		}
 		

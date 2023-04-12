@@ -15,7 +15,7 @@ Describe "$UnitName Tests" -Tag "IntegrationTests" {
 				Facet "Basic Facet" { }
 			}
 			
-			$global:PvCatalog.GetFacetDefinitionByName("Basic Facet", $null) | Should -Not -Be $null;
+			$global:PvOrthography.GetFacetDefinitionByName("Basic Facet", $null) | Should -Not -Be $null;
 		}
 	}
 	
@@ -37,7 +37,7 @@ Describe "$UnitName Tests" -Tag "IntegrationTests" {
 				Cleanup {}
 			}
 			
-			$global:PvCatalog.GetRunbookDefinition("Firewall Stuff") | Should -Not -Be $null;			
+			$global:PvOrthography.GetRunbookDefinition("Firewall Stuff") | Should -Not -Be $null;			
 		}
 		
 		It "Stores Surfaces (and children)" {
@@ -47,8 +47,8 @@ Describe "$UnitName Tests" -Tag "IntegrationTests" {
 				}
 			}
 			
-			#$global:PvCatalog.GetSurfaceDefinition("Test Surface 1") | Should -Not -Be $null;
-			$global:PvCatalog.GetFacetDefinitionByName("Test Surface 1 - Facet A", "Test Surface 1") | Should -Not -Be $null;
+			#$global:PvOrthography.GetSurfaceDefinition("Test Surface 1") | Should -Not -Be $null;
+			$global:PvOrthography.GetFacetDefinitionByName("Test Surface 1 - Facet A", "Test Surface 1") | Should -Not -Be $null;
 		}
 		
 		It "Stores Facets" {
@@ -63,9 +63,9 @@ Describe "$UnitName Tests" -Tag "IntegrationTests" {
 				}
 			}
 			
-			$global:PvCatalog.GetFacetDefinitionByName("Minimally Viable - 11", $null) | Should -Not -Be $null;
-			$global:PvCatalog.GetFacetDefinitionByName("Minimally Viable - 12", $null) | Should -Not -Be $null;
-			$global:PvCatalog.GetFacetDefinitionByName("Minimally Viable - 13", $null) | Should -Not -Be $null;
+			$global:PvOrthography.GetFacetDefinitionByName("Minimally Viable - 11", $null) | Should -Not -Be $null;
+			$global:PvOrthography.GetFacetDefinitionByName("Minimally Viable - 12", $null) | Should -Not -Be $null;
+			$global:PvOrthography.GetFacetDefinitionByName("Minimally Viable - 13", $null) | Should -Not -Be $null;
 		}
 		
 		It "Stores Patterns" {
@@ -74,7 +74,7 @@ Describe "$UnitName Tests" -Tag "IntegrationTests" {
 			}
 			
 			
-			$pattern = $global:PvCatalog.GetFacetDefinitionByName("Fake Pattern 1", $null);
+			$pattern = $global:PvOrthography.GetFacetDefinitionByName("Fake Pattern 1", $null);
 			$pattern | Should -Not -Be $null;
 		}
 	}

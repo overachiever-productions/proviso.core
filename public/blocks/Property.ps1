@@ -28,25 +28,45 @@ function Property {
 	};
 	
 	process {
-		$parentBlockType = $global:PvLexicon.GetParentBlockType();
-		$parentName = $global:PvLexicon.GetParentBlockName();
+		$parentBlockType = $global:PvOrthography.GetParentBlockType();
+		$parentName = $global:PvOrthography.GetParentBlockName();
 		$definition = New-Object Proviso.Core.Definitions.PropertyDefinition($Name, [Proviso.Core.PropertyParentType]$parentBlockType, $parentName);
 		
 		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
-		try {
-			Bind-Property -Property $definition -Verbose:$xVerbose -Debug:$xDebug;
-			
-			[bool]$replaced = $global:PvCatalog.StorePropertyDefinition($definition, (Allow-DefinitionReplacement));
-			
-			if ($replaced) {
-				Write-Verbose "Property: [$Name] (within $($definition.PropertyParentType) [$($definition.ParentName)]) was replaced.";
+		$currentProperty = $definition;
+		
+		# BIND:
+		switch ($parentBlockType) {
+			"Properties" {
+				Write-Debug "$(Get-DebugIndent)	NOT Binding Property: [$($definition.Name)] to parent, because parent is a Properties wrapper.";
+			}
+			"Cohort" {
+				Write-Debug "$(Get-DebugIndent)	Binding Property [$($definition.Name)] to parent Cohort, named: [$($definition.ParentName)], with grandparent named: [$($currentCohort.ParentName)].";
+				
+				$currentCohort.AddChildProperty($definition);
+			}
+			"Facet" {
+				Write-Debug "$(Get-DebugIndent)	Binding Property [$($definition.Name)] to Facet, named: [$($definition.ParentName)], with grandparent named: [$grandParentName].";
+				
+				$currentFacet.AddChildProperty($definition);
+			}
+			"Pattern" {
+				Write-Debug "$(Get-DebugIndent)	Binding Property [$($definition.Name)] to Pattern, named: [$($definition.ParentName)], with grandparent named: [$grandParentName].";
+				
+				$currentPattern.AddChildProperty($definition);
+			}
+			default {
+				throw "Proviso Framework Error. Invalid Property Parent: [$($Property.ParentType)] specified.";
 			}
 		}
-		catch {
-			throw "$($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+		
+		# STORE:
+		# TODO: pretty sure properties NEED to be stored via their parent, right? 
+		if ($global:PvOrthography.StorePropertyDefinition($definition, (Allow-DefinitionReplacement))) {
+			Write-Verbose "Property: [$Name] (within $($Property.PropertyParentType) [$($Property.ParentName)]) was replaced.";
 		}
 		
 		& $PropertyBlock;
