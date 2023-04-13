@@ -226,7 +226,7 @@ namespace Proviso.Core
 
         public bool StoreRunbookDefinition(RunbookDefinition definition, bool allowReplace)
         {
-            definition.Validate(null);
+            definition.Validate();
 
             CatalogPredicate<RunbookDefinition> predicate = (exists, added) => exists.Name == added.Name;
             string errorText = $"[Runbook] with name [{definition.Name}] already exists and can NOT be replaced. Ensure unique [Runbook] names and/or allow global replacement override.";
@@ -235,25 +235,16 @@ namespace Proviso.Core
 
         public bool StoreSurfaceDefinition(SurfaceDefinition definition, bool allowReplace)
         {
-            definition.Validate(null);
+            definition.Validate();
 
             CatalogPredicate<SurfaceDefinition> predicate = (exists, added) => exists.Name == added.Name;
             string errorText = $"Surface: [{definition.Name}] already exists and can NOT be replaced. Ensure unique surface names and/or allow global replacement override.";
             return this._surfaces.SetDefinition(definition, predicate, allowReplace, errorText);
         }
 
-        //public bool StoreAspectDefinition(AspectDefinition definition, bool allowReplace)
-        //{
-        //    definition.Validate(null);
-
-        //    CatalogPredicate<AspectDefinition> predicate = (exists, added) => (exists.Name == added.Name) && (exists.ParentName == added.ParentName);
-        //    string errorText = $"Aspect: [{definition.Name}] already exists within Surface: [{definition.ParentName}] and can NOT be replaced. Ensure unique Aspect names (within Surfaces) and/or allow global replacement override.";
-        //    return this._aspects.SetDefinition(definition, predicate, allowReplace, errorText);
-        //}
-
         public bool StoreFacetDefinition(FacetDefinition definition, bool allowReplace)
         {
-            definition.Validate(null);
+            definition.Validate();
 
             // NOTE: using .Id instead of .Name in predicate:
             CatalogPredicate<FacetDefinition> predicate = (exists, added) => exists.Id == added.Id;
@@ -263,7 +254,7 @@ namespace Proviso.Core
 
         public bool StorePropertyDefinition(PropertyDefinition definition, bool allowReplace)
         {
-            definition.Validate(null);
+            definition.Validate();
 
             CatalogPredicate<PropertyDefinition> predicate = (exists, added) => exists.Name == added.Name;
             string errorText = $"[Property] with name [{definition.Name}] already exists and can NOT be replaced. Ensure unique [Property] names and/or allow global replacement override.";
@@ -272,7 +263,7 @@ namespace Proviso.Core
 
         public bool StoreCohortDefinition(CohortDefinition definition, bool allowReplace)
         {
-            definition.Validate(null);
+            definition.Validate();
 
             CatalogPredicate<CohortDefinition> predicate = (exists, added) => (exists.Name == added.Name) && (exists.ParentName == added.ParentName);
             string errorText = $"[Cohort] with name [{definition.Name}] already exists and can NOT be replaced. Ensure unique [Cohort] names and/or allow global replacement override.";
@@ -281,7 +272,7 @@ namespace Proviso.Core
 
         public bool StoreEnumeratorDefinition(EnumeratorDefinition definition, bool allowReplace)
         {
-            definition.Validate(null);
+            definition.Validate();
 
             CatalogPredicate<EnumeratorDefinition> predicate = (exists, added) => exists.Name == added.Name;
             string e = definition.IsGlobal ? "Enumerator" : "Enumerate";
@@ -412,7 +403,5 @@ namespace Proviso.Core
 
             return false;
         }
-
-
     }
 }

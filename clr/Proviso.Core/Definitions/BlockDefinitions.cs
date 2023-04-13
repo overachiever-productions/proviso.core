@@ -8,7 +8,7 @@ namespace Proviso.Core.Definitions
 {
     public interface IValidated
     {
-        void Validate(object validationContext);
+        void Validate();
     }
 
     public interface IDefinable
@@ -117,7 +117,7 @@ namespace Proviso.Core.Definitions
             this.ParentName = parentName;
         }
 
-        public void Validate(object validationContext)
+        public void Validate()
         {
             if (string.IsNullOrWhiteSpace(this.Name))
                 throw new Exception("Proviso Validation Error. [Property] -Name can NOT be null/empty.");
@@ -141,7 +141,7 @@ namespace Proviso.Core.Definitions
             this.ParentName = parentName;
         }
 
-        public void Validate(object validationContext)
+        public void Validate()
         {
             if (string.IsNullOrWhiteSpace(this.Name))
                 throw new Exception("Proviso Validation Error. [Cohort] -Name can NOT be null/empty.");
@@ -155,13 +155,13 @@ namespace Proviso.Core.Definitions
 
         public void AddChildProperty(PropertyDefinition child)
         {
-            child.Validate(null);
+            child.Validate();
             this._properties.Add(child);
         }
 
         public void AddEnumerate(EnumeratorDefinition enumerate)
         {
-            enumerate.Validate(null);
+            enumerate.Validate();
             this.Enumerate = enumerate;
         }
     }
@@ -272,7 +272,7 @@ namespace Proviso.Core.Definitions
             this.ParentName = parentName;
         }
 
-        public void Validate(object validationContext)
+        public void Validate()
         {
             if (string.IsNullOrWhiteSpace(this.Name))
                 throw new Exception("Proviso Validation Error. [Enumerator] -Name can NOT be null/empty.");
@@ -340,7 +340,7 @@ namespace Proviso.Core.Definitions
             //this.SpecifiedIterator = iteratorName;
         }
 
-        public void Validate(object validationContext)
+        public void Validate()
         {
             if (string.IsNullOrWhiteSpace(this.Name)) // TODO: this error is hard-coded as Facet - could be Facet OR Pattern.
                 throw new Exception("Proviso Validation Error. [Facet] -Name can NOT be null/empty.");
@@ -350,13 +350,13 @@ namespace Proviso.Core.Definitions
 
         public void AddChildProperty(PropertyDefinition child)
         {
-            child.Validate(null);
+            child.Validate();
             this._properties.Add(child);
         }
 
         public void AddChildCohort(CohortDefinition child)
         {
-            child.Validate(null);
+            child.Validate();
             this._cohorts.Add(child);
         }
 
@@ -420,7 +420,7 @@ namespace Proviso.Core.Definitions
             this.ParentName = parentName;
         }
 
-        public void Validate(object validationContext)
+        public void Validate()
         {
             // TODO: Implement
         }
@@ -439,7 +439,7 @@ namespace Proviso.Core.Definitions
 
         public void AddFacet(FacetDefinition added)
         {
-            added.Validate(null);
+            added.Validate();
 
             var exists = this._facets.Find(x => x.Name == added.Name);
             if (exists != null)
@@ -449,7 +449,7 @@ namespace Proviso.Core.Definitions
         }
 
 
-        public void Validate(object validationContext)
+        public void Validate()
         {
             // TODO: Implement
         }
@@ -490,7 +490,7 @@ namespace Proviso.Core.Definitions
 
         public void AddFacet(FacetDefinition added)
         {
-            added.Validate(null);
+            added.Validate();
 
             var exists = this._facets.Find(x => x.Name == added.Name);
             if (exists != null)
@@ -501,7 +501,7 @@ namespace Proviso.Core.Definitions
 
         public void AddAspect(AspectDefinition added)
         {
-            added.Validate(null);
+            added.Validate();
 
             this._aspects.Add(added);
         }
@@ -511,7 +511,7 @@ namespace Proviso.Core.Definitions
         //    throw new NotImplementedException();
         //}
 
-        public void Validate(object validationContext)
+        public void Validate()
         {
             // TODO: Implement
             // TODO: this'll be roughly the same as for ... Implement|Run Def... 
@@ -523,7 +523,7 @@ namespace Proviso.Core.Definitions
     {
         public ImplementDefinition(string name) : base(name) { }
 
-        public void Validate(object validationContext)
+        public void Validate()
         {
             throw new NotImplementedException();
         }
@@ -589,7 +589,7 @@ namespace Proviso.Core.Definitions
             this._implementDefinitions.Add(added);
         }
 
-        public void Validate(object validationContext)
+        public void Validate()
         {
             // TODO: is there anything to validate here? 
             // maybe that the COUNT of Implement defs is > 0?
