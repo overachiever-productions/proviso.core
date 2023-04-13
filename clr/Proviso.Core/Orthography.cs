@@ -5,6 +5,29 @@ using Proviso.Core.Definitions;
 
 namespace Proviso.Core
 {
+    public delegate bool CatalogPredicate<in T>(T existing, T replacement);
+
+    public static class CatalogExtensions
+    {
+        public static bool SetDefinition<T>(this List<T> list, T added, CatalogPredicate<T> predicate, bool allowReplace, string exceptionText)
+        {
+            var exists = list.Find(x => predicate(x, added));
+            if (exists != null)
+            {
+                if (allowReplace)
+                {
+                    exists = added;
+                    return true;
+                }
+
+                throw new Exception(exceptionText);
+            }
+
+            list.Add(added);
+            return false;
+        }
+    }
+
     public class Orthography
     {
         private readonly List<EnumeratorDefinition> _enumerators = new List<EnumeratorDefinition>();
@@ -282,7 +305,7 @@ namespace Proviso.Core
 
         public bool StoreIteratorDefinition(IteratorDefinition definition, bool allowReplace)
         {
-            definition.Validate(null);
+            definition.Validate();
 
             CatalogPredicate<IteratorDefinition> predicate = (exists, added) => exists.Name == added.Name;
             string e = definition.IsGlobal ? "Iterator" : "Iterate";
