@@ -123,32 +123,39 @@ function Read-Facet {
 		# 				we'll add it to the Catalog ... 
 		# 				and then return it... 
 		
+		[Proviso.Core.Models.Facet]$facetOrPattern = Get-Facet -Name $Name -ParentName $ParentName -Verbose:$xVerbose -Debug:$xDebug;
+		
+		
 		
 		# Retrieve from Catalog + Validate (Discovery-Phase):
-		[Proviso.Core.Definitions.FacetDefinition]$definition = $null;
-		$definition = $global:PvCatalog.GetFacetDefinitionByName($Name, $ParentName);
-		if ($null -eq $definition) {
-			throw "Processing Error. Pattern or Facet: [$Name] was NOT found.";
-		}
-		
-		[Proviso.Core.Models.Facet]$facetOrPattern = $null;
-		try {
-
-Write-Host "herro?"
-			$facetOrPattern = Register-Facet -Facet $Name -Parent $ParentName -Verbose:$xVerbose -Debug:$xDebug;
-		}
-		catch {
-			throw "Proviso Validation Error. Facet or Pattern: [$Name] failed validation: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
-		
-		if ($null -eq $facetOrPattern) {
-			throw "Could not find Pattern or Facet: [$Name].";
-		}
+#		[Proviso.Core.Definitions.FacetDefinition]$definition = $null;
+#		$definition = $global:PvCatalog.GetFacetDefinitionByName($Name, $ParentName);
+#		if ($null -eq $definition) {
+#			throw "Processing Error. Pattern or Facet: [$Name] was NOT found.";
+#		}
+#		
+#		[Proviso.Core.Models.Facet]$facetOrPattern = $null;
+#		try {
+#
+#Write-Host "herro?"
+#			$facetOrPattern = Register-Facet -Facet $Name -Parent $ParentName -Verbose:$xVerbose -Debug:$xDebug;
+#		}
+#		catch {
+#			throw "Proviso Validation Error. Facet or Pattern: [$Name] failed validation: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
+#		}
+#		
+#		if ($null -eq $facetOrPattern) {
+#			throw "Could not find Pattern or Facet: [$Name].";
+#		}
 		
 		$results = @();  # MUST be declared here to be able to be in scope for all pipeline'd operations... 
 	};
 	
 	process {
+		
+		Write-Host "Terminating ...this code isn't ready for processing yet.... bye.... ";
+		return;
+		
 		if (Has-ArrayValue $Servers) {
 			foreach ($s in $Servers) {
 				if (Has-ArrayValue $Targets) {

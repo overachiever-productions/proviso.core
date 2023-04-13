@@ -12,5 +12,10 @@ namespace Proviso.Core
         public static Catalog Instance => new Catalog();
 
         private Catalog() { }
+
+        public Facet GetFacetByName(string name, string parentName)
+        {
+            return null;
+        }
     }
 }

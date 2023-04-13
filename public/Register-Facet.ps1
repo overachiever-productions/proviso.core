@@ -1,37 +1,130 @@
 ﻿Set-StrictMode -Version 1.0;
 
+<#
+
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+
+	$global:DebugPreference = "Continue";
+	#$global:VerbosePreference = "Continue";
+
+
+	Facets {
+		Facet "My First Facet" { 
+
+			Cohort "Named" {
+				# some code.
+				Enumerate {
+
+				}
+				Add {
+
+				}
+				Remove {
+
+				}
+
+				Property "Cohort Property A" {
+				}
+			}
+		}
+	}
+
+write-host "--------------------------------------------------"
+
+	Read-Facet "My First Facet";
+
+
+
+#>
+
 function Register-Facet {
 	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory)]
-		[string]$Facet,
-		[string]$Parent,
+		[string]$Name,
+		[string]$ParentName,
 		[switch]$OverWrite = $false		# synonyms or better names might be: $Replace, $Force? etc... 
 	);
 	
 	begin {
+		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
+		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
+		
 		
 	};
 	
 	process {
-		Write-Host "Executing REGISTER_FACET.";
+		# Bit of a DRY violation as this is a copy/paste of the same lines from Get-Facet:
+		[Proviso.Core.Definitions.FacetDefinition]$definition = $null;
+		$definition = $global:PvOrthography.GetFacetDefinitionByName($Name, $ParentName);
+		if ($null -eq $definition) {
+			throw "Processing Error. Pattern or Facet: [$Name] was NOT found.";
+		}
+		
+		Write-Debug "Facet Definition [$Name] located. Starting Discovery + Validation.";
 		
 		
-		# NOTES from Read-Facet:
-		# ---------------------------------------------------------------------------------------------
-		# options here: Register-Facet (probably my best option)... or: Import-Facet, or even Assert-Facet or ... Initialize-Facet or ... Confirm-Facet. 
-		# 			confirm sucks... and ... initialize works... but isn't exactly what I'm shooting for. 
-		#   and... maybe what I need to do here is: 
-		#    	a) PvCatalog ends up being a registry/catalog of 'COMPILED' things - like facets, surfaces, runbooks and any other resources. 
-		# 		b) what I'm CURRENTLY calling the PvCatalog could be more of a dictionary/lexicon/register... that is used ONLY for build operations? 
-		#  			and, yeah, the above is what I need to do... 
-		# 				as in: BUILD is 'my problem/domain' - something that I have to tackle as the framework author... 
-		# 				but the $PvCatalog is what 'users' can/will use to register  (or unregister) any of their objects and so on... 
-		# 				as in: 'my' stuff/dictionary/whatever is hidden and internal ... whereas the 'catalog' is public and can have objects added/removed.		
-		# ---------------------------------------------------------------------------------------------
+		# what does registration even mean? 
+		# 	it's validation, basically. or ... confirmation that the build(ed) definition is legit. 
+		# 	yeah, ultimately, it's a kind of 'compilation' - taking expressed intentions and turning them into a portable object/thingy... 
+		
+		# for a facet that means: 
+		# 		1. does the facet have a parent? I don't think that really matters. as in, facets can be stand-alone(ish) - they either have to exist in a surface/aspect or ... facets block. 
+		# 		2. is this a facet or a pattern? 
+		# 		3. do we have at least 1 property/cohort? 
+		# 		4. if we're a pattern, do we have an iterate/iterator-specified (and if the iterator is specified, can we find it?)
+		# 		5. If there's a cohort... 
+		# 			> does it have an emuerate or enumerator specified (and if enumerator - can we find one?)
+		# 			> does the cohort have at least 1 property?
+		# 		6. what else?
+		
+		# 		assuming that all of the above passes... 
+		# 			congrats, we've got a facet/pattern?
+		# 			store it (along with enumerate/iterate 'pointers'?)
+		# 				er. no. no pointers. the actual code. 
+		# 				and, insanely enough: caching/build/whatever dependencies on these enumerators/iterators
+		# 					cuz if they end up being updated/replaced, I need to either update facets and such that depend on them, or dump them from the cache etc. 
+		# 		So. Yeah. 
+		# 			when i'm done here, what I'll have is a fully weaponized bit of code that has everything it needs to process 
+		# 				e.g., it'll have all paths, all directives, and so on fully populated. 
+		# 				it'll also have the code-blocks for Iterate/Add/Remove and Enumerate/Add/Remove 'copied into place' as needed. 
+		# 			and ... 
+		# 				for each property (or cohort-property/etc.) or inclusion and whatever... 
+		# 			it'll have the code-blocks for EECC and EVERYTHING needed for execution. 
+		
+		
 	};
 	
 	end {
 		
 	};
+}
+
+function Get-Facet {
+	[CmdletBinding()]
+	param (
+		[Parameter(Mandatory)]
+		[string]$Name,
+		[string]$ParentName
+	);
+	
+	process {
+		Write-Debug "Attempting to get Facet: [$Name] from Catalog.";
+		[Proviso.Core.Models.Facet]$facet = $global:PvCatalog.GetFacetByName($Name, $ParentName);
+		
+		if ($null -eq $facet) {
+			Write-Debug "Facet: [$Name] not found in Catalog. Attempting to load definition (for registration).";
+			
+			[Proviso.Core.Definitions.FacetDefinition]$definition = $null;
+			$definition = $global:PvOrthography.GetFacetDefinitionByName($Name, $ParentName);
+			if ($null -eq $definition) {
+				throw "Processing Error. Pattern or Facet: [$Name] was NOT found.";
+			}
+			
+			Write-Debug "Facet: [$Name] definition found. Attempting Registration.";
+			
+			$facet = Register-Facet -Name $Name -ParentName $ParentName -OverWrite:(Allow-DefinitionReplacement) -Verbose:$xVerbose -Debug:$xDebug;
+		}
+		
+	}
 }

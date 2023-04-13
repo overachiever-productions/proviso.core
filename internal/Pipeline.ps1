@@ -31,7 +31,7 @@ function Execute-Pipeline {
 		# ====================================================================================================
 		#region "Setup"
 		[datetime]$pipelineStart = [datetime]::Now;
-		Write-Debug "	Pipeline Processing Starting. -Verb [$Verb] -OperationType [$OperationType] -Name [$Name] ";
+		Write-Debug "	Pipeline Processing Starting. -Verb: [$Verb] -OperationType: [$OperationType] -Name: [$Name] ";
 		
 		[Proviso.Core.Definitions.SurfaceDefinition[]]$surfaceDefinitions = @();
 		[Proviso.Core.Definitions.FacetDefinition[]]$facetDefinitions = @();
