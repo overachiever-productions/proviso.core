@@ -3,10 +3,13 @@
 function Remove {
 	[CmdletBinding()]
 	param (
+		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Named')]
 		[string]$Name = $null,
+		[Parameter(Mandatory, Position = 1, ParameterSetName = 'Named')]
+		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Anonymous')]
+		[ScriptBlock]$RemoveBlock,
 		[ValidateSet("None", "Low", "Medium", "High")]
-		[string]$Impact = "None",
-		[ScriptBlock]$RemoveBlock
+		[string]$Impact = "None"
 	);
 	
 	begin {

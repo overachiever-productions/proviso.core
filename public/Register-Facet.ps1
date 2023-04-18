@@ -25,6 +25,13 @@
 
 				Property "Cohort Property A" {
 				}
+				Property "Cohort Property B" {
+				}
+			}
+
+			Property "Facet Property 1" { 
+			}
+			Property "Facet Property 2" {
 			}
 		}
 	}
@@ -49,8 +56,6 @@ function Register-Facet {
 	begin {
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
-		
-		
 	};
 	
 	process {
@@ -62,6 +67,13 @@ function Register-Facet {
 		}
 		
 		Write-Debug "Facet Definition [$Name] located. Starting Discovery + Validation.";
+		
+		# TODO: this should be via $definition.ToFacet() or whatever... (as in, do mapping of properties and such within C# vs manually re-mapping in here... )
+		[Proviso.Core.Models.Facet]$facet = New-Object Proviso.Core.Models.Facet($definition.Name, $definition.Id, $definition.FacetType);
+		
+		# Validate: 
+		$facet.Validate($global:PvCatalog); # this could work... 
+		
 		
 		
 		# what does registration even mean? 

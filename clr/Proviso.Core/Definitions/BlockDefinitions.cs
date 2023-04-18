@@ -292,6 +292,16 @@ namespace Proviso.Core.Definitions
 
     public class FacetDefinition : DefinitionBase, IValidated
     {
+        // TODO: By storing cohorts distinct from properties ... I've created some problems. 
+        //      1. I'm going to lose the 'order' of execution/definition. 
+        //          e.g., if someone creates a facet with 2x properties, a cohort (with 2x properties) and then 3x properties. 
+        //          that's LOST ... my code (as currently constituted) would do 5x properties and 2x cohort props - or vice versa 
+        //          but NOT the order specified - which is going to be a problem. 
+        //      2. Related to the above... I'm MAKING a difference between a property - and a cohort property. 
+        //          when, in reality ... there should be no 'real' difference - other than that one is 'hard coded' and the other (cohort)
+        //          is ... going to be dynamic - i.e., it'll have an enumerate|or and ... add/remove functionality. 
+
+
         private List<PropertyDefinition> _properties = new List<PropertyDefinition>();
         private List<CohortDefinition> _cohorts = new List<CohortDefinition>();
         private List<IteratorDefinition> _iterators = new List<IteratorDefinition>();
