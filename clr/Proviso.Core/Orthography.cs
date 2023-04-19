@@ -45,7 +45,7 @@ namespace Proviso.Core
         //      er, well... did I ever decide to make properties|cohorts 'borrowable' from elsewhere?
         //      if so, then... they got to BOTH their parents and here... (but I'm going to need some sort of import/borrow/use syntax/func. 
         //      i THINK i was ONLY going to allow FACETS to be re-used like this (from one surface to the next)... but ... maybe I was going to do the same with props? (cohorts?)
-        private readonly List<CohortDefinition> _cohorts = new List<CohortDefinition>();
+        //private readonly List<CohortDefinition> _cohorts = new List<CohortDefinition>();
         private readonly List<PropertyDefinition> _properties = new List<PropertyDefinition>();
 
         private List<Taxonomy> _grammar;
@@ -284,14 +284,14 @@ namespace Proviso.Core
             return this._properties.SetDefinition(definition, predicate, allowReplace, errorText);
         }
 
-        public bool StoreCohortDefinition(CohortDefinition definition, bool allowReplace)
-        {
-            definition.Validate();
+        //public bool StoreCohortDefinition(CohortDefinition definition, bool allowReplace)
+        //{
+        //    definition.Validate();
 
-            CatalogPredicate<CohortDefinition> predicate = (exists, added) => (exists.Name == added.Name) && (exists.ParentName == added.ParentName);
-            string errorText = $"[Cohort] with name [{definition.Name}] already exists and can NOT be replaced. Ensure unique [Cohort] names and/or allow global replacement override.";
-            return this._cohorts.SetDefinition(definition, predicate, allowReplace, errorText);
-        }
+        //    CatalogPredicate<CohortDefinition> predicate = (exists, added) => (exists.Name == added.Name) && (exists.ParentName == added.ParentName);
+        //    string errorText = $"[Cohort] with name [{definition.Name}] already exists and can NOT be replaced. Ensure unique [Cohort] names and/or allow global replacement override.";
+        //    return this._cohorts.SetDefinition(definition, predicate, allowReplace, errorText);
+        //}
 
         public bool StoreEnumeratorDefinition(EnumeratorDefinition definition, bool allowReplace)
         {
@@ -359,10 +359,10 @@ namespace Proviso.Core
             return this._facets.Find(x => x.Id == id);
         }
 
-        public CohortDefinition GetCohortDefinition(string name, string parentName)
-        {
-            return this._cohorts.Find(x => x.Name == name && x.ParentName == parentName);
-        }
+        //public CohortDefinition GetCohortDefinition(string name, string parentName)
+        //{
+        //    return this._cohorts.Find(x => x.Name == name && x.ParentName == parentName);
+        //}
 
         public PropertyDefinition GetPropertyDefinition(string name, string parentName)
         {

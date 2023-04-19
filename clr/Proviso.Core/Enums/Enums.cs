@@ -63,6 +63,12 @@
         Pattern
     }
 
+    public enum PropertyType
+    {
+        Cohort,
+        Inclusion,
+        Property
+    }
 
     public enum RunbookOrSurface
     {

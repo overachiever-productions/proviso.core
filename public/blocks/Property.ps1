@@ -17,6 +17,7 @@ function Property {
 		[string]$DisplayFormat = $null,
 		[object]$Expect,
 		[object]$Extract,
+		[string]$ThrowOnConfig = $null,
 		[switch]$UsesAdd = $false,
 		[switch]$UsesAddRemove = $false
 	);
@@ -30,7 +31,7 @@ function Property {
 	process {
 		$parentBlockType = $global:PvOrthography.GetParentBlockType();
 		$parentName = $global:PvOrthography.GetParentBlockName();
-		$definition = New-Object Proviso.Core.Definitions.PropertyDefinition($Name, [Proviso.Core.PropertyParentType]$parentBlockType, $parentName);
+		$definition = New-Object Proviso.Core.Definitions.PropertyDefinition($Name, [Proviso.Core.PropertyType]"Property", [Proviso.Core.PropertyParentType]$parentBlockType, $parentName);
 		
 		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
 						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
@@ -44,19 +45,29 @@ function Property {
 				Write-Debug "$(Get-DebugIndent)	NOT Binding Property: [$($definition.Name)] to parent, because parent is a Properties wrapper.";
 			}
 			"Cohort" {
-				Write-Debug "$(Get-DebugIndent)	Binding Property [$($definition.Name)] to parent Cohort, named: [$($definition.ParentName)], with grandparent named: [$($currentCohort.ParentName)].";
-				
-				$currentCohort.AddChildProperty($definition);
+				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($definition.Name)] belonging to Cohort: [$($definition.ParentName)], to grandparent named: [$($currentCohort.ParentName)].";
+				$grandparentBlockType = $global:PvOrthography.GetGrandParentBlockType();
+				switch ($grandparentBlockType) {
+					"Facet" {
+						$currentFacet.AddProperty($definition);
+					}
+					"Pattern" {
+						$currentPattern.AddProperty($definition);
+					}
+					default {
+						throw "Proviso Framework Error. Invalid COHORT Property Parent: [$($Property.ParentType)] specified.";
+					}
+				}
 			}
 			"Facet" {
-				Write-Debug "$(Get-DebugIndent)	Binding Property [$($definition.Name)] to Facet, named: [$($definition.ParentName)], with grandparent named: [$grandParentName].";
+				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($definition.Name)] to Facet, named: [$($definition.ParentName)], with grandparent named: [$grandParentName].";
 				
-				$currentFacet.AddChildProperty($definition);
+				$currentFacet.AddProperty($definition);
 			}
 			"Pattern" {
-				Write-Debug "$(Get-DebugIndent)	Binding Property [$($definition.Name)] to Pattern, named: [$($definition.ParentName)], with grandparent named: [$grandParentName].";
+				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($definition.Name)] to Pattern, named: [$($definition.ParentName)], with grandparent named: [$grandParentName].";
 				
-				$currentPattern.AddChildProperty($definition);
+				$currentPattern.AddProperty($definition);
 			}
 			default {
 				throw "Proviso Framework Error. Invalid Property Parent: [$($Property.ParentType)] specified.";

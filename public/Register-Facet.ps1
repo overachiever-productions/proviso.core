@@ -8,30 +8,63 @@
 	#$global:VerbosePreference = "Continue";
 
 
+[string[]]$global:target = @("a","B", "Cee", "d", "e", "11");
+
 	Facets {
 		Facet "My First Facet" { 
 
-			Cohort "Named" {
-				# some code.
-				Enumerate {
+			Property "Length" -DisplayFormat "hmmm" {
+				Extract {
+					return $global:target.Length;
+				}
+				Configure {
+					throw "not supported - and this could/should be in a -param.";
+				}
+			}
 
+			Cohort "Per Member" -DisplayFormat "should inherit 'down' to each child prop" -Expect $true {
+				Enumerate {
+					return $global:target;
 				}
 				Add {
-
+					#$global:target += uhhhhh. ... guess there could/should be some sort of context data here? 
 				}
 				Remove {
-
+					# yeah... remove what? 
 				}
 
-				Property "Cohort Property A" {
+				# Inclusion goes here, right? 
+				# 			might even make sense to call Inclusion something like Membership { } 
+
+
+				Property "Is Upper Case" {
+					Extract {
+						# couple of ways to determin 'isUpperCase'. I don't REALLY care about that.
+						# 	I care about ... iterating over $context.enumerator.Current or whatever... 
+					}
 				}
-				Property "Cohort Property B" {
+
+				Property "Is Vowel" {
+					Extract {
+						# return $context.whatever.current.EnumValue -in a,e,i,o,u (case insensitive)
+					}
+				}
+
+				Property "Should be Skipped" -Skip {
+					# add some code here... 
 				}
 			}
 
-			Property "Facet Property 1" { 
+			Property "Contains 'Cee'" -Expect $true { 
+				Extract {
+					return $global:target -contains "Cee";
+				}
 			}
-			Property "Facet Property 2" {
+
+			Property "Has Numerics" -Expect $true {
+				Extract {
+					
+				}
 			}
 		}
 	}
@@ -67,6 +100,13 @@ function Register-Facet {
 		}
 		
 		Write-Debug "Facet Definition [$Name] located. Starting Discovery + Validation.";
+		
+		
+		foreach ($prop in $definition.Properties) {
+			Write-Host "PROP: $($prop.Name)";
+		}
+		
+		
 		
 		# TODO: this should be via $definition.ToFacet() or whatever... (as in, do mapping of properties and such within C# vs manually re-mapping in here... )
 		[Proviso.Core.Models.Facet]$facet = New-Object Proviso.Core.Models.Facet($definition.Name, $definition.Id, $definition.FacetType);

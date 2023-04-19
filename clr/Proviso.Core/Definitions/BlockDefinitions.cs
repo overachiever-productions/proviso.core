@@ -104,6 +104,7 @@ namespace Proviso.Core.Definitions
     public class PropertyDefinition : DefinitionBase, IValidated
     {
         public PropertyParentType ParentType { get; private set; }
+        public PropertyType PropertyType { get; private set; }
         public string ParentName { get; set; }
 
         public ScriptBlock Expect { get; set; }
@@ -111,58 +112,40 @@ namespace Proviso.Core.Definitions
         public ScriptBlock Compare { get; set; }
         public ScriptBlock Configure { get; set; }
 
-        public PropertyDefinition(string name, PropertyParentType parentType, string parentName) : base(name)
-        {
-            this.ParentType = parentType;
-            this.ParentName = parentName;
-        }
-
-        public void Validate()
-        {
-            if (string.IsNullOrWhiteSpace(this.Name))
-                throw new Exception("Proviso Validation Error. [Property] -Name can NOT be null/empty.");
-        }
-    }
-
-    public class CohortDefinition : DefinitionBase, IValidated
-    {
-        private List<PropertyDefinition> _properties = new List<PropertyDefinition>();
-
-        public PropertyParentType ParentType { get; private set; }
-        public string ParentName { get; set; }
-
-        public EnumeratorDefinition Enumerate { get; private set; }
+        public EnumeratorDefinition Enumerate { get; set; }
         public EnumeratorAddDefinition Add { get; set; }
         public EnumeratorRemoveDefinition Remove { get; set; }
 
-        public CohortDefinition(string name, PropertyParentType parentType, string parentName) : base(name)
+        public PropertyDefinition(string name, PropertyType propertyType, PropertyParentType parentType, string parentName) : base(name)
         {
+            this.PropertyType = propertyType;
             this.ParentType = parentType;
             this.ParentName = parentName;
         }
 
         public void Validate()
         {
-            if (string.IsNullOrWhiteSpace(this.Name))
-                throw new Exception("Proviso Validation Error. [Cohort] -Name can NOT be null/empty.");
-
-            if (this.ParentType != PropertyParentType.Cohorts)
+            switch (this.PropertyType)
             {
-                if(string.IsNullOrWhiteSpace(this.ParentName))
-                    throw new Exception("Proviso Validation Error. Non-Globally-Defined [Cohort] blocks must be within a Parent [Facet] or [Pattern] block.");
+                case PropertyType.Cohort:
+                    if (string.IsNullOrWhiteSpace(this.Name))
+                        throw new Exception("Proviso Validation Error. [Cohort] -Name can NOT be null/empty.");
+
+                    if (this.ParentType != PropertyParentType.Cohorts)
+                    {
+                        if (string.IsNullOrWhiteSpace(this.ParentName))
+                            throw new Exception("Proviso Validation Error. Non-Globally-Defined [Cohort] blocks must be within a Parent [Facet] or [Pattern] block.");
+                    }
+                    break;
+                case PropertyType.Property:
+                    if (string.IsNullOrWhiteSpace(this.Name))
+                        throw new Exception("Proviso Validation Error. [Property] -Name can NOT be null/empty.");
+                    break;
+                case PropertyType.Inclusion:
+                    break;
+                default:
+                    throw new InvalidOperationException("Proviso Framework Error. Invalid Property type defined.");
             }
-        }
-
-        public void AddChildProperty(PropertyDefinition child)
-        {
-            child.Validate();
-            this._properties.Add(child);
-        }
-
-        public void AddEnumerate(EnumeratorDefinition enumerate)
-        {
-            enumerate.Validate();
-            this.Enumerate = enumerate;
         }
     }
 
@@ -292,18 +275,7 @@ namespace Proviso.Core.Definitions
 
     public class FacetDefinition : DefinitionBase, IValidated
     {
-        // TODO: By storing cohorts distinct from properties ... I've created some problems. 
-        //      1. I'm going to lose the 'order' of execution/definition. 
-        //          e.g., if someone creates a facet with 2x properties, a cohort (with 2x properties) and then 3x properties. 
-        //          that's LOST ... my code (as currently constituted) would do 5x properties and 2x cohort props - or vice versa 
-        //          but NOT the order specified - which is going to be a problem. 
-        //      2. Related to the above... I'm MAKING a difference between a property - and a cohort property. 
-        //          when, in reality ... there should be no 'real' difference - other than that one is 'hard coded' and the other (cohort)
-        //          is ... going to be dynamic - i.e., it'll have an enumerate|or and ... add/remove functionality. 
-
-
         private List<PropertyDefinition> _properties = new List<PropertyDefinition>();
-        private List<CohortDefinition> _cohorts = new List<CohortDefinition>();
         private List<IteratorDefinition> _iterators = new List<IteratorDefinition>();
         private List<string> _namedIterators = new List<string>();
         private List<IteratorAddDefinition> _adds = new List<IteratorAddDefinition>();
@@ -313,6 +285,11 @@ namespace Proviso.Core.Definitions
         public FacetParentType ParentType { get; private set; }
 
         public Membership MembershipType { get; private set; }
+
+        public List<PropertyDefinition> Properties
+        {
+            get { return this._properties; }
+        }
 
         //public string SpecifiedIterator { get; private set; }
 
@@ -358,16 +335,10 @@ namespace Proviso.Core.Definitions
             // TODO: if there's an Aspect, there MUST also be a Surface. (But the inverse is not true/required.)
         }
 
-        public void AddChildProperty(PropertyDefinition child)
+        public void AddProperty(PropertyDefinition added)
         {
-            child.Validate();
-            this._properties.Add(child);
-        }
-
-        public void AddChildCohort(CohortDefinition child)
-        {
-            child.Validate();
-            this._cohorts.Add(child);
+            added.Validate();
+            this._properties.Add(added);
         }
 
         public void AddIterate(IteratorDefinition iterator)

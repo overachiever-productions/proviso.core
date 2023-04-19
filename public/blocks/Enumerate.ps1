@@ -38,7 +38,7 @@ function Enumerate {
 		
 		# BIND: 
 		Write-Debug "$(Get-DebugIndent)	Binding Enumrate to Cohort: [$($definition.ParentName)].";
-		$currentCohort.AddEnumerate($definition);
+		$currentCohort.Enumerate = $definition;
 		
 		# STORE: 
 		if (Has-Value $Name) {
