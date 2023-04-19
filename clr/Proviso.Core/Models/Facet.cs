@@ -2,23 +2,23 @@
 {
     public class Facet
     {
-        public string FacetName { get; private set; }
-        public string Id { get; private set; }
-        public FacetType FacetType { get; private set; }
+        public string FacetName { get; internal set; }
+        public string Id { get; internal set; }
+        public FacetType FacetType { get; internal set; }
 
-        public string ParentAspectName { get; set; }
-        public string ParentSurfaceName { get; set; }
-        public string ParentRunbookName { get; set; }
+        //public string ParentAspectName { get; internal set; }
+        //public string ParentSurfaceName { get; internal set; }
+        //public string ParentRunbookName { get; internal set; }
 
-        public Facet(string name, string id, FacetType type)
-        {
-            this.FacetName = name;
-            this.Id = id;
-            this.FacetType = type;
+        //public Facet(string name, string id, FacetType type)
+        //{
+        //    this.FacetName = name;
+        //    this.Id = id;
+        //    this.FacetType = type;
 
-            //this.ParentAspectName = aspectName;
-            //this.ParentSurfaceName = surfaceName;
-            //this.ParentRunbookName = runbookName;
-        }
+        //    //this.ParentAspectName = aspectName;
+        //    //this.ParentSurfaceName = surfaceName;
+        //    //this.ParentRunbookName = runbookName;
+        //}
     }
 }

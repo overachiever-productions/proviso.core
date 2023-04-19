@@ -45,19 +45,9 @@ function Property {
 				Write-Debug "$(Get-DebugIndent)	NOT Binding Property: [$($definition.Name)] to parent, because parent is a Properties wrapper.";
 			}
 			"Cohort" {
-				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($definition.Name)] belonging to Cohort: [$($definition.ParentName)], to grandparent named: [$($currentCohort.ParentName)].";
-				$grandparentBlockType = $global:PvOrthography.GetGrandParentBlockType();
-				switch ($grandparentBlockType) {
-					"Facet" {
-						$currentFacet.AddProperty($definition);
-					}
-					"Pattern" {
-						$currentPattern.AddProperty($definition);
-					}
-					default {
-						throw "Proviso Framework Error. Invalid COHORT Property Parent: [$($Property.ParentType)] specified.";
-					}
-				}
+				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($definition.Name)] to Cohort: [$($definition.ParentName)] - within grandparent named: [$($currentCohort.ParentName)].";
+				
+				$currentCohort.AddCohortProperty($definition);
 			}
 			"Facet" {
 				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($definition.Name)] to Facet, named: [$($definition.ParentName)], with grandparent named: [$grandParentName].";

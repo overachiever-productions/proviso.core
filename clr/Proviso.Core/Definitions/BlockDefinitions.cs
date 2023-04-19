@@ -14,6 +14,7 @@ namespace Proviso.Core.Definitions
     public interface IDefinable
     {
         DateTime Created { get; }
+        // TODO: add a property for Source(File) ... i.e., the path where this thingy comes from. 
         string Name { get; }
         string ModelPath { get; }
         string TargetPath { get; }
@@ -88,11 +89,15 @@ namespace Proviso.Core.Definitions
             //      instead, I need to simply STORE this 'value' as ... an OBJECT 
             //      and let that get passed on DOWN the line ... until it becomes a 'code block' of return $object;
             //          COMPARISONS (i.e., the Compare func) will handle object types, etc. 
+
+            // TODO: Implement: throw new NotImplementedException();
         }
 
         public void SetExtractFromParameter(object expect)
         {
             // same as with ... SetExpect... 
+            
+            // TODO: Implement: throw new NotImplementedException();
         }
 
         public void SetThrowOnConfig(string message)
@@ -103,6 +108,8 @@ namespace Proviso.Core.Definitions
 
     public class PropertyDefinition : DefinitionBase, IValidated
     {
+        private List<PropertyDefinition> _properties = new List<PropertyDefinition>();
+
         public PropertyParentType ParentType { get; private set; }
         public PropertyType PropertyType { get; private set; }
         public string ParentName { get; set; }
@@ -115,6 +122,8 @@ namespace Proviso.Core.Definitions
         public EnumeratorDefinition Enumerate { get; set; }
         public EnumeratorAddDefinition Add { get; set; }
         public EnumeratorRemoveDefinition Remove { get; set; }
+
+        public List<PropertyDefinition> Properties => this._properties;
 
         public PropertyDefinition(string name, PropertyType propertyType, PropertyParentType parentType, string parentName) : base(name)
         {
@@ -146,6 +155,15 @@ namespace Proviso.Core.Definitions
                 default:
                     throw new InvalidOperationException("Proviso Framework Error. Invalid Property type defined.");
             }
+        }
+
+        public void AddCohortProperty(PropertyDefinition added)
+        {
+            if (this.PropertyType != PropertyType.Cohort)
+                throw new InvalidOperationException("Proviso Framework Error. Can not add properties to non-Cohorts.");
+
+            added.Validate();
+            this._properties.Add(added);
         }
     }
 
@@ -286,10 +304,7 @@ namespace Proviso.Core.Definitions
 
         public Membership MembershipType { get; private set; }
 
-        public List<PropertyDefinition> Properties
-        {
-            get { return this._properties; }
-        }
+        public List<PropertyDefinition> Properties => this._properties;
 
         //public string SpecifiedIterator { get; private set; }
 

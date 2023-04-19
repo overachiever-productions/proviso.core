@@ -101,18 +101,26 @@ function Register-Facet {
 		
 		Write-Debug "Facet Definition [$Name] located. Starting Discovery + Validation.";
 		
+		[Proviso.Core.Models.Facet]$facet = [Proviso.Core.Mapper]::ToFacet($definition);
+#		$facet.Validate($global:PvCatalog);
+		
+		Write-Host "Facet name is: $($facet.FacetName)";
 		
 		foreach ($prop in $definition.Properties) {
-			Write-Host "PROP: $($prop.Name)";
+			if ("Cohort" -eq $prop.PropertyType) {
+				foreach ($p in $prop.Properties) {
+					Write-Host "  PROP: $($p.Name)";
+				}
+			}
+			else {
+				Write-Host "PROP: $($prop.Name)";
+			}
+			
 		}
 		
 		
-		
-		# TODO: this should be via $definition.ToFacet() or whatever... (as in, do mapping of properties and such within C# vs manually re-mapping in here... )
-		[Proviso.Core.Models.Facet]$facet = New-Object Proviso.Core.Models.Facet($definition.Name, $definition.Id, $definition.FacetType);
-		
 		# Validate: 
-		$facet.Validate($global:PvCatalog); # this could work... 
+		#$facet.Validate($global:PvCatalog); # this could work... 
 		
 		
 		

@@ -4,7 +4,7 @@ function Cohort {
 	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory, Position = 0)]
-		[string]$Name,
+		[string]$Name,  # actually... cohorts can be anonymous - right? (they're never truly displayed.)
 		[Parameter(Mandatory, Position = 1)]
 		[ScriptBlock]$CohortBlock,
 		[string]$ModelPath = $null,
@@ -60,6 +60,7 @@ function Cohort {
 		}
 		
 		# STORE: 
+		# TODO: non-anonymous? cohorts can be saved/re-used? 
 #		if ($global:PvOrthography.StoreCohortDefinition($definition, (Allow-DefinitionReplacement))) {
 #			Write-Verbose "Cohort named [$Name] (within Facet [$($global:PvOrthography.GetCurrentFacet())]) was replaced.";
 #		}
