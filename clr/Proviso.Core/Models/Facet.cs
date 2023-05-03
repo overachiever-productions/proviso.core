@@ -6,19 +6,8 @@
         public string Id { get; internal set; }
         public FacetType FacetType { get; internal set; }
 
-        //public string ParentAspectName { get; internal set; }
-        //public string ParentSurfaceName { get; internal set; }
-        //public string ParentRunbookName { get; internal set; }
-
-        //public Facet(string name, string id, FacetType type)
-        //{
-        //    this.FacetName = name;
-        //    this.Id = id;
-        //    this.FacetType = type;
-
-        //    //this.ParentAspectName = aspectName;
-        //    //this.ParentSurfaceName = surfaceName;
-        //    //this.ParentRunbookName = runbookName;
-        //}
+        public string ParentName { get; internal set; }
+        public FacetParentType ParentType { get; internal set; }
+        public Membership MembershipType { get; internal set; }
     }
 }

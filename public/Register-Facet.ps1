@@ -13,7 +13,7 @@
 	Facets {
 		Facet "My First Facet" { 
 
-			Property "Length" -DisplayFormat "hmmm" {
+			Property "Count" -DisplayFormat "hmmm" {
 				Extract {
 					return $global:target.Length;
 				}
@@ -106,6 +106,8 @@ function Register-Facet {
 		
 		Write-Host "Facet name is: $($facet.FacetName)";
 		
+		
+		# note: this is 'wrong' in the sense that I should be interrogating the $facet at this point - not the FacetDefinition... 
 		foreach ($prop in $definition.Properties) {
 			if ("Cohort" -eq $prop.PropertyType) {
 				foreach ($p in $prop.Properties) {
@@ -115,7 +117,6 @@ function Register-Facet {
 			else {
 				Write-Host "PROP: $($prop.Name)";
 			}
-			
 		}
 		
 		
