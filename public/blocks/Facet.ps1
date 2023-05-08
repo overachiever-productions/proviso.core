@@ -5,8 +5,27 @@
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 
 	$global:DebugPreference = "Continue";
-	$global:VerbosePreference = "Continue";
+#	$global:VerbosePreference = "Continue";
 
+	Facets {
+		Facet "Global_Basic" -Id "11_22" -Path "Test.Path" {
+		}
+
+		Facet "Global_Skipped" -Path "Doesn't matter - skipped" -Ignore "Skipped - not ready." { 
+		}
+	}
+
+	$facet = $global:PvBlockStore.GetFacetByName("Global_Basic", "");
+	$facet | fl;
+
+	write-host "-----------------";
+	$facet = $global:PvBlockStore.GetFacetByName("Global_Skipped", "");
+	$facet | fl;
+
+#>
+
+
+<#
 #	Surface "Bigly" {
 #		Facet "Child" {}
 #	}
@@ -73,11 +92,13 @@ function Facet {
 		[string]$DisplayFormat = $null,
 		[object]$Expect = $null,
 		[object]$Extract = $null,
-		[string]$ThrowOnConfig = $null
+		[Alias('PreventConfig', 'NoConfig', 'DisableConfig')]
+		[switch]$PreventConfiguration = $false,
+		[Alias('ThrowOnConfig', 'ThrowOnConfiguration')]
+		[string]$ThrowOnConfigure = $null
 	);
 	
 	begin {
-		$currentFacetType = "Facet";
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		
@@ -85,24 +106,29 @@ function Facet {
 	};
 	
 	process {
-		$parentName = $global:PvOrthography.GetParentBlockName();
-
-		[Proviso.Core.FacetParentType]$parentType = Get-FacetParentType;
-		$definition = New-Object Proviso.Core.Definitions.FacetDefinition($Name, $Id, [Proviso.Core.FacetType]"Scalar", $parentType, $parentName);
+		$currentFacet = New-Object Proviso.Core.Models.Facet($Name, $Id, ([Proviso.Core.FacetParentType](Get-ParentBlockType)), (Get-ParentBlockName));
 		
-		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
-						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
+		Set-Declarations $currentFacet -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
+						 -Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfigure $ThrowOnConfigure `
 						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
-		$currentFacet = $definition;
-		
 		# BIND:
-		Bind-Facet -Facet $definition -Verbose:$xVerbose -Debug:$xDebug;
+		switch ((Get-ParentBlockType)) {
+			"Facets" {
+				Write-Debug "$(Get-DebugIndent)Bypassing Binding of Facet: [$($currentFacet.Name)] to Parent, because Parent is a Facets wrapper.";
+			}
+			"Aspect" {
+				Write-Debug "$(Get-DebugIndent) Binding Facet: [$($currentFacet.Name)] to Aspect: [$($currentAspect.Name)].";
+				$currentAspect.AddFacet($currentFacet);
+			}
+			"Surface" {
+				Write-Debug "$(Get-DebugIndent)	Binding Facet: [$($currentFacet.Name)] to Surface: [$($currentSurface.Name)].";
+				$currentSurface.AddFacet($currentFacet);
+			}
+		}
 		
 		# STORE: 
-		if ($global:PvOrthography.StoreFacetDefinition($definition, (Allow-DefinitionReplacement))) {
-			Write-Verbose "Facet: [$Name] was replaced.";
-		}
+		Store-Facet $currentFacet -AllowReplace (Allow-BlockReplacement) -Verbose:$xVerbose -Debug:$xDebug;
 		
 		& $FacetBlock;
 	};

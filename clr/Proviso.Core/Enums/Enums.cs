@@ -16,9 +16,11 @@
 
     public enum FacetType
     {
-        Scalar,
+        Facet,
         Pattern, 
-        Import
+        Import, 
+        VirtualFacet, 
+        VirtualPattern
     }
 
     public enum Impact
@@ -35,7 +37,7 @@
         Pattern
     }
 
-    public enum Membership
+    public enum MembershipType
     {
         Naive,
         Explicit
@@ -67,7 +69,9 @@
     {
         Cohort,
         Inclusion,
-        Property
+        Property, 
+        VirtualCohort, 
+        VirtualProperty
     }
 
     public enum RunbookOrSurface

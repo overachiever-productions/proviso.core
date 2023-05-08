@@ -1,5 +1,7 @@
 ﻿Set-StrictMode -Version 1.0;
 
+# REFACTOR: _MIGHT_ make sense to call this Utility or even Proviso.Core.Utility.ps ... 
+
 function Write-PvDebug {
 	[CmdletBinding()]
 	param (
@@ -112,6 +114,8 @@ function Is-Skipped {
 		
 		Write-Verbose $verbose;
 	}
+	
+	return $bypass;
 }
 
 filter Allow-DefinitionReplacement {
@@ -120,6 +124,13 @@ filter Allow-DefinitionReplacement {
 	
 	# otherwise, use compilation vs 'now' times:
 	# TODO: implement time-checks... 
+	
+	return $false;
+}
+
+filter Allow-BlockReplacement {
+	# TODO: this is simply a side-by-side func/filter for Allow-DefinitionReplacement.
+	# 	i.e., once there's enough of a critical-mass of blocks using THIS func vs the above... delete the above...
 	
 	return $false;
 }
@@ -146,52 +157,69 @@ function Should-SetPaths {
 	return $false;
 }
 
-function Set-Definitions {
-	[CmdletBinding()]
-	param (
-		[Parameter(Mandatory, Position = 0)]
-		[Proviso.Core.Definitions.IDefinable]$iDefinable,
-		[parameter(Mandatory)]
-		[string]$BlockType, 
-		[string]$ModelPath = $null,
-		[string]$TargetPath = $null,
-		[ValidateSet("None", "Low", "Medium", "High")]
-		[string]$Impact = "None",
-		[switch]$Skip = $false,
-		[string]$Ignore = $null,
-		[string]$DisplayFormat = $null,
-		[object]$Expect = $null,
-		[object]$Extract = $null,
-		[string]$ThrowOnConfig = $null
-	);
-	
-	if ((Is-Skipped $BlockType -Name $Name -Skip:$Skip -Ignore $Ignore -Verbose:$xVerbose -Debug:$xDebug)) {
-		$iDefinable.SetSkipped($Ignore);
-	}
-	
-	if (Should-SetPaths $BlockType -Name $Name -ModelPath $ModelPath -TargetPath $TargetPath -Path $Path -Verbose:$xVerbose -Debug:$xDebug) {
-		$ModelPath, $TargetPath = $Path;
-	}
-	
-	$iDefinable.SetPaths($ModelPath, $TargetPath);
-	
-	if ($Impact -ne "None") {
-		$iDefinable.SetImpact(([Proviso.Core.Impact]$Impact));
-	}
-	
-	if ($Expect) {
-		$iDefinable.SetExpectFromParameter($Expect);
-	}
-	
-	if ($Extract) {
-		$iDefinable.SetExtractFromParameter($Extract);
-	}
-	
-	if ($ThrowOnConfig) {
-		$iDefinable.SetThrowOnConfig($ThrowOnConfig);
-	}
-	
-	# TODO: Comparison... 
-	# TODO: Processing Order? 
-	
-}
+#function Set-Definitions {
+#	[CmdletBinding()]
+#	param (
+#		[Parameter(Mandatory, Position = 0)]
+#		[Proviso.Core.IDeclarable]$iDeclarable,
+#		[parameter(Mandatory)]
+#		[string]$BlockType, 
+#		[string]$ModelPath = $null,
+#		[string]$TargetPath = $null,
+#		[ValidateSet("None", "Low", "Medium", "High")]
+#		[string]$Impact = "None",
+#		[switch]$Skip = $false,
+#		[string]$Ignore = $null,
+#		[string]$DisplayFormat = $null,
+#		[object]$Expect = $null,
+#		[object]$Extract = $null,
+#		[string]$ThrowOnConfig = $null
+#	);
+#
+#	if ((Is-Skipped $BlockType -Name $Name -Skip:$Skip -Ignore $Ignore -Verbose:$xVerbose -Debug:$xDebug)) {
+#		$iDeclarable.SetSkipped($Ignore);
+#	}
+#	
+#	if (Should-SetPaths $BlockType -Name $Name -ModelPath $ModelPath -TargetPath $TargetPath -Path $Path -Verbose:$xVerbose -Debug:$xDebug) {
+#		$ModelPath, $TargetPath = $Path, $Path;
+#	}
+#	
+#	$iDeclarable.SetPaths($ModelPath, $TargetPath);
+#	
+#	if ($Impact -ne "None") {
+#		$iDeclarable.SetImpact(([Proviso.Core.Impact]$Impact));
+#	}
+#	
+#	if ($Expect) {
+#		$iDeclarable.SetExpectFromParameter($Expect);
+#	}
+#	
+#	if ($Extract) {
+#		$iDeclarable.SetExtractFromParameter($Extract);
+#	}
+#	
+#	if ($ThrowOnConfig) {
+#		$iDeclarable.SetThrowOnConfig($ThrowOnConfig);
+#	}
+#	
+#	
+#	
+#	#$stack = ((Get-PSCallStack).Command -join ",") -replace "Enter-Block,"
+#	
+#	
+#	# TODO: Implement this LATER. I't s a 'nice to have' - not something core/critical.
+#	# also... $PSCmdlet.MyInvocation.ScriptName? might be a better way? 
+#	# this is ... close. 
+#	# 		what I might actually want to do is ... 
+#	# 		in Enter-Block... capture the 'current (caller)' script-name/source via this approach (i.e., basically [1] vs [0])
+#	# 			and shove it into a variable... 
+#	# 			that I can then call via a func in Orthography.ps ... e.g., Get-CurrentBlockDefinitionScriptThingy... 
+#	# 		and then call that here... and ... shove it into $iDeclarable.SetSourceMetaDataAndOtherStuff($x, $y, $z-etc)
+##	$stack = (Get-PSCallStack).ScriptName -join "`n";
+##	
+#	
+#	# TODO: Comparison... 
+#	# TODO: Processing Order? 
+#	
+#	
+#}

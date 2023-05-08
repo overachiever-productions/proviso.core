@@ -101,10 +101,10 @@ function Register-Facet {
 		
 		Write-Debug "Facet Definition [$Name] located. Starting Discovery + Validation.";
 		
-		[Proviso.Core.Models.Facet]$facet = [Proviso.Core.Mapper]::ToFacet($definition);
+#		[Proviso.Core.Models.Facet]$facet = [Proviso.Core.Mapper]::ToFacet($definition);
 #		$facet.Validate($global:PvCatalog);
 		
-		Write-Host "Facet name is: $($facet.FacetName)";
+#		Write-Host "Facet name is: $($facet.FacetName)";
 		
 		
 		# note: this is 'wrong' in the sense that I should be interrogating the $facet at this point - not the FacetDefinition... 

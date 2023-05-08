@@ -1,4 +1,4 @@
-﻿using System.CodeDom;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Proviso.Core

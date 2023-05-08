@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Proviso.Core.Definitions;
 
 //namespace Proviso.Core.Models
 //{
