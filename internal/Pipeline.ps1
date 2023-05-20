@@ -77,24 +77,21 @@ function Execute-Pipeline {
 		# NOTE: no need to evaluate the verb for READs - we'll ALWAYS at LEAST do READ (can't Test (Compare) or Invoke (Configure) without READ-ing).
 		TrySet-TargetAsImplicitExtractForNonExplicitExtractProperties -Surfaces $surfaces -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 		
+		if ($Verb -in ("Test", "Invoke")) {
+			# TODO: address how model vs config stuff works ... i.e., this is starting to be where I have to draw the line between the two. 
+			# 		are they same things? just slightly different with slightly different names? or ... are they entirely different things? 
+			# 			either way, the func below should handle the complexity... (i.e., I might need to pass in -Config $Config here as well? )
+			TrySet-ModelAsImplicitExpectForNonExplicitExpectProperties -Surfaces $surfaces -Model $Model -Verbose:$xVerbose -Debug:$xDebug;
+		}
 		
-#		if (-not (Does-ExtractExistsForAllProperties -Surfaces $surfaces -Verbose:$xVerbose -Debug:$xDebug)) {
-#			if (Is-Empty $Target) {
-#				$global:PvPipelineContext_OperationDescription
-#				
-#				throw "Pipeline Validation Error. All Properties in $($global:PvPipelineContext_OperationDescription) must containt an -Extract parameter or Extract{} block OR -Target must be supplied to $Verb-XXXX operation.";
-#				
-#				throw "Pipleine failure for x_currentOperation(pulled from Read/test/whatever method..) cuz ... not all xyz have Extract and/or need -Target";
-#			}
-#		}
-		
-		
-		# 		for TEST & INVOKE: 
-		# 			- make sure we have a $Model or Expect {} for EVERY prop. 
-		# 			- make sure we have a $Target or Extract {} for EVERY prop.
-		
-		#  	further, for INVOKE: 
-		# 		make sure that the -Impact of all thingies to process NOT > than ... -PipelineAllowedImpact... 
+		if ("Invoke" -eq $Verb) {
+			# Couple of Tasks Here:
+			# 1. Make sure we've got a Configure for each Property. 
+			# 		or, that if -UsesAdd or whatever is set ... that we've got what we need in that dept. 
+			# 2. Validate -Impact of each property ... vs -PipelineAllowedImpact (or whatever) I'm going to call that. 
+			# 		obviously, if an impact for a single property is 'greater than' what the user has specified/allowed... we'll have to throw here. 
+		}
+ 
 		Write-Debug "	  Pipeline Validations Complete.";
 		#endregion
 		
@@ -104,7 +101,6 @@ function Execute-Pipeline {
 		#region Processing 
 		try {
 			if ($isRunbook) {
-				
 				# A. 
 				# if there's a .Setup { } block (and... if it's applicable???)
 				# then... do $runbook.Setup();
@@ -183,7 +179,6 @@ function Execute-Pipeline {
 	}
 }
 
-
 function Process-PropertyOperations {
 	[CmdletBinding()]
 	param (
@@ -251,6 +246,7 @@ function TrySet-TargetAsImplicitExtractForNonExplicitExtractProperties {
 								throw "Runtime Validation Failure. Cohort Property [$($nestedProp.Name)] does NOT have an explicit -Extract or Extract {} defined. Either Implement Extract or specify -Target for $($global:PvPipelineContext_CurentOperationName). ";
 							}
 							
+							# TODO: uhhh... what about ... if the property in question has a -TargetPath ... then this should be generating something like "return $Target.<targetPath>"..
 							$nestedProp.Extract = Get-ReturnScript $Target;
 						}
 					}
@@ -261,6 +257,7 @@ function TrySet-TargetAsImplicitExtractForNonExplicitExtractProperties {
 							throw "Runtime Validation Failure. Property [$($prop.Name)] does NOT have an explicit -Extract or Extract {} defined. Either Implement Extract or specify -Target for $($global:PvPipelineContext_CurentOperationName). ";
 						}
 						
+						# TODO: uhhh... what about ... if the property in question has a -TargetPath ... then this should be generating something like "return $Target.<targetPath>"..
 						$prop.Extract = Get-ReturnScript $Target;
 					}
 				}
@@ -269,69 +266,40 @@ function TrySet-TargetAsImplicitExtractForNonExplicitExtractProperties {
 	}
 }
 
-function Validate-ExpectOrModelForAllProperties {
+function TrySet-ModelAsImplicitExpectForNonExplicitExpectProperties {
 	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory)]
-		[Proviso.Core.ISurface[]]$Surfaces
+		[Proviso.Core.ISurface[]]$Surfaces,
+		[Object]$Model
 	);
 	
 	foreach ($surface in $Surfaces) {
 		foreach ($facet in $surface.Facets) {
 			foreach ($prop in $facet.Properties) {
-				
 				if ($prop.IsCohort) {
 					foreach ($nestedProp in $prop.Properties) {
-						# if not EXPECT or $model... ?throw... 
-						
-						Write-Host "		EXPECT: ";
-						
-						
+						if (-not ($nestedProp.Extract)) {
+							if (Is-Empty $Model) {
+								throw "Runtime Validation Failure. Cohort Property [$($nestedProp.Name)] does NOT have an explicit -Expect or Expect {} defined. Either Implement Expect or specify -Model for $($global:PvPipelineContext_CurentOperationName). ";
+							}
+							
+							# TODO: uhhh... what about ... if the property in question has a -ModdelPath ... then this should be generating something like "return $Model.<modelPath>"..
+							$nestedProp.Extract = Get-ReturnScript $Model;
+						}
 					}
 				}
 				else {
-					# if not EXPECT or $model... ?throw... 	
-					
-					Write-Host "		EXPECT: ";
+					if (-not ($prop.Extract)) {
+						if (Is-Empty $Model) {
+							# TODO: uhhh... what about ... if the property in question has a -ModdelPath ... then this should be generating something like "return $Model.<modelPath>"..
+							throw "Runtime Validation Failure. Property [$($prop.Name)] does NOT have an explicit -Expect or Expect {} defined. Either Implement Expect or specify -Model for $($global:PvPipelineContext_CurentOperationName). ";
+						}
+						
+						$prop.Extract = Get-ReturnScript $Model;
+					}
 				}
 			}
 		}
 	}
 }
-
-
-#
-#function Extract-PropertyValue {
-#	[CmdletBinding()]
-#	param (
-#		[Proviso.Core.Models.Property]$Property,
-#		[Object]$Model
-#	);
-#	
-#	# fun... finally 'getting there' - i.e., to actual implementation logic. 
-#	# 	at a high level, that should look roughly like: 
-#	# 	if there's an Extract {} block defined (either cuz there was an explicit block or ... cuz there was an explicit -Extract "xxx" defined)
-#	# 		then, run that. 
-#	
-#	# otherwise, if there's a Model: 
-#	# 		and there's a .ModelPath... 
-#	# 			then extract $Model.<ModelPath>
-#	# 	otherwise, 
-#	# 		just return $Model. 
-#	
-#	# and... if there was a $Model required PRIOR to the last bit of logic, we would have THROWN earlier on in the mix. 
-#}
-#
-#function Test-Property {
-#	[CmdletBinding()]
-#	param (
-#		
-#	);
-#}
-#
-#function Invoke-Property {
-#	[CmdletBinding()]
-#	param (
-#		
-#	);
-#}
