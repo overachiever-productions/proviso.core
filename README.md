@@ -8,7 +8,10 @@ It's still 'early days' - so this roadmap is a guestimate at this point.
 - 0.4 - Discovery Phase Logic/Binding + Core Facet Execution capabilities.
     - 0.4.1 - Binding of Child ScriptBlocks (cohorts, properties, etc.) to parents (Facets/Patterns, Surfaces, etc.) complete.
     - 0.4.2 - BIND & STORE semantics completed.
-    - 0.4.3 - Discovery Functionality MVP
+    - 0.4.3 - High-Level Pipeline + Validation Complete.
+    - 0.4.4 - Results-Handling (for Read/Test/Invoke of simple blocks).
+    - 0.4.5 - Custom Results Formatting/output (MVP).
+    - 0.4.6 - Addition of Cohorts and Patterns.
 - 0.5 - Config Scaffolding/Proxies & Intrinsics/Contexts Viable.
 - 0.6 - DisplayFormat and Iterate/Enumerate + modality support complete. 
 - 0.7 - Results-Objects xml formats finalized. 
