@@ -1,5 +1,7 @@
 ﻿Set-StrictMode -Version 1.0;
 
+# REFACTOR: _MIGHT_ make sense to call this Utility or even Proviso.Core.Utility.ps ... 
+
 function Write-PvDebug {
 	[CmdletBinding()]
 	param (
@@ -107,11 +109,39 @@ function Is-Skipped {
 		$verbose = "Configuring $($ObjectType): [$Name] for bypass (-Skip Enabled).";
 		
 		if (Has-Value $Ignore) {
-			$verbose = $verbose.Replace(" -Skip Enabled", " '$Ignore'");
+			$verbose = $verbose.Replace(" -Skip Enabled", "'$Ignore'");
 		}
 		
 		Write-Verbose $verbose;
 	}
+	
+	return $bypass;
+}
+
+function Throws-OnConfig {
+	[CmdletBinding()]
+	param (
+		[Parameter(Mandatory, Position = 0)]
+		[string]$ObjectType,
+		[string]$Name,
+		[switch]$NoConfig,
+		[string]$ThrowOnConfigure
+	);
+	
+	$throws = $false;
+	if ($NoConfig -or (Has-Value $ThrowOnConfigure)) {
+		$throws = $true;
+		
+		$verbose = "Configuring $(): [$Name] to Throw on attempt to use Configure (-NoConfig Enabled).";
+		
+		if (Has-Value $ThrowOnConfigure) {
+			$verbose = $verbose.Replace("-NoConfig Enabled", "'$ThrowOnConfigure'");
+		}
+		
+		Write-Verbose $verbose;
+	}
+	
+	return $throws;
 }
 
 filter Allow-DefinitionReplacement {
@@ -120,6 +150,13 @@ filter Allow-DefinitionReplacement {
 	
 	# otherwise, use compilation vs 'now' times:
 	# TODO: implement time-checks... 
+	
+	return $false;
+}
+
+filter Allow-BlockReplacement {
+	# TODO: this is simply a side-by-side func/filter for Allow-DefinitionReplacement.
+	# 	i.e., once there's enough of a critical-mass of blocks using THIS func vs the above... delete the above...
 	
 	return $false;
 }
@@ -146,52 +183,58 @@ function Should-SetPaths {
 	return $false;
 }
 
-function Set-Definitions {
-	[CmdletBinding()]
+filter Inherit {
 	param (
-		[Parameter(Mandatory, Position = 0)]
-		[Proviso.Core.Definitions.IDefinable]$iDefinable,
-		[parameter(Mandatory)]
-		[string]$BlockType, 
-		[string]$ModelPath = $null,
-		[string]$TargetPath = $null,
-		[ValidateSet("None", "Low", "Medium", "High")]
-		[string]$Impact = "None",
-		[switch]$Skip = $false,
-		[string]$Ignore = $null,
-		[string]$DisplayFormat = $null,
-		[object]$Expect = $null,
-		[object]$Extract = $null,
-		[string]$ThrowOnConfig = $null
+		$Parent,
+		$Child,
+		$Property
 	);
 	
-	if ((Is-Skipped $BlockType -Name $Name -Skip:$Skip -Ignore $Ignore -Verbose:$xVerbose -Debug:$xDebug)) {
-		$iDefinable.SetSkipped($Ignore);
+	if (Has-Value $Parent.$Property) {
+		if (Is-Empty $Child.$Property) {
+			$Child.$Property = $Parent.$Property;
+		}
 	}
-	
-	if (Should-SetPaths $BlockType -Name $Name -ModelPath $ModelPath -TargetPath $TargetPath -Path $Path -Verbose:$xVerbose -Debug:$xDebug) {
-		$ModelPath, $TargetPath = $Path;
-	}
-	
-	$iDefinable.SetPaths($ModelPath, $TargetPath);
-	
-	if ($Impact -ne "None") {
-		$iDefinable.SetImpact(([Proviso.Core.Impact]$Impact));
-	}
-	
-	if ($Expect) {
-		$iDefinable.SetExpectFromParameter($Expect);
-	}
-	
-	if ($Extract) {
-		$iDefinable.SetExtractFromParameter($Extract);
-	}
-	
-	if ($ThrowOnConfig) {
-		$iDefinable.SetThrowOnConfig($ThrowOnConfig);
-	}
-	
-	# TODO: Comparison... 
-	# TODO: Processing Order? 
-	
 }
+
+filter Override-Impact {
+	param (
+		$Parent,
+		$Child
+	);
+	
+	if ($Parent -is [Proviso.Core.IPotent]) {
+		if ("None" -ne $Parent.Impact) {
+			if ("None" -eq $Child.Impact) {
+				$Child.Impact = $Parent.Impact; # er, well... is this correct? 2 ways to look at this... a) if facet has a 'higher' impact than a child, it should override? or b) if there's an EXPLICIT "low" prop for a facet with "high"... then, we have to assume that the prop and facet are both correct (vs thinking that prop now becomes "High", right?)
+			}
+		}
+	}
+}
+
+filter Override-Skip {
+	param (
+		$Parent,
+		$Child
+	);
+	
+	if ($Parent.Skip) {
+		$Child.Skip = $true;
+		$Child.SkipReason = $Parent.SkipReason;
+	}
+}
+
+filter Override-ThrowOnConfig {
+	param (
+		$Parent,
+		$Child
+	);
+	
+	if ($Parent -is [Proviso.Core.IPotent]) {
+		if ($Parent.ThrowOnConfig) {
+			$Child.ThrowOnConfig = $true;
+			$Child.MessageToThrow = $Parent.MessageToThrow;
+		}
+	}
+}
+

@@ -2,16 +2,14 @@
 
 <#
 
-	Wrapper for globally defined Facets and Patterns.
+	Wrapper for globally defined Facets.
 
 #>
 
 function Facets {
 	[CmdletBinding()]
-	[Alias('Patterns')]
 	param (
 		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Named')]
-		[Alias('FacetsSetName', 'PatternsSetName')]
 		[string]$Name = $null,
 		
 		[Parameter(Mandatory, Position = 1, ParameterSetName = 'Named')]
