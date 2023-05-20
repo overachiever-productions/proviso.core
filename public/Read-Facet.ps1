@@ -7,15 +7,50 @@
 	$global:DebugPreference = "Continue";
 	#$global:VerbosePreference = "Continue";
 
+
+[string[]]$global:target = @("a","B", "Cee", "d", "e", "11");
+
 write-host "--------------------------------------------------"
 
 
 	Facets {
-		Facet "My First Facet" { }
+		Facet "My First Facet" -TargetPath "Prop1" { 
+			Property "Count" -DisplayFormat "hmmm" {
+#				Extract {
+#					return $global:target.Length;
+#				}
+#				Configure {
+#					throw "not supported - and this could/should be in a -param.";
+#				}
+			}
+			Property "Int Prop" -Expect 10 {}
+			Property "String Prop" -Expect "10" {}
+			Property "Array Prop" -Expect @(10, "10") {}
+			Property "IP Prop" -Expect 192.168.11.3 -Extract 11 {}
+			#Cohort "Basic Cohort" -Expect 20  {
+			#
+			#}
+		}
 	}
 
+write-host "--------------------------------------------------"
+	Read-Facet "My First Facet" -Target "Targetted Wiggly";
+
+
+
+
+write-host "--------------------------------------------------"
+	# re-load - it SHOULD already be in the catalog 
 	Read-Facet "My First Facet";
 
+
+write-host "--------------------------------------------------"
+	Read-Facet "This doesn't exist";
+
+
+#>
+
+<# 
 write-host "--------------------------------------------------"
 
 	Surface "Extended Events" {
@@ -75,32 +110,44 @@ write-host "--------------------------------------------------"
 
 function Read-Facet {
 	[CmdletBinding(DefaultParameterSetName = 'Default')]
-	[Alias("Read-Pattern")]
 	param (
+		
+# TODO: add in an option for Read-Facet via -Id... 		
+		
 		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Default')]
 		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Targets')]
 		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Servers')]
-		[Alias('FacetName', 'PatternName')]
+		[Alias('FacetName')]
 		[string]$Name,
+		
 		[Parameter(ParameterSetName = 'Default')]
 		[Parameter(ParameterSetName = 'Targets')]
 		[Parameter(ParameterSetName = 'Servers')]
-		[Alias('SurfaceName', 'AspectName')]
+		#[Alias('SurfaceName', 'AspectName')]
 		[string]$ParentName,
+		
 		[Parameter(Mandatory, ValueFromPipeline, ParameterSetName = 'Targets')]
 		[Parameter(ParameterSetName = 'Default')]
 		[Parameter(ParameterSetName = 'Servers')]
 		[Alias('Target')]
 		[object[]]$Targets,
+		
+		
+# TODO: add in a param (and ... param-set details) for $Model, right? 
+# 		er, NO: if this were a Test or Invoke operation, then ... yup. 
+# 			but not for a READ... 
+		
 		[Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'Servers')]
 		[Parameter(ParameterSetName = 'Default')]
 		[Parameter(ParameterSetName = 'Targets')]
 		[Alias('Host', 'Hosts', 'Server', 'Computer', 'Computers', 'ComputerName', 'ComputerNames')]
 		[string[]]$Servers = $null,
+		
 		[Parameter(ParameterSetName = 'Default')]
 		[Parameter(ParameterSetName = 'Targets')]
 		[Parameter(ParameterSetName = 'Servers')]
 		[switch]$AsPSON = $false,
+		
 		[Parameter(ParameterSetName = 'Default')]
 		[Parameter(ParameterSetName = 'Targets')]
 		[Parameter(ParameterSetName = 'Servers')]
@@ -111,64 +158,39 @@ function Read-Facet {
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		
+		# CONTEXT: Get-Facet is a proxy method. If the Facet is already registered (discovered/validated, etc.) we'll get it back. 
+		# 		If the facet isn't already registered, Get-Facet will attempt the registration process, then return the Facet (if everything worked).
+		[Proviso.Core.Models.Facet]$facet = Get-Facet -Name $Name -ParentName $ParentName -Verbose:$xVerbose -Debug:$xDebug;
 		
-		# workflow here will be: Get-Facet (or surface or runbook)
-		# where Get-XXXX is ... private/internal (never exposed to end-users? i mean... maybe? )
-		# 	and ... where Get-XXX will do the following: 
-		# 		try to pull it back from the catalog. 
-		# 			if the XXX is there, great - it's compiled + validated and ... good to go. 
-		# 			if XXX wasn't in the catalog, will check the $Ortho-cache or whatever and ... 
-		# 				if it finds it, will try to register it ... 
-		# 					meaning, that if it compiles, and passes registration-checks and such... 
-		# 				we'll add it to the Catalog ... 
-		# 				and then return it... 
-		
-		
-		# Retrieve from Catalog + Validate (Discovery-Phase):
-		[Proviso.Core.Definitions.FacetDefinition]$definition = $null;
-		$definition = $global:PvCatalog.GetFacetDefinitionByName($Name, $ParentName);
-		if ($null -eq $definition) {
-			throw "Processing Error. Pattern or Facet: [$Name] was NOT found.";
-		}
-		
-		[Proviso.Core.Models.Facet]$facetOrPattern = $null;
-		try {
-
-Write-Host "herro?"
-			$facetOrPattern = Register-Facet -Facet $Name -Parent $ParentName -Verbose:$xVerbose -Debug:$xDebug;
-		}
-		catch {
-			throw "Proviso Validation Error. Facet or Pattern: [$Name] failed validation: $($_.Exception.Message) `r`t$($_.ScriptStackTrace) ";
-		}
-		
-		if ($null -eq $facetOrPattern) {
-			throw "Could not find Pattern or Facet: [$Name].";
-		}
+		if ($null -eq $facet) {
+			throw "Processing Error. Facet: [$Name] NOT found.";
+		}		
 		
 		$results = @();  # MUST be declared here to be able to be in scope for all pipeline'd operations... 
 	};
 	
 	process {
+		
 		if (Has-ArrayValue $Servers) {
 			foreach ($s in $Servers) {
 				if (Has-ArrayValue $Targets) {
 					foreach ($t in $Targets) {
-						$results += Process-ReadFacet -Facet $facetOrPattern -ServerName $s -Target $t -Credential $Credential -Verbose:$xVerbose -Debug:$xDebug;
+						$results += Process-ReadFacet -Facet $facet -ServerName $s -Target $t -Credential $Credential -Verbose:$xVerbose -Debug:$xDebug;
 					}
 				}
 				else {
-					$results += Process-ReadFacet -Facet $facetOrPattern -ServerName $s -Credential $Credential -Verbose:$xVerbose -Debug:$xDebug;
+					$results += Process-ReadFacet -Facet $facet -ServerName $s -Credential $Credential -Verbose:$xVerbose -Debug:$xDebug;
 				}
 			}
 		}
 		else {
 			if (Has-ArrayValue $Targets) {
 				foreach ($t in $Targets) {
-					$results += Process-ReadFacet -Facet $facetOrPattern -Target $t -Verbose:$xVerbose -Debug:$xDebug;
+					$results += Process-ReadFacet -Facet $facet -Target $t -Verbose:$xVerbose -Debug:$xDebug;
 				}
 			}
 			else {
-				$results += Process-ReadFacet -Facet $facetOrPattern -Verbose:$xVerbose -Debug:$xDebug;
+				$results += Process-ReadFacet -Facet $facet -Verbose:$xVerbose -Debug:$xDebug;
 			}
 		}
 	};
@@ -197,23 +219,20 @@ function Process-ReadFacet {
 	begin {
 		
 		if (Has-Value $ServerName) {
-			
 			# NOTE: attempt to use Creds if/as supplied? 
-			
 			Write-Host "need to validate server: $ServerName";
 			# as in, make sure that a) we can connect to it (resolve it), b) it has same version of Proviso.Core on it. 
-			
 			# also, it MIGHT make sense to look into caching whether a server is accessible or not? 
 		}
 	};
 	
 	process {
-		
-		
-		# $result = Execute-Pipeline -Verb "Read" -OperationType "Facet" -Name $Name -Model $null -Target $Target;
+		#$global:PvPipelineContext.CurrentOperationName = "Read-Facet";
+		$global:PvPipelineContext_CurentOperationName = "Read-Facet";  # TODO: turn this into an actual object... 
+		$result = Execute-Pipeline -Verb "Read" -OperationType Facet -Block $Facet -Target $Target;
 	};
 	
 	end {
-		
+		return $result;
 	};
 }

@@ -1,5 +1,47 @@
 ﻿Set-StrictMode -Version 1.0;
 
+<#
+
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+
+	$global:DebugPreference = "Continue";
+#	$global:VerbosePreference = "Continue";
+
+	Facets {
+		Facet "Global_Basic" -Id "11_22" -Path "Test.Path" {
+			Property "Test Prop 1" -Path "UserName" {
+				# wow. the logic here is kind of insane/complex. 
+				# if there's a path... the expectation is that Extract = $target.<Target_PATH> ... 
+				# 		and that Expect is the equivalent of $model.<model_path> ... 
+				# 		meaning that ... in some way, both of the above have to be 'promised' or place-holdered until RUN TIME... (can't really be defined NOW or even in discovery). 
+				# 			cuz... i won't know until runtime whether we have a $model or $target - right? 
+				# 					well... i'll know to EXPECT those ... but won't know what they ARE... 
+			}
+			Property "Test Prop 2" -TargetPath "EmailAddress" -ModelPath "email" -Skip {
+			}
+#			Cohort "Cohort 1" {
+#
+#			}
+		}
+
+		Facet "Global_Skipped" -Path "Doesn't matter - skipped" -Ignore "Skipped - not ready." { 
+		}
+
+		Facet "Implicit Property Facet" -ThrowOnConfigure "Not Configurable - Yet" {
+		}
+	}
+
+	$facet = $global:PvBlockStore.GetFacetByName("Global_Basic", "");
+	write-host "Properties Count: $($facet.Properties.Count) "
+	
+	foreach($p in $facet.Properties) {
+		write-host "-------------------------------------";
+		$p | fl;
+	}
+
+
+#>
+
 function Property {
 	[CmdletBinding()]
 	param (
@@ -17,6 +59,10 @@ function Property {
 		[string]$DisplayFormat = $null,
 		[object]$Expect,
 		[object]$Extract,
+		[Alias('PreventConfig', 'PreventConfiguration', 'DisableConfig')]
+		[switch]$NoConfig = $false,
+		[Alias('ThrowOnConfig', 'ThrowOnConfiguration')]
+		[string]$ThrowOnConfigure = $null,
 		[switch]$UsesAdd = $false,
 		[switch]$UsesAddRemove = $false
 	);
@@ -24,50 +70,55 @@ function Property {
 	begin {
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
+		
 		Enter-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	process {
-		$parentBlockType = $global:PvOrthography.GetParentBlockType();
-		$parentName = $global:PvOrthography.GetParentBlockName();
-		$definition = New-Object Proviso.Core.Definitions.PropertyDefinition($Name, [Proviso.Core.PropertyParentType]$parentBlockType, $parentName);
+		$currentProperty = New-Object Proviso.Core.Models.Property($Name, ([Proviso.Core.FacetParentType](Get-ParentBlockType)), (Get-ParentBlockName));
 		
-		Set-Definitions $definition -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
-						-Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfig $ThrowOnConfig `
-						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
-		
-		$currentProperty = $definition;
+		Set-Declarations $currentProperty -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
+						 -Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -NoConfig:$NoConfig `
+						 -ThrowOnConfigure $ThrowOnConfigure -DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		# BIND:
-		switch ($parentBlockType) {
+		switch ((Get-ParentBlockType)) {
 			"Properties" {
-				Write-Debug "$(Get-DebugIndent)	NOT Binding Property: [$($definition.Name)] to parent, because parent is a Properties wrapper.";
+				Write-Debug "$(Get-DebugIndent)	NOT Binding Property: [$($currentProperty.Name)] to parent, because parent is a Properties wrapper.";
 			}
 			"Cohort" {
-				Write-Debug "$(Get-DebugIndent)	Binding Property [$($definition.Name)] to parent Cohort, named: [$($definition.ParentName)], with grandparent named: [$($currentCohort.ParentName)].";
+				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($currentProperty.Name)] to Cohort: [$($currentProperty.ParentName)] - within grandparent named: [$($currentCohort.ParentName)].";
 				
-				$currentCohort.AddChildProperty($definition);
+				$currentCohort.AddCohortProperty($currentProperty);
 			}
 			"Facet" {
-				Write-Debug "$(Get-DebugIndent)	Binding Property [$($definition.Name)] to Facet, named: [$($definition.ParentName)], with grandparent named: [$grandParentName].";
+				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($currentProperty.Name)] to Facet, named: [$($currentProperty.ParentName)], with grandparent named: [$grandParentName].";
 				
-				$currentFacet.AddChildProperty($definition);
+				$currentFacet.AddProperty($currentProperty);
 			}
 			"Pattern" {
-				Write-Debug "$(Get-DebugIndent)	Binding Property [$($definition.Name)] to Pattern, named: [$($definition.ParentName)], with grandparent named: [$grandParentName].";
+				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($currentProperty.Name)] to Pattern, named: [$($currentProperty.ParentName)], with grandparent named: [$grandParentName].";
 				
-				$currentPattern.AddChildProperty($definition);
+				$currentPattern.AddProperty($currentProperty);
 			}
 			default {
-				throw "Proviso Framework Error. Invalid Property Parent: [$($Property.ParentType)] specified.";
+				throw "Proviso Framework Error. Invalid Property Parent: [$($currentProperty.ParentType)] specified.";
 			}
 		}
 		
 		# STORE:
-		# TODO: pretty sure properties NEED to be stored via their parent, right? 
-		if ($global:PvOrthography.StorePropertyDefinition($definition, (Allow-DefinitionReplacement))) {
-			Write-Verbose "Property: [$Name] (within $($Property.PropertyParentType) [$($Property.ParentName)]) was replaced.";
-		}
+		# TODO: Figure out what rules I want to impose on re-using properties. 
+		# 	 There are a few options: 
+		# 		a. any property can be re-used (this gets SUPER hard cuz... in order to 'import' it ... I'd need to be able to find it (as a code author) and... store it correctly.)
+		# 			don't think this is the right approach. 
+		# 		b. MAYBE, globally-defined properties can be re-used? 
+		# 			this'd be a bit easier to tackle - and ... makes a bit more sense? 
+		# 		c. The other option too is ... they can't ever be re-used. 
+		# 	either way, whatever I decided, I'll need to implement that for Properties, Cohorts, and Inclusions ... 
+		# 	likewise, I have CLR VirtualProperty and VirtualCohort objects defined. 
+		# 		they'd be ... what ends up being referenced as a place-holder ... and then 'looked up' during 'discovery' / etc. 
+		# 		and, if I end up NOT allowing re-use ... then I don't need those virtual objects... 
+		#Store-Property $currentProperty -AllowReplace (Allow-BlockReplacement) -Verbose:$xVerbose -Debug:$xDebug;
 		
 		& $PropertyBlock;
 	};
