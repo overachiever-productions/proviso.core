@@ -109,13 +109,39 @@ function Is-Skipped {
 		$verbose = "Configuring $($ObjectType): [$Name] for bypass (-Skip Enabled).";
 		
 		if (Has-Value $Ignore) {
-			$verbose = $verbose.Replace(" -Skip Enabled", " '$Ignore'");
+			$verbose = $verbose.Replace(" -Skip Enabled", "'$Ignore'");
 		}
 		
 		Write-Verbose $verbose;
 	}
 	
 	return $bypass;
+}
+
+function Throws-OnConfig {
+	[CmdletBinding()]
+	param (
+		[Parameter(Mandatory, Position = 0)]
+		[string]$ObjectType,
+		[string]$Name,
+		[switch]$NoConfig,
+		[string]$ThrowOnConfigure
+	);
+	
+	$throws = $false;
+	if ($NoConfig -or (Has-Value $ThrowOnConfigure)) {
+		$throws = $true;
+		
+		$verbose = "Configuring $(): [$Name] to Throw on attempt to use Configure (-NoConfig Enabled).";
+		
+		if (Has-Value $ThrowOnConfigure) {
+			$verbose = $verbose.Replace("-NoConfig Enabled", "'$ThrowOnConfigure'");
+		}
+		
+		Write-Verbose $verbose;
+	}
+	
+	return $throws;
 }
 
 filter Allow-DefinitionReplacement {
@@ -157,69 +183,58 @@ function Should-SetPaths {
 	return $false;
 }
 
-#function Set-Definitions {
-#	[CmdletBinding()]
-#	param (
-#		[Parameter(Mandatory, Position = 0)]
-#		[Proviso.Core.IDeclarable]$iDeclarable,
-#		[parameter(Mandatory)]
-#		[string]$BlockType, 
-#		[string]$ModelPath = $null,
-#		[string]$TargetPath = $null,
-#		[ValidateSet("None", "Low", "Medium", "High")]
-#		[string]$Impact = "None",
-#		[switch]$Skip = $false,
-#		[string]$Ignore = $null,
-#		[string]$DisplayFormat = $null,
-#		[object]$Expect = $null,
-#		[object]$Extract = $null,
-#		[string]$ThrowOnConfig = $null
-#	);
-#
-#	if ((Is-Skipped $BlockType -Name $Name -Skip:$Skip -Ignore $Ignore -Verbose:$xVerbose -Debug:$xDebug)) {
-#		$iDeclarable.SetSkipped($Ignore);
-#	}
-#	
-#	if (Should-SetPaths $BlockType -Name $Name -ModelPath $ModelPath -TargetPath $TargetPath -Path $Path -Verbose:$xVerbose -Debug:$xDebug) {
-#		$ModelPath, $TargetPath = $Path, $Path;
-#	}
-#	
-#	$iDeclarable.SetPaths($ModelPath, $TargetPath);
-#	
-#	if ($Impact -ne "None") {
-#		$iDeclarable.SetImpact(([Proviso.Core.Impact]$Impact));
-#	}
-#	
-#	if ($Expect) {
-#		$iDeclarable.SetExpectFromParameter($Expect);
-#	}
-#	
-#	if ($Extract) {
-#		$iDeclarable.SetExtractFromParameter($Extract);
-#	}
-#	
-#	if ($ThrowOnConfig) {
-#		$iDeclarable.SetThrowOnConfig($ThrowOnConfig);
-#	}
-#	
-#	
-#	
-#	#$stack = ((Get-PSCallStack).Command -join ",") -replace "Enter-Block,"
-#	
-#	
-#	# TODO: Implement this LATER. I't s a 'nice to have' - not something core/critical.
-#	# also... $PSCmdlet.MyInvocation.ScriptName? might be a better way? 
-#	# this is ... close. 
-#	# 		what I might actually want to do is ... 
-#	# 		in Enter-Block... capture the 'current (caller)' script-name/source via this approach (i.e., basically [1] vs [0])
-#	# 			and shove it into a variable... 
-#	# 			that I can then call via a func in Orthography.ps ... e.g., Get-CurrentBlockDefinitionScriptThingy... 
-#	# 		and then call that here... and ... shove it into $iDeclarable.SetSourceMetaDataAndOtherStuff($x, $y, $z-etc)
-##	$stack = (Get-PSCallStack).ScriptName -join "`n";
-##	
-#	
-#	# TODO: Comparison... 
-#	# TODO: Processing Order? 
-#	
-#	
-#}
+filter Inherit {
+	param (
+		$Parent,
+		$Child,
+		$Property
+	);
+	
+	if (Has-Value $Parent.$Property) {
+		if (Is-Empty $Child.$Property) {
+			$Child.$Property = $Parent.$Property;
+		}
+	}
+}
+
+filter Override-Impact {
+	param (
+		$Parent,
+		$Child
+	);
+	
+	if ($Parent -is [Proviso.Core.IPotent]) {
+		if ("None" -ne $Parent.Impact) {
+			if ("None" -eq $Child.Impact) {
+				$Child.Impact = $Parent.Impact; # er, well... is this correct? 2 ways to look at this... a) if facet has a 'higher' impact than a child, it should override? or b) if there's an EXPLICIT "low" prop for a facet with "high"... then, we have to assume that the prop and facet are both correct (vs thinking that prop now becomes "High", right?)
+			}
+		}
+	}
+}
+
+filter Override-Skip {
+	param (
+		$Parent,
+		$Child
+	);
+	
+	if ($Parent.Skip) {
+		$Child.Skip = $true;
+		$Child.SkipReason = $Parent.SkipReason;
+	}
+}
+
+filter Override-ThrowOnConfig {
+	param (
+		$Parent,
+		$Child
+	);
+	
+	if ($Parent -is [Proviso.Core.IPotent]) {
+		if ($Parent.ThrowOnConfig) {
+			$Child.ThrowOnConfig = $true;
+			$Child.MessageToThrow = $Parent.MessageToThrow;
+		}
+	}
+}
+

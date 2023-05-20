@@ -8,7 +8,7 @@
 #	$global:VerbosePreference = "Continue";
 
 	Facets {
-		Facet "Global_Basic" -Id "11_22" -Path "Test.Path" {
+		Facet "Global_Basic" -Id "11_22" -Path "Test.Path" -NoConfig -Impact "High" {
 		}
 
 		Facet "Global_Skipped" -Path "Doesn't matter - skipped" -Ignore "Skipped - not ready." { 
@@ -23,7 +23,6 @@
 	$facet | fl;
 
 #>
-
 
 <#
 #	Surface "Bigly" {
@@ -92,8 +91,8 @@ function Facet {
 		[string]$DisplayFormat = $null,
 		[object]$Expect = $null,
 		[object]$Extract = $null,
-		[Alias('PreventConfig', 'NoConfig', 'DisableConfig')]
-		[switch]$PreventConfiguration = $false,
+		[Alias('PreventConfig', 'PreventConfiguration', 'DisableConfig')]
+		[switch]$NoConfig = $false,
 		[Alias('ThrowOnConfig', 'ThrowOnConfiguration')]
 		[string]$ThrowOnConfigure = $null
 	);
@@ -103,14 +102,15 @@ function Facet {
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		
 		Enter-Block ($MyInvocation.MyCommand) -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
+
 	};
 	
 	process {
 		$currentFacet = New-Object Proviso.Core.Models.Facet($Name, $Id, ([Proviso.Core.FacetParentType](Get-ParentBlockType)), (Get-ParentBlockName));
 		
 		Set-Declarations $currentFacet -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
-						 -Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfigure $ThrowOnConfigure `
-						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
+						 -Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -NoConfig:$NoConfig `
+						 -ThrowOnConfigure $ThrowOnConfigure -DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		# BIND:
 		switch ((Get-ParentBlockType)) {
@@ -128,7 +128,7 @@ function Facet {
 		}
 		
 		# STORE: 
-		Store-Facet $currentFacet -AllowReplace (Allow-BlockReplacement) -Verbose:$xVerbose -Debug:$xDebug;
+		Add-FacetToBlockStore $currentFacet -AllowReplace (Allow-BlockReplacement) -Verbose:$xVerbose -Debug:$xDebug;
 		
 		& $FacetBlock;
 	};

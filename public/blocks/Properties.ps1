@@ -8,7 +8,6 @@
 function Properties {
 	[CmdletBinding()]
 	param (
-		[Alias('PropertiesSetName')]
 		[string]$Name,
 		[ScriptBlock]$PropertiesBlock
 	);

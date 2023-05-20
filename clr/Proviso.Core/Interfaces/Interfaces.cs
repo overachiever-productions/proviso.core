@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Management.Automation;
 
 namespace Proviso.Core
 {
-
     // TODO: roll this into ... IDeclarable... 
     public interface ITrackable
     {
@@ -11,24 +11,25 @@ namespace Proviso.Core
         string SourceFile { get; }
     }
 
+    // REFACTOR: In addition to being 'declarable' ... these 'attributes' also
+    //      apply to script blocks ... so... IScriptBlockAble? (or something similar)?
     public interface IDeclarable
     {
-        string ParentName { get; }
         string Name { get; }
-        string ModelPath { get; }
-        string TargetPath { get; }
+        string ParentName { get; }
+        string ModelPath { get; set; }
+        string TargetPath { get; set; }
         bool Skip { get; }
         string SkipReason { get; }
         string DisplayFormat { get; }
 
+        ScriptBlock Expect { get; set; }
+        ScriptBlock Extract { get; set; }
+        //ScriptBlock Compare { get; }
+
         void SetDisplayFormat(string format);
         void SetPaths(string model, string target);
         void SetSkipped(string reason);
-        
-        // TODO: this stuff only applies to ... Properties? or ... does it also apply to Facets and Aspects? 
-        void SetComparisonType(string name);
-        void SetExpectFromParameter(object expect);
-        void SetExtractFromParameter(object expect);
     }
 
     public interface IBuildValidated
@@ -65,6 +66,22 @@ namespace Proviso.Core
         bool IsVirtual { get; }
     }
 
+    public interface ISurface
+    {
+        //string Name { get; }
+
+        bool IsVirtual { get; }
+        bool IsPlaceHolder { get; }
+    }
+
+    // Not wild about this name: 
+    public interface IFacetable
+    {
+        List<IFacet> Facets { get; }
+
+        void AddFacet(IFacet added);
+    }
+
     public interface IPotent {
         Impact Impact { get; }
         bool ThrowOnConfig { get; }
@@ -88,11 +105,13 @@ namespace Proviso.Core
     {
         public string ParentName { get; private set; }
         public string Name { get; private set; }
-        public string ModelPath { get; private set; }
-        public string TargetPath { get; private set; }
+        public string ModelPath { get; set; }
+        public string TargetPath { get; set; }
         public bool Skip { get; private set; }
         public string SkipReason { get; private set; }
         public string DisplayFormat { get; private set; }
+        public ScriptBlock Expect { get; set; }
+        public ScriptBlock Extract { get; set; }
 
         internal DeclarableBase(string name, string parentName)
         {
@@ -125,24 +144,6 @@ namespace Proviso.Core
         public void SetComparisonType(string name)
         {
             throw new NotImplementedException();
-        }
-
-        public void SetExpectFromParameter(object expect)
-        {
-            // NOTE: I've been tempted to think about using ... PSON code/examples as a way to figure out what TYPE of object we've got here. 
-            //      but i don't NEED to. 
-            //      instead, I need to simply STORE this 'value' as ... an OBJECT 
-            //      and let that get passed on DOWN the line ... until it becomes a 'code block' of return $object;
-            //          COMPARISONS (i.e., the Compare func) will handle object types, etc. 
-
-            // TODO: Implement: throw new NotImplementedException();
-        }
-
-        public void SetExtractFromParameter(object expect)
-        {
-            // same as with ... SetExpect... 
-
-            // TODO: Implement: throw new NotImplementedException();
         }
     } 
 }

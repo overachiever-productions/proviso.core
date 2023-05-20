@@ -12,8 +12,6 @@ namespace Proviso.Core.Models
         public bool IsCohort { get; }
         public bool IsVirtual { get; }
 
-        public ScriptBlock Expect { get; set; }
-        public ScriptBlock Extract { get; set; }
         public ScriptBlock Compare { get; set; }
         public ScriptBlock Configure { get; set; }
 
@@ -81,6 +79,29 @@ namespace Proviso.Core.Models
     //{
 
     //}
+
+
+    public class AnonymousProperty : IProperty
+    {
+        public string Name { get; }
+        public string ParentName { get; }
+        public PropertyParentType ParentType { get; }
+        public PropertyType PropertyType { get; }
+        public bool IsCohort { get; }
+        public bool IsVirtual { get; }
+
+        public AnonymousProperty(string parentName, PropertyParentType parentType)
+        {
+            // parentType can only be ... Facet or Cohort, right? 
+
+            this.Name = $"{parentName}.Property";
+            this.ParentName = parentName;
+            this.ParentType = parentType;
+
+            this.IsVirtual = false; // false != anonymous
+            this.IsCohort = false;
+        }
+    }
 
     public class VirtualProperty : IProperty
     {

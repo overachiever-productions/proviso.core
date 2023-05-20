@@ -92,68 +92,101 @@ function Register-Facet {
 	};
 	
 	process {
-		# Bit of a DRY violation as this is a copy/paste of the same lines from Get-Facet:
-		[Proviso.Core.Definitions.FacetDefinition]$definition = $null;
-		$definition = $global:PvOrthography.GetFacetDefinitionByName($Name, $ParentName);
+		# TODO: add option for $Id? 
+		[Proviso.Core.Models.Facet]$facet = Get-FacetFromBlockStore -Name $Name -ParentName $ParentName;
 		if ($null -eq $definition) {
-			throw "Processing Error. Pattern or Facet: [$Name] was NOT found.";
+			throw "Processing Error. Facet: [$Name] was NOT found.";
 		}
 		
-		Write-Debug "Facet Definition [$Name] located. Starting Discovery + Validation.";
+		Write-Debug "			Facet Definition [$Name] located. Starting Discovery + Validation.";
 		
-#		[Proviso.Core.Models.Facet]$facet = [Proviso.Core.Mapper]::ToFacet($definition);
-#		$facet.Validate($global:PvCatalog);
+		#region Implementation Notes:
+		# NOTE: I presume that implementing the details listed below makes sense here (i.e., implement code here). 
+		# 		but, eventually, code that loads FACETS will be loaded/executed for ... surfaces and such. 
+		# 		so there's potentially a point to making the functionality below reusable?
+		#endregion
 		
-#		Write-Host "Facet name is: $($facet.FacetName)";
+		# DISCOVERY: 
+		# 	Rules / Processes: 
+		# 		- Each Facet MUST have at least 1 property. 
+		# 			the property CAN be anonymous though... 
 		
+		# 		- NOTE: as I get to a point where I can/will? allow 'global' properties to be referenced. 
+		# 			then, this is where those'd be added. 
+		# 			i.e., process/logic would be something along the lines of: 
+		# 			a) look for 'promises'/virtual property references. 
+		# 					and ... then confirm that we can find them via the Catalog... 
+		# 			b) similar-ish for Cohorts and their child properties. 
+		# 					and ... validate their Enumerate|or and ADD/REMOVE + behavior/membership declarations. 
+		# 					and ... then resolve any virtual/promise properties or whatever... 
+		# 			c) explicitly defined properties... 
+		# 			d) if we're at NO properties at this point... 
+		# 				then ... create an ANONYMOUS property ... 
 		
-		# note: this is 'wrong' in the sense that I should be interrogating the $facet at this point - not the FacetDefinition... 
-		foreach ($prop in $definition.Properties) {
-			if ("Cohort" -eq $prop.PropertyType) {
-				foreach ($p in $prop.Properties) {
-					Write-Host "  PROP: $($p.Name)";
+		if ($facet.Properties.Count -eq 0) {
+			$anonymousProp = New-Object Proviso.Core.Models.AnonymousProperty($facet.Name, ([Proviso.Core.PropertyParentType]"Facet"));
+			$facet.AddProperty($anonymousProp)
+		}
+		else {
+			# might need to iterate props here and ... find cohorts and ...expand them on up/into the parent or??? 
+			
+			# i.e., I can do something like this without too much effort: 
+			foreach ($p in $facet.Properties) {
+				if ($p.IsCohort) {
+					foreach ($pp in $p.Properties) {
+						Write-Host "i'm a nested property.";
+					}
 				}
 			}
-			else {
-				Write-Host "PROP: $($prop.Name)";
-			}
+			# only... 	all'z the above does is iterate over these ... i need a cohesive, bundled/weaponized, implementation. 
+			
+		}
+		
+		foreach ($prop in $facet.Properties) {
+			
+			
+			
+			# INHERITANCE:
+			# 		?Display Format?, ?Compare/Comparison-Type?
+			Inherit -Parent $facet -Child $prop -Property "Expect";
+			Inherit -Parent $facet -Child $prop -Property "Extract";
+			Inherit -Parent $facet -Child $prop -Property "TargetPath";
+			Inherit -Parent $facet -Child $prop -Property "ModelPath";
+			
+			# OVERRIDES:
+			Override-Impact -Parent $facet -Child $prop;
+			Override-Skip -Parent $facet -Child $prop;
+			Override-ThrowOnConfig -Parent $facet -Child $prop;
 		}
 		
 		
-		# Validate: 
-		#$facet.Validate($global:PvCatalog); # this could work... 
+		#     	- For EACH property in .Properties: 
+		# 			MAP any of the following details owned/defined at the Facet Level:
+		# 			> Target/Model Path - i.e., if not defined in the property, and IF defined by Facet, 'inherit down' to property (per each path option)
+		# 			> Impact - i.e., Inherit if defined at facet and NOT defined at property (not that this'll be NONE/NONE by default at facet/prop level - but that's fine - we're looking for EXPLICIT declarations)
+		# 			> Skip. If the Facet is skipped, all props will be skipped. 
+		# 				at which point... do I even BOTHER with discovery? I THINK I do, cuz I'd want to see a 'skipped' facet with 4 props ... show up as 4 skips in validation/testing/etc. right?
+		# 			> Display Format - again, inherit 'down' if/as needed. 
+		# 			> EECC. 
+		# 				not only do these 'inherit down' if/as needed. 
+		# 				BUT... the values will be 'weaponized'
+		# 				e.g., assume a Facet with 2x properties with -Expect 10 ... 
+		# 					not only would this inherit down to it's 2x properties (so that their expects would be 10 (unless other values were explicitly specified)
+		# 					 BUT, the actual EXPECT for those 2x properties would be, literally, something along the lines of { return $Expect; } - or whatever... 
+		# 			> Configure - similar to the above ... 
+		# 				if throwOnConfig or NoConfig is set at the FACET level... it overwrites all children. 
 		
 		
-		
-		# what does registration even mean? 
-		# 	it's validation, basically. or ... confirmation that the build(ed) definition is legit. 
-		# 	yeah, ultimately, it's a kind of 'compilation' - taking expressed intentions and turning them into a portable object/thingy... 
-		
-		# for a facet that means: 
-		# 		1. does the facet have a parent? I don't think that really matters. as in, facets can be stand-alone(ish) - they either have to exist in a surface/aspect or ... facets block. 
-		# 		2. is this a facet or a pattern? 
-		# 		3. do we have at least 1 property/cohort? 
-		# 		4. if we're a pattern, do we have an iterate/iterator-specified (and if the iterator is specified, can we find it?)
-		# 		5. If there's a cohort... 
-		# 			> does it have an emuerate or enumerator specified (and if enumerator - can we find one?)
-		# 			> does the cohort have at least 1 property?
-		# 		6. what else?
-		
-		# 		assuming that all of the above passes... 
-		# 			congrats, we've got a facet/pattern?
-		# 			store it (along with enumerate/iterate 'pointers'?)
-		# 				er. no. no pointers. the actual code. 
-		# 				and, insanely enough: caching/build/whatever dependencies on these enumerators/iterators
-		# 					cuz if they end up being updated/replaced, I need to either update facets and such that depend on them, or dump them from the cache etc. 
-		# 		So. Yeah. 
-		# 			when i'm done here, what I'll have is a fully weaponized bit of code that has everything it needs to process 
-		# 				e.g., it'll have all paths, all directives, and so on fully populated. 
-		# 				it'll also have the code-blocks for Iterate/Add/Remove and Enumerate/Add/Remove 'copied into place' as needed. 
-		# 			and ... 
-		# 				for each property (or cohort-property/etc.) or inclusion and whatever... 
-		# 			it'll have the code-blocks for EECC and EVERYTHING needed for execution. 
+		#  	Reviewing the rules above, there are 2x behavior types: 
+		# 		- Inherit-Down (i.e., syntactical sugar that allows for easier definition at the 'parent' level to trickle down to children IF they don't have values explicitly defined (otherwise, their explicit values 'trump' inheritance))
+		# 		- OVERRIDE. Skip, Impact, and ThrowOnConfig are overrides. 	
 		
 		
+		# Validation/Discovery Complete; Time to promote this to a registered Facet (i.e., shove it into the Catalog).
+		Write-Debug "				Facet: [$Name] Passed Discovery. Adding to Catalog.";
+		Add-FacetToCatalog $facet -Verbose:$xVerbose -Debug:$xDebug;
+		
+		return $facet;
 	};
 	
 	end {
@@ -164,28 +197,35 @@ function Register-Facet {
 function Get-Facet {
 	[CmdletBinding()]
 	param (
+		# TODO: set up different paramter sets here... 
+		[string]$Id,
+		
 		[Parameter(Mandatory)]
 		[string]$Name,
 		[string]$ParentName
 	);
 	
 	process {
-		Write-Debug "Attempting to get Facet: [$Name] from Catalog.";
-		[Proviso.Core.Models.Facet]$facet = $global:PvCatalog.GetFacetByName($Name, $ParentName);
+		[Proviso.Core.Models.Facet]$facet = Get-FacetFromCatalog -Id $Id -Name $Name -ParentName $ParentName -Verbose:$xVerbose -Debug:$xDebug;
 		
 		if ($null -eq $facet) {
-			Write-Debug "Facet: [$Name] not found in Catalog. Attempting to load definition (for registration).";
+			Write-Debug "		Facet: [$Name] not found in Catalog. Attempting to load definition (for registration).";
 			
-			[Proviso.Core.Definitions.FacetDefinition]$definition = $null;
-			$definition = $global:PvOrthography.GetFacetDefinitionByName($Name, $ParentName);
+			[Proviso.Core.Models.Facet]$definition = $null;
+			
+	# TODO: -verbose -debug? 
+	# TODO: ... what about .. by Id? (guess that would be another signature/call into Read-Facet - i.e., it'd pass down the Id ... and then ... I'd pass that around until here? )
+	# 		and yeah... it probably makes sense to maybe implement some different signatures (in the block store) for that?
+			$definition = Get-FacetFromBlockStore -Name $Name -ParentName $ParentName;
 			if ($null -eq $definition) {
-				throw "Processing Error. Pattern or Facet: [$Name] was NOT found.";
+				throw "Processing Error. Facet: [$Name] was NOT found.";
 			}
 			
-			Write-Debug "Facet: [$Name] definition found. Attempting Registration.";
+			Write-Debug "		Facet: [$Name] definition found. Attempting Registration.";
 			
 			$facet = Register-Facet -Name $Name -ParentName $ParentName -OverWrite:(Allow-DefinitionReplacement) -Verbose:$xVerbose -Debug:$xDebug;
 		}
 		
+		return $facet;
 	}
 }

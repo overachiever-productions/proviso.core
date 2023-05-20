@@ -45,7 +45,8 @@ namespace Proviso.Core
         {
             added.Validate();
 
-            StoragePredicate<Facet> predicate = (exists, added) => exists.Id == added.Id;
+            // NOTE: using hash-code for identification here... 
+            StoragePredicate<Facet> predicate = (exists, added) => exists.GetHashCode() == added.GetHashCode();
             return this._facets.Save(added, predicate, allowReplace, $"Facet: [{added.Name}]");
         }
 
@@ -57,7 +58,8 @@ namespace Proviso.Core
                 if (facets.Count() == 1)
                     return facets.First();
 
-                throw new InvalidOperationException($"Multiple Facets named: [{name}] exist - specify the ParentName or Execute Lookup by Facet.Id instead.");
+                if(facets.Count() > 1)
+                    throw new InvalidOperationException($"Multiple Facets named: [{name}] exist - specify the ParentName or Execute Lookup by Facet.Id instead.");
             }
 
             return this._facets.FirstOrDefault(x => x.Name == name && x.ParentName == parentName);
@@ -70,7 +72,7 @@ namespace Proviso.Core
 
         public bool StorePattern(Pattern added, bool allowReplace)
         {
-            return false;
+            throw new NotImplementedException();
         }
     }
 }

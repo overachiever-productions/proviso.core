@@ -2,7 +2,7 @@
 
 $global:PvBlockStore = [Proviso.Core.BlockStore]::Instance;
 
-function Store-Facet {
+function Add-FacetToBlockStore {
 	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory, Position = 0)]
@@ -17,6 +17,15 @@ function Store-Facet {
 
 function Store-Pattern {
 	
+}
+
+function Get-FacetFromBlockStore {
+	param (
+		[string]$Name,
+		[string]$ParentName
+	);
+	
+	return $PvBlockStore.GetFacetByName($Name, $ParentName);
 }
 
 # SEE NOTES in Property.ps1 - down near the #STORE comment... 

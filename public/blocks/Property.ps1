@@ -2,7 +2,6 @@
 
 <#
 
-
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 
 	$global:DebugPreference = "Continue";
@@ -36,16 +35,12 @@
 	write-host "Properties Count: $($facet.Properties.Count) "
 	
 	foreach($p in $facet.Properties) {
-		
 		write-host "-------------------------------------";
 		$p | fl;
-		
 	}
 
 
-
 #>
-
 
 function Property {
 	[CmdletBinding()]
@@ -64,6 +59,9 @@ function Property {
 		[string]$DisplayFormat = $null,
 		[object]$Expect,
 		[object]$Extract,
+		[Alias('PreventConfig', 'PreventConfiguration', 'DisableConfig')]
+		[switch]$NoConfig = $false,
+		[Alias('ThrowOnConfig', 'ThrowOnConfiguration')]
 		[string]$ThrowOnConfigure = $null,
 		[switch]$UsesAdd = $false,
 		[switch]$UsesAddRemove = $false
@@ -77,14 +75,11 @@ function Property {
 	};
 	
 	process {
-#		$parentBlockType = $global:PvOrthography.GetParentBlockType();
-#		$parentName = $global:PvOrthography.GetParentBlockName();
-		
 		$currentProperty = New-Object Proviso.Core.Models.Property($Name, ([Proviso.Core.FacetParentType](Get-ParentBlockType)), (Get-ParentBlockName));
 		
 		Set-Declarations $currentProperty -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
-						 -Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -ThrowOnConfigure $ThrowOnConfigure `
-						-DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
+						 -Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -NoConfig:$NoConfig `
+						 -ThrowOnConfigure $ThrowOnConfigure -DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
 		
 		# BIND:
 		switch ((Get-ParentBlockType)) {
