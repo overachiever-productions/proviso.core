@@ -143,11 +143,7 @@ function Register-Facet {
 		}
 		
 		foreach ($prop in $facet.Properties) {
-			
-			
-			
 			# INHERITANCE:
-			# 		?Display Format?, ?Compare/Comparison-Type?
 			Inherit -Parent $facet -Child $prop -Property "Expect";
 			Inherit -Parent $facet -Child $prop -Property "Extract";
 			Inherit -Parent $facet -Child $prop -Property "TargetPath";
@@ -159,30 +155,6 @@ function Register-Facet {
 			Override-ThrowOnConfig -Parent $facet -Child $prop;
 		}
 		
-		
-		#     	- For EACH property in .Properties: 
-		# 			MAP any of the following details owned/defined at the Facet Level:
-		# 			> Target/Model Path - i.e., if not defined in the property, and IF defined by Facet, 'inherit down' to property (per each path option)
-		# 			> Impact - i.e., Inherit if defined at facet and NOT defined at property (not that this'll be NONE/NONE by default at facet/prop level - but that's fine - we're looking for EXPLICIT declarations)
-		# 			> Skip. If the Facet is skipped, all props will be skipped. 
-		# 				at which point... do I even BOTHER with discovery? I THINK I do, cuz I'd want to see a 'skipped' facet with 4 props ... show up as 4 skips in validation/testing/etc. right?
-		# 			> Display Format - again, inherit 'down' if/as needed. 
-		# 			> EECC. 
-		# 				not only do these 'inherit down' if/as needed. 
-		# 				BUT... the values will be 'weaponized'
-		# 				e.g., assume a Facet with 2x properties with -Expect 10 ... 
-		# 					not only would this inherit down to it's 2x properties (so that their expects would be 10 (unless other values were explicitly specified)
-		# 					 BUT, the actual EXPECT for those 2x properties would be, literally, something along the lines of { return $Expect; } - or whatever... 
-		# 			> Configure - similar to the above ... 
-		# 				if throwOnConfig or NoConfig is set at the FACET level... it overwrites all children. 
-		
-		
-		#  	Reviewing the rules above, there are 2x behavior types: 
-		# 		- Inherit-Down (i.e., syntactical sugar that allows for easier definition at the 'parent' level to trickle down to children IF they don't have values explicitly defined (otherwise, their explicit values 'trump' inheritance))
-		# 		- OVERRIDE. Skip, Impact, and ThrowOnConfig are overrides. 	
-		
-		
-		# Validation/Discovery Complete; Time to promote this to a registered Facet (i.e., shove it into the Catalog).
 		Write-Debug "				Facet: [$Name] Passed Discovery. Adding to Catalog.";
 		Add-FacetToCatalog $facet -Verbose:$xVerbose -Debug:$xDebug;
 		

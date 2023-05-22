@@ -18,6 +18,8 @@ filter Import-Types {
 		"$ScriptRoot\clr\Proviso.Core\Taxonomy.cs"
 		"$ScriptRoot\clr\Proviso.Core\Catalog.cs"
 		
+		"$ScriptRoot\clr\Proviso.Core\Results.cs"
+		
 		#"$ScriptRoot\clr\Proviso.Core\Definitions\BlockDefinitions.cs"
 		#"$ScriptRoot\clr\Proviso.Core\Mapper.cs"
 		

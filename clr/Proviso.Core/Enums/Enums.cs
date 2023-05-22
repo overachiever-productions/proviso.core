@@ -65,6 +65,14 @@
         Pattern
     }
 
+    public enum PropertyPipelineProcessingOutcome
+    {
+        NotRun, 
+        Skipped, 
+        Errored,
+        Completed
+    }
+
     public enum PropertyType
     {
         Cohort,

@@ -16,14 +16,19 @@ write-host "--------------------------------------------------"
 	Facets {
 		Facet "My First Facet" -TargetPath "Prop1" { 
 			Property "Count" -DisplayFormat "hmmm" {
-#				Extract {
-#					return $global:target.Length;
-#				}
+				Extract {
+					return $global:target.Length;
+				}
 #				Configure {
 #					throw "not supported - and this could/should be in a -param.";
 #				}
 			}
-			Property "Int Prop" -Expect 10 {}
+			Property "Contains 'Cee'" -Expect $true { 
+				Extract {
+					return $global:target -contains "Cee";
+				}
+			}
+			Property "Int Prop" -Expect 10 -Extract 99 {}
 			Property "String Prop" -Expect "10" {}
 			Property "Array Prop" -Expect @(10, "10") {}
 			Property "IP Prop" -Expect 192.168.11.3 -Extract 11 {}
@@ -34,7 +39,22 @@ write-host "--------------------------------------------------"
 	}
 
 write-host "--------------------------------------------------"
-	Read-Facet "My First Facet" -Target "Targetted Wiggly";
+	$r = Read-Facet "My First Facet" -Target "Targetted Wiggly";
+
+#write-host "--------------------------------------------------"
+#	$r | fl;
+
+write-host "--------------------------------------------------"	
+	foreach($read in $r.PropertyReadResults) {
+		# DOPE. this isn't too far from the final output ... as in, final output will do the following:
+		# 		a. fixed width (obviously). 
+		# 		b. use DisplayFormat (or whatever) if/when populated ... otherwise, just use name when DisplayNOT available. 
+		# 		c. IF there's a failure, don't display output/results? (i presume we won't have anything). 
+		# 			instead, throws some sort of info into the 'notes' column... 
+		#  that's really 'it'. 
+		write-host "$($read.PropertyName) => $($read.ExtractionResult.Result)";
+
+	}
 
 
 
@@ -227,9 +247,8 @@ function Process-ReadFacet {
 	};
 	
 	process {
-		#$global:PvPipelineContext.CurrentOperationName = "Read-Facet";
-		$global:PvPipelineContext_CurentOperationName = "Read-Facet";  # TODO: turn this into an actual object... 
-		$result = Execute-Pipeline -Verb "Read" -OperationType Facet -Block $Facet -Target $Target;
+		$global:PvPipelineContext_CurentOperationName = "Read-Facet";  # TODO: turn this into an actual object...  ALTHOUGH... the pipeline can/will 'know' this via $Verb-$OperationType ... so, NOT needed.
+		$result = Execute-Pipeline -Verb "Read" -OperationType Facet -Block $Facet -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	end {
