@@ -23,6 +23,11 @@ write-host "--------------------------------------------------"
 #					throw "not supported - and this could/should be in a -param.";
 #				}
 			}
+			Property "Contains 'Cee'" -Expect $true { 
+				Extract {
+					return $global:target -contains "Cee";
+				}
+			}
 			Property "Int Prop" -Expect 10 -Extract 99 {}
 			Property "String Prop" -Expect "10" {}
 			Property "Array Prop" -Expect @(10, "10") {}
@@ -242,9 +247,8 @@ function Process-ReadFacet {
 	};
 	
 	process {
-		#$global:PvPipelineContext.CurrentOperationName = "Read-Facet";
-		$global:PvPipelineContext_CurentOperationName = "Read-Facet";  # TODO: turn this into an actual object... 
-		$result = Execute-Pipeline -Verb "Read" -OperationType Facet -Block $Facet -Target $Target;
+		$global:PvPipelineContext_CurentOperationName = "Read-Facet";  # TODO: turn this into an actual object...  ALTHOUGH... the pipeline can/will 'know' this via $Verb-$OperationType ... so, NOT needed.
+		$result = Execute-Pipeline -Verb "Read" -OperationType Facet -Block $Facet -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	end {

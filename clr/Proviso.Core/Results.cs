@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Management.Automation;
 
 namespace Proviso.Core
 {
@@ -24,16 +25,24 @@ namespace Proviso.Core
         public bool Failed { get; set; }
         public string ObjectType { get; set; }
         public Object Result { get; set; }
-        public Exception Exception { get; set; }
+        public ErrorRecord Error { get; set; }
 
-        // TODO: create 2x factory-methods (static .ctors) for SuccessResult and ErrorResult... 
-        //      i.e., I don't need to pass in failed/exception SUCCESS, and I don't need to pass in objectType/result for failures?
-        public ExtractResult(bool failed, string objectType, object result, Exception exception)
+        private ExtractResult(bool failed, string objectType, object result, ErrorRecord error)
         {
             this.Failed = failed;
             this.ObjectType = objectType;
             this.Result = result;
-            this.Exception = exception;
+            this.Error = error;
+        }
+
+        public static ExtractResult SuccessfulExtractResult(string objectType, object result)
+        {
+            return new ExtractResult(false, objectType, result, null);
+        }
+
+        public static ExtractResult FailedExtractResult(ErrorRecord error)
+        {
+            return new ExtractResult(true, null, null, error);
         }
     }
 
@@ -48,7 +57,7 @@ namespace Proviso.Core
     //}
 
 
-    // REFACTOR: need to figure out what the potential overlap of ExtractResult vs ReadResult is... 
+    // XXXX REFACTOR XXXX: need to figure out what the potential overlap of ExtractResult vs ReadResult is... 
     //      i.e., a PropertyReadResult is just going to be a single ExtractResult. 
     //          whereas a PropertyTestResult will be a single ExtractResult + a single ExpectResult + a single TestResult.. 
     //      seems like there's a bit of overlap in these ... but... actually, there really isn't. 

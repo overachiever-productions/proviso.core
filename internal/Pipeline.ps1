@@ -99,6 +99,8 @@ function Execute-Pipeline {
 		# 3. Processing (i.e., actual pipeline)
 		# ====================================================================================================		
 		#region Processing 
+		
+		Write-Debug "	Starting Pipeline Processing.";
 		try {
 			if ($isRunbook) {
 				# A. 
@@ -142,6 +144,7 @@ function Execute-Pipeline {
 					# setup facet-level context info/details... 
 					# e.g., $global:PvContext.Facet.xxxx props and such. 
 					
+					Write-Debug "		Iterating Properties.";
 					foreach ($property in $facet.Properties) { #note that at this point we'll always have 1 or more props, even if the prop in question is anonymous... 
 						
 						# TODO: additional context info/setup... 
@@ -162,6 +165,7 @@ function Execute-Pipeline {
 						
 						# free-up/clear any context info as needed. 
 					}
+					Write-Debug "		Property Iteration Complete.";
 				}
 				
 				if ($surface.Cleanup) {
@@ -178,7 +182,7 @@ function Execute-Pipeline {
 		catch {
 			
 		}
-		
+		Write-Debug "	  Pipeline Processing Complete.";
 		#endregion
 		
 		# ====================================================================================================
@@ -192,6 +196,10 @@ function Execute-Pipeline {
 	}
 	
 	end {
+		Write-Debug "Pipeline Operations Complete.";
+		Write-Verbose "Pipeline Operations Complete.";
+		
+		
 		return $results;
 	}
 }
@@ -235,40 +243,22 @@ function Process-PropertyOperations {
 		[Object]$Target
 	);
 	
-	
-	Write-Host "	PROPERTY: $($Property.Name)";
-	
 	# NOTE: no need to evaluate the verb for READs - we'll ALWAYS at LEAST do READ (can't Test (Compare) or Invoke (Configure) without READ-ing).
-	# TODO" remove this IF check... and just ALWAYS run this operation.
-	if ($Verb -in @("Read", "Test", "Invoke")) {
-		Write-Debug "			Executing EXTRACT: $($Property.Extract)";
+	try {
+		$block = $Property.Extract;
+		[Object]$output = & $block;
 		
-		try {
-			$block = $Property.Extract;
-			[Object]$output = & $block;
-			
-			[string]$type = $output.GetType().FullName
-			[Proviso.Core.ExtractResult]$extract = New-Object Proviso.Core.ExtractResult($false, $type, $output, $null);
-		}
-		catch {
-			Write-Host "failed... "
-		}
-		
-		[Proviso.Core.PropertyReadResult]$read = New-Object Proviso.Core.PropertyReadResult(($Property.Name), ($Property.DisplayFormat), $extract);
-		$Results.PropertyReadResults.Add($read);
-		
-		# PICKUP/NEXT:
-		# 	so, the actual implementation here will be: 
-		#   within a try/catch:
-		# 		$output = & $ExtractBlock... 
-		# 		throw $output + other meta-data into a CLR ExtractResult... 
-		# 			or... throw exception into a CLR ExtractResult... 
-		# 		hand this back (from this func) or ... 
-		# 			pass $resultsObject into this func and $resultsObject.AddExtractResultToCurrentProperty() ... which'll bind everything up as needed. 
-		# 				specifically, for a read-facet, it'll add to the List<IPropertyResult> ... results... 
-		# 				and, if this is a surface or runbook, it'll add into the corresponding collections for those objects as well... 
-		# 					i.e., a surface will have .Facets ... but it'll also have .Properties (which are PropertyXXXResults )
+		[Proviso.Core.ExtractResult]$extract = [Proviso.Core.ExtractResult]::SuccessfulExtractResult(($output.GetType().FullName), $output);
 	}
+	catch {
+		[Proviso.Core.ExtractResult]$extract = [Proviso.Core.ExtractResult]::FailedExtractResult($_);
+	}
+	
+	[Proviso.Core.PropertyReadResult]$read = New-Object Proviso.Core.PropertyReadResult(($Property.Name), ($Property.DisplayFormat), $extract);
+	$Results.PropertyReadResults.Add($read);
+	
+	# TODO: if $Results is ... SurfaceXXX (vs FacetXXX) ... add $read to list of SURFACE-level $Props... 
+	# TODO: if $Results is ... RunbookXXX (vs FacetXXX) ... ad $read to list of RUNBOOK-level $props... 
 
 	if ($Verb -in ("Test", "Invoke")) {
 		# do compare stuff. 
