@@ -23,7 +23,7 @@ write-host "--------------------------------------------------"
 #					throw "not supported - and this could/should be in a -param.";
 #				}
 			}
-			Property "Int Prop" -Expect 10 {}
+			Property "Int Prop" -Expect 10 -Extract 99 {}
 			Property "String Prop" -Expect "10" {}
 			Property "Array Prop" -Expect @(10, "10") {}
 			Property "IP Prop" -Expect 192.168.11.3 -Extract 11 {}
@@ -34,7 +34,22 @@ write-host "--------------------------------------------------"
 	}
 
 write-host "--------------------------------------------------"
-	Read-Facet "My First Facet" -Target "Targetted Wiggly";
+	$r = Read-Facet "My First Facet" -Target "Targetted Wiggly";
+
+#write-host "--------------------------------------------------"
+#	$r | fl;
+
+write-host "--------------------------------------------------"	
+	foreach($read in $r.PropertyReadResults) {
+		# DOPE. this isn't too far from the final output ... as in, final output will do the following:
+		# 		a. fixed width (obviously). 
+		# 		b. use DisplayFormat (or whatever) if/when populated ... otherwise, just use name when DisplayNOT available. 
+		# 		c. IF there's a failure, don't display output/results? (i presume we won't have anything). 
+		# 			instead, throws some sort of info into the 'notes' column... 
+		#  that's really 'it'. 
+		write-host "$($read.PropertyName) => $($read.ExtractionResult.Result)";
+
+	}
 
 
 

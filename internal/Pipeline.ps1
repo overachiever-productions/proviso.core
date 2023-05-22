@@ -35,7 +35,7 @@ function Execute-Pipeline {
 		# 1. Setup
 		# ====================================================================================================		
 		#region Setup
-		[datetime]$pipelineStart = [datetime]::Now;
+		$results = Initialize-ResultsObject -Verb $Verb -OperationType $OperationType -Block $Block -Verbose:$xVerbose -Debug:$xDebug;
 		
 		[Proviso.Core.ISurface[]]$surfaces = @();
 		
@@ -104,28 +104,38 @@ function Execute-Pipeline {
 				# A. 
 				# if there's a .Setup { } block (and... if it's applicable???)
 				# then... do $runbook.Setup();
+				# TODO:
+				#$resultsObject.AddRunbookSetupOutcome(exceptionOrNot, that's about it, right?);
 				
 				# B. 
 				# if there are any asserts AND if they're applicable... 
 				# 	run applicable RUNBOOK asserts.
+				# 	i.e., for EACH assert ... 
+				# 		process 
+				# TODO:
+				# 	and $resultsObject.AddRunbookAssertOutcome()
+
 			}
 			
 			foreach ($surface in $surfaces) {
 				
-				$surfaceName = "~PLACEHOLDER_SURFACE~";
 				if (-not ($surface.IsPlaceHolder)) {
-					$surfaceName = $surface.Name;
+					Write-Debug "		Processing Surface: [$($surface.Name)].";
 				}
-				Write-Debug "		Processing Surface: [$surfaceName].";
 				
 				if ($surface.Setup) {
 					# or... do we need to check for the verb types? 
 					# do setup... 
+					
+					# TODO: handle $resultsObject.AddSurfaceSetupOutcome();
 				}
 				
 				if ($surface.HasActiveAssertions) {
 					# i.e., if any assertions exist, are not disabled, and ... apply to the verb??? we're running... 
 					# 		then... do each assertion. 
+					
+					# TODO: foreach... 
+					# 	TODO: $resultsObject.AddSurfaceAssertOutcome()
 				}
 				
 				foreach ($facet in $surface.Facets) {
@@ -140,11 +150,13 @@ function Execute-Pipeline {
 						if ($property.IsCohort) {
 			Write-Host "I'm a cohort... "
 							foreach ($nestedProperty in $property.Properties) {
-								Process-PropertyOperations -Verb $Verb -Property $nestedProperty -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+								Process-PropertyOperations -Verb $Verb -Property $nestedProperty -Results $results `
+									-Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 							}
 						}
 						else {
-							Process-PropertyOperations -Verb $Verb -Property $property -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+							Process-PropertyOperations -Verb $Verb -Property $property -Results $results `
+								-Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 						}
 						
 						
@@ -172,11 +184,35 @@ function Execute-Pipeline {
 		# ====================================================================================================
 		# 4. Post-Processing
 		# ====================================================================================================		
+		$results.PipelineEnd = [datetime]::Now;
+		
+		# TODO: add $results into a list/collection of 'past' pipeline operations. 
+		# 		i.e., we'll always RETURN $results ... meaning they'll be 'intercepted' by Posh and 'rendered' for output via custom XML formats... 
+		# 			but, users might also want to 'look at' the 'last'/previous executions etc... 
 	}
 	
 	end {
-		
+		return $results;
 	}
+}
+
+function Initialize-ResultsObject {
+	[CmdletBinding()]
+	param (
+		[string]$Verb,
+		[string]$OperationType,
+		[Proviso.Core.IDeclarable]$Block
+	);
+	
+	# TODO: i could use a switch here ... with ... 9 friggin levels of stuff... 
+	# 		or... might make more sense to figure out how 'dynamically' create a new Proviso.Core.$OperationType$VerbResult... and spit that out? 
+	# 		i mean, worst case, i create a SCRIPTBLOCK of "return New-Object Proviso.Core.$($OperationType)$($Verb)Result($name, $format).."; 
+	# 			cuz... that's 3-4 lines of code, max ... vs 9x switch/case options... 
+	
+	$name = $Block.Name;
+	$format = $Block.Format;
+	
+	return New-Object Proviso.Core.FacetReadResult($name, $format);
 }
 
 function Process-PropertyOperations {
@@ -189,6 +225,8 @@ function Process-PropertyOperations {
 		# TODO: might need to end up making this an IProperty (to account for Inclusion|Property (but never cohort/etc.))
 		[Parameter(Mandatory)]
 		[Proviso.Core.Models.Property]$Property,
+		
+		$Results,
 		
 		[Object]$Model,
 		
@@ -203,9 +241,33 @@ function Process-PropertyOperations {
 	# NOTE: no need to evaluate the verb for READs - we'll ALWAYS at LEAST do READ (can't Test (Compare) or Invoke (Configure) without READ-ing).
 	# TODO" remove this IF check... and just ALWAYS run this operation.
 	if ($Verb -in @("Read", "Test", "Invoke")) {
-		
-		# extract info and ... bundle it up for output/results info... 
 		Write-Debug "			Executing EXTRACT: $($Property.Extract)";
+		
+		try {
+			$block = $Property.Extract;
+			[Object]$output = & $block;
+			
+			[string]$type = $output.GetType().FullName
+			[Proviso.Core.ExtractResult]$extract = New-Object Proviso.Core.ExtractResult($false, $type, $output, $null);
+		}
+		catch {
+			Write-Host "failed... "
+		}
+		
+		[Proviso.Core.PropertyReadResult]$read = New-Object Proviso.Core.PropertyReadResult(($Property.Name), ($Property.DisplayFormat), $extract);
+		$Results.PropertyReadResults.Add($read);
+		
+		# PICKUP/NEXT:
+		# 	so, the actual implementation here will be: 
+		#   within a try/catch:
+		# 		$output = & $ExtractBlock... 
+		# 		throw $output + other meta-data into a CLR ExtractResult... 
+		# 			or... throw exception into a CLR ExtractResult... 
+		# 		hand this back (from this func) or ... 
+		# 			pass $resultsObject into this func and $resultsObject.AddExtractResultToCurrentProperty() ... which'll bind everything up as needed. 
+		# 				specifically, for a read-facet, it'll add to the List<IPropertyResult> ... results... 
+		# 				and, if this is a surface or runbook, it'll add into the corresponding collections for those objects as well... 
+		# 					i.e., a surface will have .Facets ... but it'll also have .Properties (which are PropertyXXXResults )
 	}
 
 	if ($Verb -in ("Test", "Invoke")) {
