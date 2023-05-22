@@ -16,9 +16,9 @@ write-host "--------------------------------------------------"
 	Facets {
 		Facet "My First Facet" -TargetPath "Prop1" { 
 			Property "Count" -DisplayFormat "hmmm" {
-#				Extract {
-#					return $global:target.Length;
-#				}
+				Extract {
+					return $global:target.Length;
+				}
 #				Configure {
 #					throw "not supported - and this could/should be in a -param.";
 #				}
