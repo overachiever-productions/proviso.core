@@ -11,6 +11,7 @@ It's still 'early days' - so this roadmap is a guestimate at this point.
     - 0.4.3 - High-Level Pipeline + Validation Complete.
     - 0.4.4 - Results-Handling (for Read/Test/Invoke of simple blocks).
     - 0.4.5 - Custom Results Formatting/output (MVP).
+    - 0.4.6 - Injection of Context Properties (for code-interaction).
     - 0.4.6 - Addition of Cohorts and Patterns.
 - 0.5 - Config Scaffolding/Proxies & Intrinsics/Contexts Viable.
 - 0.6 - DisplayFormat and Iterate/Enumerate + modality support complete. 
