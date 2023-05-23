@@ -4,7 +4,7 @@
 
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 
-	$global:DebugPreference = "Continue";
+	#$global:DebugPreference = "Continue";
 	#$global:VerbosePreference = "Continue";
 
 
@@ -19,9 +19,6 @@ write-host "--------------------------------------------------"
 				Extract {
 					return $global:target.Length;
 				}
-#				Configure {
-#					throw "not supported - and this could/should be in a -param.";
-#				}
 			}
 			Property "Contains 'Cee'" -Expect $true { 
 				Extract {
@@ -38,30 +35,13 @@ write-host "--------------------------------------------------"
 		}
 	}
 
-write-host "--------------------------------------------------"
-	$r = Read-Facet "My First Facet" -Target "Targetted Wiggly";
+#write-host "--------------------------------------------------"
+	Read-Facet "My First Facet" -Target "Text 1";
+
 
 #write-host "--------------------------------------------------"
-#	$r | fl;
-
-write-host "--------------------------------------------------"	
-	foreach($read in $r.PropertyReadResults) {
-		# DOPE. this isn't too far from the final output ... as in, final output will do the following:
-		# 		a. fixed width (obviously). 
-		# 		b. use DisplayFormat (or whatever) if/when populated ... otherwise, just use name when DisplayNOT available. 
-		# 		c. IF there's a failure, don't display output/results? (i presume we won't have anything). 
-		# 			instead, throws some sort of info into the 'notes' column... 
-		#  that's really 'it'. 
-		write-host "$($read.PropertyName) => $($read.ExtractionResult.Result)";
-
-	}
-
-
-
-
-write-host "--------------------------------------------------"
 	# re-load - it SHOULD already be in the catalog 
-	Read-Facet "My First Facet";
+	Read-Facet "My First Facet" -Target "Text 2";
 
 
 write-host "--------------------------------------------------"
@@ -172,6 +152,17 @@ function Read-Facet {
 		[Parameter(ParameterSetName = 'Targets')]
 		[Parameter(ParameterSetName = 'Servers')]
 		[PSCredential]$Credential
+		
+		
+# TODO: add in 2x display properties: 
+# 		-Wrap: allows wrap of text in the 'outcome'/comments column (vs default which is equivlent of -NoWrap.)
+# 		-NonMatchedOnly: which... a) needs a better name, and b) does NOT apply to READ-xxx. But, it's the idea that I could, somehow, emit a DIFFERENT result-type out the bottom of
+# 			the Test-XXX or Invoke-XXX operation itself that'd be ... well, the exact same kind of object as the normal results object for those operations, but ... filtered to where it
+# 			it only shows properties that ... were non-matched (either for Test... or for Invoke (second test/validate)
+# 			and... truth is... i might not even need a secondary object-type or 'filtered' set of results in the same object type. in fact, i don't want that. 
+# 			instead, I'd have $PvFormatter.WriteThisOrThatColumnIf($global:NonMatchedOrNot, $_)... 
+# 		i mean... the above is way over-wrought... but it's, conceptually, what I'd want to tackle. i.e., ONLY write ENTIRE ROWS? if they're non-matched (assuming that this is even possible)
+		
 	);
 	
 	begin {

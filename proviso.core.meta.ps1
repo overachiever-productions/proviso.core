@@ -14,7 +14,7 @@ filter Import-Types {
 		"$ScriptRoot\clr\Proviso.Core\BuildContext.cs"
 		"$ScriptRoot\clr\Proviso.Core\BlockStore.cs"
 		
-		#"$ScriptRoot\clr\Proviso.Core\Formatter.cs"
+		"$ScriptRoot\clr\Proviso.Core\Formatter.cs"
 		"$ScriptRoot\clr\Proviso.Core\Taxonomy.cs"
 		"$ScriptRoot\clr\Proviso.Core\Catalog.cs"
 		

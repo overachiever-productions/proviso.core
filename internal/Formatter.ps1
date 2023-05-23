@@ -55,3 +55,10 @@
 					and, of course, just 'wrap' all of the above into a func (like i did with monolithic proviso) - and just pass in the 'data' to this func/etc. 
 
 #>
+
+
+$global:PvFormatter = [Proviso.Core.Formatter]::Instance;
+
+# TODO: execute something like $PvFormatter.SetCurrentHostDetails(blah)
+# 			where the idea is I set info about what kind of formatting/output the current output/console can handle... 
+# 			so, that when I call $PvFormatter.OutputTestValue(or, whatever) ... it can check for support of current host for color and such... 
