@@ -55,3 +55,6 @@
 					and, of course, just 'wrap' all of the above into a func (like i did with monolithic proviso) - and just pass in the 'data' to this func/etc. 
 
 #>
+
+$global:PvFormatter = [Proviso.Core.Formatter]::Instance;
+$PvFormatter.SetCurrentHostInfo($($Host.Name))

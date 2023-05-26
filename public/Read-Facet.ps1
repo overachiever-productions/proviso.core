@@ -4,14 +4,13 @@
 
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 
-	$global:DebugPreference = "Continue";
+	#$global:DebugPreference = "Continue";
 	#$global:VerbosePreference = "Continue";
 
 
 [string[]]$global:target = @("a","B", "Cee", "d", "e", "11");
 
-write-host "--------------------------------------------------"
-
+#write-host "--------------------------------------------------"
 
 	Facets {
 		Facet "My First Facet" -TargetPath "Prop1" { 
@@ -19,49 +18,28 @@ write-host "--------------------------------------------------"
 				Extract {
 					return $global:target.Length;
 				}
-#				Configure {
-#					throw "not supported - and this could/should be in a -param.";
-#				}
 			}
 			Property "Contains 'Cee'" -Expect $true { 
 				Extract {
 					return $global:target -contains "Cee";
 				}
 			}
-			Property "Int Prop" -Expect 10 -Extract 99 {}
-			Property "String Prop" -Expect "10" {}
-			Property "Array Prop" -Expect @(10, "10") {}
-			Property "IP Prop" -Expect 192.168.11.3 -Extract 11 {}
-			#Cohort "Basic Cohort" -Expect 20  {
-			#
-			#}
+			Property "Extract 99 Prop" -Expect 10 -Extract 99 {}
+			Property "Extract (string)11 Prop" -Expect "10" -Extract "10" {}
+			Property "Extract Array Prop" -Expect @(10, "10") -Extract @(11, "11") {}
+			Property "Extract IP Prop" -Expect 192.168.11.3 -Extract 10.10.2.198 {}
+			Property "No Explicit Extract Prop" -Expect "something" { }
+			Property "No Explicit Anything Prop" { }
 		}
 	}
 
-write-host "--------------------------------------------------"
-	$r = Read-Facet "My First Facet" -Target "Targetted Wiggly";
+##write-host "--------------------------------------------------"
+	Read-Facet "My First Facet" -Target "Target Text/Value";
+
 
 #write-host "--------------------------------------------------"
-#	$r | fl;
-
-write-host "--------------------------------------------------"	
-	foreach($read in $r.PropertyReadResults) {
-		# DOPE. this isn't too far from the final output ... as in, final output will do the following:
-		# 		a. fixed width (obviously). 
-		# 		b. use DisplayFormat (or whatever) if/when populated ... otherwise, just use name when DisplayNOT available. 
-		# 		c. IF there's a failure, don't display output/results? (i presume we won't have anything). 
-		# 			instead, throws some sort of info into the 'notes' column... 
-		#  that's really 'it'. 
-		write-host "$($read.PropertyName) => $($read.ExtractionResult.Result)";
-
-	}
-
-
-
-
-write-host "--------------------------------------------------"
 	# re-load - it SHOULD already be in the catalog 
-	Read-Facet "My First Facet";
+	Read-Facet "My First Facet" -Target "Target Text 2";
 
 
 write-host "--------------------------------------------------"
@@ -172,14 +150,25 @@ function Read-Facet {
 		[Parameter(ParameterSetName = 'Targets')]
 		[Parameter(ParameterSetName = 'Servers')]
 		[PSCredential]$Credential
+		
+		
+# TODO: add in 2x display properties: 
+# 		-Wrap: allows wrap of text in the 'outcome'/comments column (vs default which is equivlent of -NoWrap.)
+# 		-NonMatchedOnly: which... a) needs a better name, and b) does NOT apply to READ-xxx. But, it's the idea that I could, somehow, emit a DIFFERENT result-type out the bottom of
+# 			the Test-XXX or Invoke-XXX operation itself that'd be ... well, the exact same kind of object as the normal results object for those operations, but ... filtered to where it
+# 			it only shows properties that ... were non-matched (either for Test... or for Invoke (second test/validate)
+# 			and... truth is... i might not even need a secondary object-type or 'filtered' set of results in the same object type. in fact, i don't want that. 
+# 			instead, I'd have $PvFormatter.WriteThisOrThatColumnIf($global:NonMatchedOrNot, $_)... 
+# 		i mean... the above is way over-wrought... but it's, conceptually, what I'd want to tackle. i.e., ONLY write ENTIRE ROWS? if they're non-matched (assuming that this is even possible)
+		
 	);
 	
 	begin {
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		
-		# CONTEXT: Get-Facet is a proxy method. If the Facet is already registered (discovered/validated, etc.) we'll get it back. 
-		# 		If the facet isn't already registered, Get-Facet will attempt the registration process, then return the Facet (if everything worked).
+		# CONTEXT: Get-Facet is a proxy method. If the Facet is already registered, we'll get it back. 
+		#	Otherwise, Get-Facet will attempt registration + return the Facet (if everything worked).
 		[Proviso.Core.Models.Facet]$facet = Get-Facet -Name $Name -ParentName $ParentName -Verbose:$xVerbose -Debug:$xDebug;
 		
 		if ($null -eq $facet) {
@@ -247,8 +236,10 @@ function Process-ReadFacet {
 	};
 	
 	process {
+		$instance = [Proviso.Core.Models.Facet]::GetInstance($Facet);
+		
 		$global:PvPipelineContext_CurentOperationName = "Read-Facet";  # TODO: turn this into an actual object...  ALTHOUGH... the pipeline can/will 'know' this via $Verb-$OperationType ... so, NOT needed.
-		$result = Execute-Pipeline -Verb "Read" -OperationType Facet -Block $Facet -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+		$result = Execute-Pipeline -Verb "Read" -OperationType Facet -Block $instance -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	end {

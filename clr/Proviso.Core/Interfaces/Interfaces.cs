@@ -45,6 +45,8 @@ namespace Proviso.Core
         PropertyType PropertyType { get; }
         bool IsCohort { get; }
         bool IsVirtual { get; }
+
+        IProperty GetInstance();
     }
 
     public interface IIterator
@@ -74,7 +76,7 @@ namespace Proviso.Core
         bool IsPlaceHolder { get; }
     }
 
-    // Not wild about this name: 
+    // REFACTOR: this name sucks.
     public interface IFacetable
     {
         List<IFacet> Facets { get; }
@@ -101,6 +103,7 @@ namespace Proviso.Core
 
     }
 
+    [Serializable]
     public class DeclarableBase : IDeclarable
     {
         public string ParentName { get; private set; }
