@@ -37,12 +37,15 @@ function Execute-Pipeline {
 		#region Setup
 		$results = Initialize-ResultsObject -Verb $Verb -OperationType $OperationType -Block $Block -Verbose:$xVerbose -Debug:$xDebug;
 		
+		#$blockInstance = DeepClone-Block -Block $Block -Verbose:$xVerbose -Debug:$xDebug;
+#$blockInstance = $Block.Clone();
+		
 		[Proviso.Core.ISurface[]]$surfaces = @();
 		
 		try {
 			switch ($OperationType) {
 				{ $_ -in @("Facet", "Pattern") } {
-					$fakeSurface = New-Object Proviso.Core.Models.PlaceHolderSurface;  # still hate how Posh won't allow parameterless .ctors..
+					$fakeSurface = New-Object Proviso.Core.Models.PlaceHolderSurface;
 					$fakeSurface.AddFacet($Block);
 					$surfaces += $fakeSurface;
 				}
@@ -62,7 +65,7 @@ function Execute-Pipeline {
 		catch {
 			Write-Debug "	Processing Pipeline: Exception During Setup: $($_.Exception.Message) -Stack: $($_.ScriptStackTrace)";
 			# TODO: implement this throw... stuff
-			throw "Processing Setup Exception.";
+			throw "Processing Setup Exception: $_";
 		}
 		Write-Debug "	Pipeline Setup Operations Complete.";
 		
@@ -199,7 +202,8 @@ function Execute-Pipeline {
 		Write-Debug "Pipeline Operations Complete.";
 		Write-Verbose "Pipeline Operations Complete.";
 		
-		
+		# TODO: if there was an unhandled exception or full-blown problem... DON'T return results?
+		# 		or ... do, but load it with exception info? e.g., this is EASY to TEST (just throw somewhere early in the pipeline (in the Process block) - or ... put a RETURN in the process block somewhere... 
 		return $results;
 	}
 }
@@ -256,7 +260,6 @@ function Process-PropertyOperations {
 	
 	[Proviso.Core.PropertyReadResult]$read = New-Object Proviso.Core.PropertyReadResult(($Property.Name), ($Property.DisplayFormat), $extract);
 	$Results.PropertyReadResults.Add($read);
-	
 	# TODO: if $Results is ... SurfaceXXX (vs FacetXXX) ... add $read to list of SURFACE-level $Props... 
 	# TODO: if $Results is ... RunbookXXX (vs FacetXXX) ... ad $read to list of RUNBOOK-level $props... 
 

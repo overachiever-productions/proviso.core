@@ -1,41 +1,84 @@
 ﻿using System;
 using System.Management.Automation;
+using System.Text.RegularExpressions;
 
 namespace Proviso.Core
 {
     public class Formatter
     {
-        public static Formatter Instance => new Formatter();
-
         private Formatter() { }
 
-        public string ToEmpty(string input)
+        public bool HostSupportsColor { get; set; } // exposing this as a PUBLIC prop - not sure I'm going to use it much from 'outside' this class though.
+        public static Formatter Instance => new Formatter();
+
+        public void SetCurrentHostInfo(string name)
         {
-            if (string.IsNullOrEmpty(input))
-                return "<EMPTY>";
-
-            return input;
-        }
-
-        public string ToHeading(string input)
-        {
-            return System.Text.RegularExpressions.Regex.Replace(input.ToUpper(), ".{1}", "$0 ");
-        }
-
-        public static void WriteVerbose(string message)
-        {
-            // TODO: https://stackoverflow.com/questions/51662588/is-there-a-way-to-write-to-powershell-verbose-stream-from-c-sharp-static-non-ps 
-            //      i've also seen stuff on how to do this in ... a book somewhere. 
-            // maybe? https://stackoverflow.com/questions/54107825/how-to-pass-warning-and-verbose-streams-from-a-remote-command-when-calling-power
-
-            using (PowerShell ps = PowerShell.Create(RunspaceMode.CurrentRunspace))
+            if (name.ToLowerInvariant() == "consolehost")
+                this.HostSupportsColor = true;
+            else
             {
-                VerboseRecord verbose = new VerboseRecord(message);
-
-                ps.Streams.Verbose.Add(verbose);
+                var regex = new Regex("console|code|remotehost");
+                if(regex.IsMatch(name))
+                    this.HostSupportsColor = true;
             }
-
-            Console.WriteLine(message);
         }
+
+        public string SizedDash(int length)
+        {
+            string output = new String('-', length);
+
+            if (this.HostSupportsColor)
+                output = $"\u001b[36;1m{output}\u001b[0m";
+
+            return output;
+        }
+
+        public string ColumnHeading(int leftPadding, string name, int length)
+        {
+            string padding = new String(' ', length);
+            string output = $"{name}{padding}".Substring(0, length);
+
+            if (leftPadding > 0)
+                output = new String(' ', leftPadding) + output;
+
+            if (this.HostSupportsColor)
+                output = $"\u001b[36;1m{output}\u001b[0m";
+
+            return output;
+        }
+
+        public string ColumnDivider(int leftPadding, int length)
+        {
+            string output = new String(' ', leftPadding) + this.SizedDash(length);
+
+            if(this.HostSupportsColor)
+                output = $"\u001b[36;1m{output}\u001b[0m";
+
+            return output;
+        }
+
+        public string BoundedString(string input, int length)
+        {
+            string cleaned = input.Trim();
+            if (cleaned.Length > length)
+                cleaned = cleaned.Substring(0, length - 1) + '…';
+
+            string padding = new String(' ', length);
+
+            return $"{cleaned}{padding}".Substring(0, length);
+        }
+
+        //public string ToEmpty(string input)
+        //{
+        //    if (string.IsNullOrEmpty(input))
+        //        return "<EMPTY>";
+
+        //    return input;
+        //}
+
+        //public string ToHeading(string input)
+        //{
+        //    return System.Text.RegularExpressions.Regex.Replace(input.ToUpper(), ".{1}", "$0 ");
+        //}
     }
 }

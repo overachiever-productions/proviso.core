@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+
+	<Controls>
+		<Control>
+			<Name>PropertyReadResult</Name>
+			<CustomControl>
+				<CustomEntries>
+					<CustomEntry>
+						<CustomItem>
+							<Text>  </Text>
+							<ExpressionBinding>
+								<ScriptBlock>$PvFormatter.BoundedString($_.GetPropertyName(), 40)</ScriptBlock>
+                            </ExpressionBinding>
+							<Text>   </Text>
+							<ExpressionBinding>
+								<ScriptBlock>$PvFormatter.BoundedString($_.ExtractionResult.Result, 24)</ScriptBlock>
+                            </ExpressionBinding>
+							<Text>  </Text>
+							<ExpressionBinding>
+								<ScriptBlock>$PvFormatter.BoundedString($_.GetReadDetail(), 44)</ScriptBlock>
+                            </ExpressionBinding>
+							<NewLine />
+                        </CustomItem>
+                    </CustomEntry>
+                </CustomEntries>
+            </CustomControl>
+        </Control>
+		<!--  No-worky. Just says that TableControl is 'unknown' - as in, can't define/re-use table controls... 
+		<Control>
+			<Name>PropertyReadResultTable</Name>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<Width>42</Width>
+						<Label>Name</Label>
+                    </TableColumnHeader>
+                </TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>PropertyName</PropertyName>
+	                        </TableColumnItem>
+	                    </TableColumnItems>
+					</TableRowEntry>
+                </TableRowEntries>				
+            </TableControl>
+        </Control>-->
+	</Controls>
+
+	<ViewDefinitions>
+		<View>
+			<Name>FacetReadResult-Default</Name>
+			<ViewSelectedBy>
+				<TypeName>Proviso.Core.FacetReadResult</TypeName>
+            </ViewSelectedBy>
+			<CustomControl>
+				<CustomEntries>
+					<CustomEntry>
+						<CustomItem>
+							<ExpressionBinding>
+								<ScriptBlock>$PvFormatter.SizedDash(118)</ScriptBlock>
+							</ExpressionBinding>
+							<NewLine />
+							<ExpressionBinding>
+								<ScriptBlock>$PvFormatter.ColumnHeading(0, 'FACET: ' + $_.GetFacetName(), 80)</ScriptBlock>
+                            </ExpressionBinding>
+							<!--<Text>FACET: </Text>
+							<ExpressionBinding>
+								<PropertyName>FacetName</PropertyName>
+                            </ExpressionBinding>-->	
+							<NewLine />
+							<ExpressionBinding>
+								<ScriptBlock>$PvFormatter.SizedDash(118)</ScriptBlock>
+							</ExpressionBinding>							
+							<NewLine />
+							<Text>  PROPERTIES:</Text>
+							<NewLine />
+							<NewLine />
+							<ExpressionBinding>
+								<ScriptBlock>$PvFormatter.ColumnHeading(2, "Name", 40) + $PvFormatter.ColumnHeading(3, "Actual", 24) + $PvFormatter.ColumnHeading(3, "Detail", 44)</ScriptBlock>
+                            </ExpressionBinding>
+							<NewLine />
+							<ExpressionBinding>
+								<ScriptBlock>$PvFormatter.ColumnDivider(2, 40) + $PvFormatter.ColumnDivider(3, 24) + $PvFormatter.ColumnDivider(3, 44)</ScriptBlock>
+                            </ExpressionBinding>
+							<NewLine />
+							<Frame>
+								<CustomItem>
+									<ExpressionBinding>
+										<!-- TODO: if $_.OnlyShowDeviants (or whatever I'm going to call this) for TEST/INVOKE operations is set ... then, don't return $_.PropertryTestResults ... instead, return them WHERE ... failed = true. -->
+										<ScriptBlock>$_.PropertyReadResults</ScriptBlock>
+										<EnumerateCollection />
+										<CustomControlName>PropertyReadResult</CustomControlName>
+	                                </ExpressionBinding>
+								</CustomItem>
+                            </Frame>
+							<NewLine />
+	                    </CustomItem>
+	                </CustomEntry>
+				</CustomEntries>
+            </CustomControl> 
+			
+			
+			<!--<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<Width>42</Width>
+						<Label>F A C E T</Label>
+                    </TableColumnHeader>
+                </TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>FacetName</PropertyName>
+	                        </TableColumnItem>
+	                    </TableColumnItems>
+					</TableRowEntry>
+                </TableRowEntries>
+            </TableControl> -->
+        </View>
+
+
+	</ViewDefinitions>
+
+</Configuration>

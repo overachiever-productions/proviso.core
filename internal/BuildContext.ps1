@@ -214,6 +214,10 @@ filter Get-ReturnScript {
 	
 #>
 	
+	# TODO: this looks pretty dope actually: 
+	# 	https://github.com/iRon7/ConvertTo-Expression
+
+	
 	switch ($Object.GetType().FullName) {
 		"System.String" {
 			$script = "return `"$Object`";";

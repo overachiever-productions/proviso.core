@@ -29,6 +29,12 @@ namespace Proviso.Core.Models
             if (string.IsNullOrWhiteSpace(this.Name))
                 throw new Exception("Validation Error. [Property] -Name can NOT be null/empty.");
         }
+
+        public IProperty GetInstance()
+        {
+            // NOTE: ScriptBlocks are shallow-copied via .MemberwiseClone().
+            return (Property)this.MemberwiseClone();
+        }
     }
 
     public class Cohort : DeclarableBase, IProperty, IBuildValidated
@@ -65,7 +71,7 @@ namespace Proviso.Core.Models
             var iValidated = added as IBuildValidated;
             if (iValidated != null)
                 iValidated.Validate();
-            
+
             this._properties.Add(added);
         }
 
@@ -73,13 +79,27 @@ namespace Proviso.Core.Models
         {
             // cohorts ... require a name or don't they? 
         }
-    }
 
+        public IProperty GetInstance()
+        {
+            var output = (Cohort)this.MemberwiseClone();
+
+            output.ClearProperties();
+            foreach (IProperty prop in this.Properties)
+                output.AddCohortProperty(prop.GetInstance());
+
+            return output;
+        }
+
+        private void ClearProperties()
+        {
+            this._properties = new List<IProperty>();
+        }
+    }
     //public class Inclusion : DeclarableBase, IProperty
     //{
 
     //}
-
 
     public class AnonymousProperty : IProperty
     {
@@ -100,6 +120,11 @@ namespace Proviso.Core.Models
 
             this.IsVirtual = false; // false != anonymous
             this.IsCohort = false;
+        }
+
+        public IProperty GetInstance()
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -122,6 +147,11 @@ namespace Proviso.Core.Models
             this.IsCohort = false;
             this.IsVirtual = false;
         }
+
+        public IProperty GetInstance()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class VirtualCohort : IProperty
@@ -142,6 +172,11 @@ namespace Proviso.Core.Models
             this.PropertyType = PropertyType.VirtualCohort;
             this.IsCohort = true;
             this.IsVirtual = true;
+        }
+
+        public IProperty GetInstance()
+        {
+            throw new NotImplementedException();
         }
     }
 }
