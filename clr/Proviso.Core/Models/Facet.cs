@@ -28,6 +28,19 @@ namespace Proviso.Core.Models
             this.FacetParentType = parentType;
         }
 
+        public static Facet GetInstance(Facet source)
+        {
+            // shallow properties:
+            var output = (Facet)source.MemberwiseClone();
+
+            // complex/child properties: 
+            output.ClearProperties();
+            foreach (var prop in source.Properties)
+                output.AddProperty(prop.GetInstance());
+
+            return output;
+        }
+
         public void Validate()
         {
 
@@ -59,6 +72,11 @@ namespace Proviso.Core.Models
                 return this.Id.GetHashCode();
 
             return $"{this.Name}::{this.ParentName}".GetHashCode();
+        }
+
+        private void ClearProperties()
+        {
+            this._properties = new List<IProperty>();
         }
     }
 

@@ -11,6 +11,8 @@ filter Import-Types {
 		"$ScriptRoot\clr\Proviso.Core\Interfaces\Interfaces.cs"
 		
 		#"$ScriptRoot\clr\Proviso.Core\Orthography.cs"
+		
+		"$ScriptRoot\clr\Proviso.Core\Utilities.cs"
 		"$ScriptRoot\clr\Proviso.Core\BuildContext.cs"
 		"$ScriptRoot\clr\Proviso.Core\BlockStore.cs"
 		

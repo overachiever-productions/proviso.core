@@ -78,6 +78,21 @@ namespace Proviso.Core
             this.DisplayFormat = format;
             this.ExtractionResult = result;
         }
+
+        public string GetPropertyName()
+        {
+            // TODO: Implement DislapyFormat functionality... 
+            return this.PropertyName;
+        }
+
+        public string GetReadDetail()
+        {
+            // TODO: Implement this fully. 
+            if (this.ExtractionResult.Failed)
+                return "Ruh roh: " + this.ExtractionResult.Error.Exception.Message;
+
+            return "";
+        }
     }
 
     //public class PropertyTestResult : PropertyReadResult
@@ -109,6 +124,11 @@ namespace Proviso.Core
         // NOT the result of each Facet.Read in a Surface (or surfaces in a runbook)
         //  but the outcome of a Facet-Read result
         //      i.e., it's more streamlined and less 'complex' than surface/runbook operations... 
+        public string GetFacetName()
+        {
+            // TODO: implement .DisplayFormat functionality if/when present. 
+            return this.FacetName;
+        }
     }
 
     public class FacetTestResult

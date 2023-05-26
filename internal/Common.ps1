@@ -1,6 +1,7 @@
 ﻿Set-StrictMode -Version 1.0;
 
 # REFACTOR: _MIGHT_ make sense to call this Utility or even Proviso.Core.Utility.ps ... 
+# 		though, since writing the above, I've added a  new Utilities.cs / ps1 file... but, still, I could 'lump' THESE funcs in with those... 
 
 function Write-PvDebug {
 	[CmdletBinding()]
@@ -237,4 +238,3 @@ filter Override-ThrowOnConfig {
 		}
 	}
 }
-

@@ -10,8 +10,7 @@
 
 [string[]]$global:target = @("a","B", "Cee", "d", "e", "11");
 
-write-host "--------------------------------------------------"
-
+#write-host "--------------------------------------------------"
 
 	Facets {
 		Facet "My First Facet" -TargetPath "Prop1" { 
@@ -25,23 +24,22 @@ write-host "--------------------------------------------------"
 					return $global:target -contains "Cee";
 				}
 			}
-			Property "Int Prop" -Expect 10 -Extract 99 {}
-			Property "String Prop" -Expect "10" {}
-			Property "Array Prop" -Expect @(10, "10") {}
-			Property "IP Prop" -Expect 192.168.11.3 -Extract 11 {}
-			#Cohort "Basic Cohort" -Expect 20  {
-			#
-			#}
+			Property "Extract 99 Prop" -Expect 10 -Extract 99 {}
+			Property "Extract (string)11 Prop" -Expect "10" -Extract "10" {}
+			Property "Extract Array Prop" -Expect @(10, "10") -Extract @(11, "11") {}
+			Property "Extract IP Prop" -Expect 192.168.11.3 -Extract 10.10.2.198 {}
+			Property "No Explicit Extract Prop" -Expect "something" { }
+			Property "No Explicit Anything Prop" { }
 		}
 	}
 
-#write-host "--------------------------------------------------"
-	Read-Facet "My First Facet" -Target "Text 1";
+##write-host "--------------------------------------------------"
+	Read-Facet "My First Facet" -Target "Target Text/Value";
 
 
 #write-host "--------------------------------------------------"
 	# re-load - it SHOULD already be in the catalog 
-	Read-Facet "My First Facet" -Target "Text 2";
+	Read-Facet "My First Facet" -Target "Target Text 2";
 
 
 write-host "--------------------------------------------------"
@@ -169,8 +167,8 @@ function Read-Facet {
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		
-		# CONTEXT: Get-Facet is a proxy method. If the Facet is already registered (discovered/validated, etc.) we'll get it back. 
-		# 		If the facet isn't already registered, Get-Facet will attempt the registration process, then return the Facet (if everything worked).
+		# CONTEXT: Get-Facet is a proxy method. If the Facet is already registered, we'll get it back. 
+		#	Otherwise, Get-Facet will attempt registration + return the Facet (if everything worked).
 		[Proviso.Core.Models.Facet]$facet = Get-Facet -Name $Name -ParentName $ParentName -Verbose:$xVerbose -Debug:$xDebug;
 		
 		if ($null -eq $facet) {
@@ -238,8 +236,10 @@ function Process-ReadFacet {
 	};
 	
 	process {
+		$instance = [Proviso.Core.Models.Facet]::GetInstance($Facet);
+		
 		$global:PvPipelineContext_CurentOperationName = "Read-Facet";  # TODO: turn this into an actual object...  ALTHOUGH... the pipeline can/will 'know' this via $Verb-$OperationType ... so, NOT needed.
-		$result = Execute-Pipeline -Verb "Read" -OperationType Facet -Block $Facet -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+		$result = Execute-Pipeline -Verb "Read" -OperationType Facet -Block $instance -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	end {
