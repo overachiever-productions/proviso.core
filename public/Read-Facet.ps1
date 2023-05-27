@@ -48,6 +48,60 @@ write-host "--------------------------------------------------"
 
 #>
 
+<#
+	# MULTI-TARGET TESTS/SIGNATURES: 
+
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+
+	Facets {
+		Facet "Fake Firewall Facet" -TargetPath "Prop1" { 
+			Property "No Explicit Anything Prop" { }
+		}
+	}
+	
+	$multiTargets = @("First", "Second", "Third");
+
+	Read-Facet "Fake Firewall Facet" -Targets $multiTargets;
+
+	
+
+# PATHING targets... (i.e., need to add in paths).
+	#$targetsObjects = @(
+	#	[PSCustomObject]@{ ObjectName = "Object 1" }
+	#	[PSCustomObject]@{ ObjectName = "Object 2" }
+	#	[PSCustomObject]@{ ObjectName = "Object 3" }
+	#);
+
+	Read-Facet "Fake Firewall Facet" -Targets $targetsObjects;
+#>
+
+
+<#
+	# MULTI-SERVER TESTS/SIGNATURES: 
+
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+
+	Facets {
+		Facet "Fake Firewall Facet" -TargetPath "Prop1" { 
+			Property "No Explicit Anything Prop" { }
+		}
+	}
+
+	$myServers = @(
+		[PSCustomObject]@{ Host = "Server1" }
+		[PSCustomObject]@{ Host = "Server2" }
+		[PSCustomObject]@{ Host = "Server2" }
+	);
+
+	# PICKUP/NEXT: add in some sort of ... info to the RESULTs about which host/server each something something is being run against. 
+	# 		then, if not 'local host' ... spit out info into the results object / header. 
+	# 	otherwise, this is working REALLY well at this point. (i.e., at the point of being faked)
+	Read-Facet "Fake Firewall Facet" -Target "Target Text/Value" -Servers $myServers;
+
+#>
+
+
+
 <# 
 write-host "--------------------------------------------------"
 
