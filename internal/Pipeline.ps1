@@ -37,9 +37,6 @@ function Execute-Pipeline {
 		#region Setup
 		$results = Initialize-ResultsObject -Verb $Verb -OperationType $OperationType -Block $Block -Verbose:$xVerbose -Debug:$xDebug;
 		
-		#$blockInstance = DeepClone-Block -Block $Block -Verbose:$xVerbose -Debug:$xDebug;
-#$blockInstance = $Block.Clone();
-		
 		[Proviso.Core.ISurface[]]$surfaces = @();
 		
 		try {

@@ -1,11 +1,5 @@
 ﻿Set-StrictMode -Version 1.0;
 
-<#
-
-	Wrapper for globally defined Facets.
-
-#>
-
 function Facets {
 	[CmdletBinding()]
 	param (
