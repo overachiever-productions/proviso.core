@@ -49,6 +49,38 @@ write-host "--------------------------------------------------"
 #>
 
 <#
+	# SIMPLE PATHING Test/Example 
+
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+
+	Facets {
+		Facet "User Details Facet" { 
+			Property "Username via Path" -TargetPath "UserName" -ModelPath "User_Name" { }
+			Property "Email via Path" -Path "Email" { }
+			Property "ZipCode via Path" -Path "Address.Zip" { }
+			Property "Nullable Street2 via Path" -Path "Address.Street2" { }
+		}
+	}
+	
+	$address = [PSCustomObject]@{
+		Street = "5214 W Country Hills Ln"
+		Street2 = $null
+		#Street2 = ''  # note that this works just fine... 
+		Zip = "99208"
+		State = "WA"
+	};
+
+	$user = [PSCustomObject]@{
+		UserName = "OverAchiever"
+		Email = "mike@overachiever.net"
+		Address = $address
+	};
+
+	Read-Facet "User Details Facet" -Target $user;
+
+#>
+
+<#
 	# MULTI-TARGET TESTS/SIGNATURES: 
 
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
@@ -75,7 +107,6 @@ write-host "--------------------------------------------------"
 	Read-Facet "Fake Firewall Facet" -Targets $targetsObjects;
 #>
 
-
 <#
 	# MULTI-SERVER TESTS/SIGNATURES: 
 
@@ -99,8 +130,6 @@ write-host "--------------------------------------------------"
 	Read-Facet "Fake Firewall Facet" -Target "Target Text/Value" -Servers $myServers;
 
 #>
-
-
 
 <# 
 write-host "--------------------------------------------------"

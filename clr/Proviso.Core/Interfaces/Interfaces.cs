@@ -4,6 +4,21 @@ using System.Management.Automation;
 
 namespace Proviso.Core
 {
+    internal static class StringExtensions
+    {
+        internal static string StripLeadingSeparator(this string input, List<string> separators)
+        {
+            if (separators == null) separators = new List<string> { "." };
+            foreach (var separator in separators)
+            {
+                if(input.StartsWith(separator))
+                    return input.Substring(separator.Length);
+            }
+
+            return input;
+        }
+    }
+
     // TODO: roll this into ... IDeclarable... 
     public interface ITrackable
     {
@@ -103,7 +118,6 @@ namespace Proviso.Core
 
     }
 
-    [Serializable]
     public class DeclarableBase : IDeclarable
     {
         public string ParentName { get; private set; }
@@ -132,10 +146,12 @@ namespace Proviso.Core
 
         public void SetPaths(string model, string target)
         {
+            // TODO: hand in a list of $PvPreferences.PathSeparators to .StripLeadingSeparator() calls... 
+
             if (!string.IsNullOrWhiteSpace(model))
-                this.ModelPath = model;
+                this.ModelPath = model.StripLeadingSeparator(null);
             if (!string.IsNullOrWhiteSpace(target))
-                this.TargetPath = target;
+                this.TargetPath = target.StripLeadingSeparator(null);
         }
 
         public void SetSkipped(string reason)

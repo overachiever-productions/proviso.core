@@ -14,9 +14,9 @@
                             </ExpressionBinding>
 							<Text>   </Text>
 							<ExpressionBinding>
-								<ScriptBlock>$PvFormatter.BoundedString($_.ExtractionResult.Result, 24)</ScriptBlock>
+								<ScriptBlock>$PvFormatter.BoundedString($_.ExtractionResult.GetResultForConsoleDisplay(), 24)</ScriptBlock>
                             </ExpressionBinding>
-							<Text>  </Text>
+							<Text>   </Text>
 							<ExpressionBinding>
 								<ScriptBlock>$PvFormatter.BoundedString($_.GetReadDetail(), 44)</ScriptBlock>
                             </ExpressionBinding>
