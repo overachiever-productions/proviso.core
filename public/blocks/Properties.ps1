@@ -1,9 +1,4 @@
 ﻿Set-StrictMode -Version 1.0;
-<#
-
-	Wrapper for globally defined Properties.
-
-#>
 
 function Properties {
 	[CmdletBinding()]

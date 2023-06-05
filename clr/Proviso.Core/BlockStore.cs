@@ -6,11 +6,11 @@ using Proviso.Core.Models;
 
 namespace Proviso.Core
 {
-    public delegate bool StoragePredicate<in T>(T existing, T replacement);
+    internal delegate bool StoragePredicate<in T>(T existing, T replacement);
 
-    public static class StorageExtensions
+    internal static class StorageExtensions
     {
-        public static bool Save<T>(this List<T> list, T added, StoragePredicate<T> predicate, bool allowReplace, string identifier)
+        internal static bool Save<T>(this List<T> list, T added, StoragePredicate<T> predicate, bool allowReplace, string identifier)
         {
             var exists = list.Find(x => predicate(x, added));
             if (exists != null)

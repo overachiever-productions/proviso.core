@@ -13,7 +13,7 @@
 #write-host "--------------------------------------------------"
 
 	Facets {
-		Facet "My First Facet" -TargetPath "Prop1" { 
+		Facet "My First Facet" { 
 			Property "Count" -DisplayFormat "hmmm" {
 				Extract {
 					return $global:target.Length;
@@ -45,6 +45,109 @@
 write-host "--------------------------------------------------"
 	Read-Facet "This doesn't exist";
 
+#>
+
+<# 
+	# Anonymous Property / Minimally-Viable Facets
+
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+	
+	Facets {
+		Facet "Minimally Viable" { }
+	}
+	
+	#$f = Get-Facet -Name "Minimally Viable";
+	#$f
+	#$instance = [Proviso.Core.Models.Facet]::GetInstance($f);
+	#Write-host "------------------"
+	#$instance;
+
+#$global:DebugPreference = "Continue";
+	Read-Facet "Minimally Viable" -Target "11";
+
+#>
+
+<#
+	# SIMPLE PATHING Test/Example 
+
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+
+	Facets {
+		Facet "User Details Facet" { 
+			Property "Username via Path" -TargetPath "UserName" -ModelPath "User_Name" { }
+			Property "Email via Path" -Path "Email" { }
+# TODO: when the property below is not commented out... it THROWS in command-line/Posh7, but does NOT throw in Sapien PowerShell Studio... 
+			#Property "ZipCode via Path" -Path "Address.Zip" { }
+			Property "Nullable Street2 via Path" -Path "Address.Street2" { }
+		}
+	}
+	
+	$address = [PSCustomObject]@{
+		Street = "5214 W Country Hills Ln"
+		Street2 = $null
+		#Street2 = ''  # note that this works just fine... 
+		Zip = "99208"
+		State = "WA"
+	};
+
+	$user = [PSCustomObject]@{
+		UserName = "OverAchiever"
+		Email = "mike@overachiever.net"
+		Address = $address
+	};
+
+	Read-Facet "User Details Facet" -Target $user;
+
+#>
+
+<#
+	# MULTI-TARGET TESTS/SIGNATURES: 
+
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+
+	Facets {
+		Facet "Fake Firewall Facet" -TargetPath "Prop1" { 
+			Property "No Explicit Anything Prop" { }
+		}
+	}
+	
+	$multiTargets = @("First", "Second", "Third");
+
+	Read-Facet "Fake Firewall Facet" -Targets $multiTargets;
+
+	
+
+# PATHING targets... (i.e., need to add in paths).
+	#$targetsObjects = @(
+	#	[PSCustomObject]@{ ObjectName = "Object 1" }
+	#	[PSCustomObject]@{ ObjectName = "Object 2" }
+	#	[PSCustomObject]@{ ObjectName = "Object 3" }
+	#);
+
+	Read-Facet "Fake Firewall Facet" -Targets $targetsObjects;
+#>
+
+<#
+	# MULTI-SERVER TESTS/SIGNATURES: 
+
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+
+	Facets {
+		Facet "Fake Firewall Facet" -TargetPath "Prop1" { 
+			Property "No Explicit Anything Prop" { }
+		}
+	}
+
+	$myServers = @(
+		[PSCustomObject]@{ Host = "Server1" }
+		[PSCustomObject]@{ Host = "Server2" }
+		[PSCustomObject]@{ Host = "Server2" }
+	);
+
+	# PICKUP/NEXT: add in some sort of ... info to the RESULTs about which host/server each something something is being run against. 
+	# 		then, if not 'local host' ... spit out info into the results object / header. 
+	# 	otherwise, this is working REALLY well at this point. (i.e., at the point of being faked)
+	Read-Facet "Fake Firewall Facet" -Target "Target Text/Value" -Servers $myServers;
 
 #>
 
@@ -129,7 +232,6 @@ function Read-Facet {
 		[Parameter(ParameterSetName = 'Servers')]
 		[Alias('Target')]
 		[object[]]$Targets,
-		
 		
 # TODO: add in a param (and ... param-set details) for $Model, right? 
 # 		er, NO: if this were a Test or Invoke operation, then ... yup. 

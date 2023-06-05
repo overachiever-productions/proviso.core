@@ -23,6 +23,8 @@ namespace Proviso.Core
     public class ExtractResult
     {
         public bool Failed { get; set; }
+
+        // refactor: it appears that I don't ever USE ObjectType ... 
         public string ObjectType { get; set; }
         public Object Result { get; set; }
         public ErrorRecord Error { get; set; }
@@ -35,9 +37,24 @@ namespace Proviso.Core
             this.Error = error;
         }
 
+        public Object GetResultForConsoleDisplay()
+        {
+            if (this.Result == null)
+            {
+                return "$null";
+            }
+
+            return this.Result;
+        }
+
         public static ExtractResult SuccessfulExtractResult(string objectType, object result)
         {
             return new ExtractResult(false, objectType, result, null);
+        }
+
+        public static ExtractResult NullResult()
+        {
+            return new ExtractResult(false, "", null, null);
         }
 
         public static ExtractResult FailedExtractResult(ErrorRecord error)
@@ -89,7 +106,7 @@ namespace Proviso.Core
         {
             // TODO: Implement this fully. 
             if (this.ExtractionResult.Failed)
-                return "Ruh roh: " + this.ExtractionResult.Error.Exception.Message;
+                return "Error: " + this.ExtractionResult.Error.Exception.Message;
 
             return "";
         }
