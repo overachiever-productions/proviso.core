@@ -37,9 +37,6 @@ function Execute-Pipeline {
 		#region Setup
 		$results = Initialize-ResultsObject -Verb $Verb -OperationType $OperationType -Block $Block -Verbose:$xVerbose -Debug:$xDebug;
 		
-		#$blockInstance = DeepClone-Block -Block $Block -Verbose:$xVerbose -Debug:$xDebug;
-#$blockInstance = $Block.Clone();
-		
 		[Proviso.Core.ISurface[]]$surfaces = @();
 		
 		try {
@@ -147,7 +144,7 @@ function Execute-Pipeline {
 					# setup facet-level context info/details... 
 					# e.g., $global:PvContext.Facet.xxxx props and such. 
 					
-					Write-Debug "		Iterating Properties.";
+					Write-Debug "		Iterating Properties...";
 					foreach ($property in $facet.Properties) { #note that at this point we'll always have 1 or more props, even if the prop in question is anonymous... 
 						
 						# TODO: additional context info/setup... 
@@ -183,7 +180,7 @@ function Execute-Pipeline {
 			}
 		}
 		catch {
-			
+			throw "Error in ... Pipeline Processing (step 3): $_ ";
 		}
 		Write-Debug "	  Pipeline Processing Complete.";
 		#endregion
@@ -236,7 +233,7 @@ function Process-PropertyOperations {
 		
 		# TODO: might need to end up making this an IProperty (to account for Inclusion|Property (but never cohort/etc.))
 		[Parameter(Mandatory)]
-		[Proviso.Core.Models.Property]$Property,
+		[Proviso.Core.IProperty]$Property,
 		
 		$Results,
 		
@@ -247,12 +244,16 @@ function Process-PropertyOperations {
 		[Object]$Target
 	);
 	
-	# NOTE: no need to evaluate the verb for READs - we'll ALWAYS at LEAST do READ (can't Test (Compare) or Invoke (Configure) without READ-ing).
 	try {
 		$block = $Property.Extract;
 		[Object]$output = & $block;
 		
-		[Proviso.Core.ExtractResult]$extract = [Proviso.Core.ExtractResult]::SuccessfulExtractResult(($output.GetType().FullName), $output);
+		if ($null -eq $output) {
+			[Proviso.Core.ExtractResult]$extract = [Proviso.Core.ExtractResult]::NullResult();
+		}
+		else {
+			[Proviso.Core.ExtractResult]$extract = [Proviso.Core.ExtractResult]::SuccessfulExtractResult(($output.GetType().FullName), $output);
+		}
 	}
 	catch {
 		[Proviso.Core.ExtractResult]$extract = [Proviso.Core.ExtractResult]::FailedExtractResult($_);
@@ -298,22 +299,20 @@ function TrySet-TargetAsImplicitExtractForNonExplicitExtractProperties {
 					foreach ($nestedProp in $prop.Properties) {
 						if (-not ($nestedProp.Extract)) {
 							if (Is-Empty $Target) {
-								throw "Runtime Validation Failure. Cohort Property [$($nestedProp.Name)] does NOT have an explicit -Extract or Extract {} defined. Either Implement Extract or specify -Target for $($global:PvPipelineContext_CurentOperationName). ";
+								throw "`nRuntime Validation Failure: `n  - Cohort Property [$($nestedProp.Name)] does NOT have an explicit - Extract, Extract{}, or -Path defined. `n  -Either Implement Extract or specify -Target for $($global:PvPipelineContext_CurentOperationName). ";
 							}
 							
-							# TODO: uhhh... what about ... if the property in question has a -TargetPath ... then this should be generating something like "return $Target.<targetPath>"..
-							$nestedProp.Extract = Get-ReturnScript $Target;
+							$nestedProp.Extract = Get-RuntimeGeneratedExtractProxy $Target -Path ($nestedProp.TargetPath) -Verbose:$xVerbose -Debug:$xDebug;
 						}
 					}
 				}
 				else {
 					if (-not ($prop.Extract)) {
 						if (Is-Empty $Target) {
-							throw "Runtime Validation Failure. Property [$($prop.Name)] does NOT have an explicit -Extract or Extract {} defined. Either Implement Extract or specify -Target for $($global:PvPipelineContext_CurentOperationName). ";
+							throw "`nRuntime Validation Failure: `n  - Property [$($prop.Name)] does NOT have an explicit -Extract, Extract{}, or -Path defined. `n  - Either Implement Extract or specify -Target for $($global:PvPipelineContext_CurentOperationName). ";
 						}
 						
-						# TODO: uhhh... what about ... if the property in question has a -TargetPath ... then this should be generating something like "return $Target.<targetPath>"..
-						$prop.Extract = Get-ReturnScript $Target;
+						$prop.Extract = Get-RuntimeGeneratedExtractProxy $Target -Path ($prop.TargetPath) -Verbose:$xVerbose -Debug:$xDebug;
 					}
 				}
 			}
@@ -326,7 +325,8 @@ function TrySet-ModelAsImplicitExpectForNonExplicitExpectProperties {
 	param (
 		[Parameter(Mandatory)]
 		[Proviso.Core.ISurface[]]$Surfaces,
-		[Object]$Model
+		[Object]$Model,
+		[Object]$Config   # TODO: figure out how to handle this - is it something I pass in INSTEAD of the $Model or ??? what? 
 	);
 	
 	foreach ($surface in $Surfaces) {
@@ -336,11 +336,10 @@ function TrySet-ModelAsImplicitExpectForNonExplicitExpectProperties {
 					foreach ($nestedProp in $prop.Properties) {
 						if (-not ($nestedProp.Extract)) {
 							if (Is-Empty $Model) {
-								throw "Runtime Validation Failure. Cohort Property [$($nestedProp.Name)] does NOT have an explicit -Expect or Expect {} defined. Either Implement Expect or specify -Model for $($global:PvPipelineContext_CurentOperationName). ";
+								throw "`nRuntime Validation Failure: `n  - Cohort Property [$($nestedProp.Name)] does NOT have an explicit -Expect, Expect{}, or -Path defined. `n  - Either Implement Expect or specify -Model for $($global:PvPipelineContext_CurentOperationName). ";
 							}
 							
-							# TODO: uhhh... what about ... if the property in question has a -ModdelPath ... then this should be generating something like "return $Model.<modelPath>"..
-							$nestedProp.Extract = Get-ReturnScript $Model;
+							$nestedProp.Extract = Get-RuntimeGeneratedExpectProxy $Model -Path ($nestedProp.ModelPath) -Config $Config -Verbose:$xVerbose -Debug:$xDebug;
 						}
 					}
 				}
@@ -348,13 +347,295 @@ function TrySet-ModelAsImplicitExpectForNonExplicitExpectProperties {
 					if (-not ($prop.Extract)) {
 						if (Is-Empty $Model) {
 							# TODO: uhhh... what about ... if the property in question has a -ModdelPath ... then this should be generating something like "return $Model.<modelPath>"..
-							throw "Runtime Validation Failure. Property [$($prop.Name)] does NOT have an explicit -Expect or Expect {} defined. Either Implement Expect or specify -Model for $($global:PvPipelineContext_CurentOperationName). ";
+							throw "`nRuntime Validation Failure: `n  - Property [$($prop.Name)] does NOT have an explicit -Expect, Expect{}, or -Path defined. `n  - Either Implement Expect or specify -Model for $($global:PvPipelineContext_CurentOperationName). ";
 						}
 						
-						$prop.Extract = Get-ReturnScript $Model;
+						$prop.Extract = Get-RuntimeGeneratedExpectProxy $Model -Path ($prop.ModelPath) -Config $Config -Verbose:$xVerbose -Debug:$xDebug;
 					}
 				}
 			}
 		}
 	}
+}
+
+function Get-RuntimeGeneratedExtractProxy {
+	[CmdletBinding()]
+	param (
+		[Parameter(Mandatory, Position = 0)]
+		[Object]$Target,
+		[string]$Path
+	);
+	
+	if (Has-Value $Path) {
+		$value = Extract-ValueFromObjectByPath -Object $Target -Path $Path;
+		
+		if ($null -eq $value) {
+			# TODO: allow different path separators ... (i.e., the call into Object-SupportsPropertyAtPath is hard-coded for . as the path separator... )
+			if (Object-SupportsPropertyAtPathLevel $Target -Path $Path) {
+				return Get-ReturnScript $null; # can't merely return $null, have to return a SCRIPT that'll ... return $null;
+			}
+			
+			# TODO: figure out how to hand in {operationNameHere} - e.g., "Read-Facet" or "Test-Surface".FacetName??? 
+			throw "Explicitly Supplied -Target for [{operationNameHere}] does not have a property that matches the path: [$Path].";
+		}
+		
+		return Get-ReturnScript $value;
+	}
+	else {
+		return Get-ReturnScript $Target;
+	}
+}
+
+function Get-RuntimeGeneratedExpectProxy {
+	[CmdletBinding()]
+	param (
+		[Parameter(Mandatory, Position = 0)]
+		[Object]$Model,
+		[string]$Path,
+		[Object]$Config  
+	);
+	
+	# TODO: not sure if -Model AND -Config are used together, or if -Config will be used instead of -Model ... and so on... 
+	#  		i.e., have to figure this out ... 
+	
+	
+	throw "Not Implemented yet.";
+	
+	# TODO: virtually the same as Get-RuntimeGeneratedExtractProxy ... 
+	# 	EXCEPT: 
+	# 		1. There's an option for if/when the value expected is $null to look for a default / etc. 
+	# 		2. There's also the option to handle/process {TOKEN} results as well... e.g., {PARENT} or {DEFAULT_PATH} or whatever makes sense and so on... 
+	
+}
+
+filter Get-ReturnScript {
+	param (
+		[Object]$Output
+	);
+	
+	# NOTE: This is a fairly naive implementation - probably needs some additional complexity/options to better handle outputs. 
+	
+	# TODO: This MIGHT be a much better option: 
+	# 	https://github.com/iRon7/ConvertTo-Expression 
+	
+	if ($null -eq $Output) {
+		$script = "return `$null; ";
+	}
+	else {
+		switch ($Output.GetType().FullName) {
+			"System.String" {
+				$script = "return `"$Output`";";
+			}
+			"System.Object[]" {
+				# TODO: this is a REALLY naive implementation and ... it's also casting @(10, "10") to @(10, 10) (as near as I can tell... )
+				$data = $Output -join ",";
+				$script = "return @(" + $data + "); ";
+			}
+			default {
+				$script = "return $Output;";
+			}
+		}
+	}
+	return [ScriptBlock]::Create($script).GetNewClosure();
+}
+
+filter Extract-ValueFromObjectByPath {
+	param (
+		[Parameter(Mandatory)]
+		[Object]$Object,
+		[Parameter(Mandatory)]
+		[string]$Path
+	);
+	
+	$keys = $Path -split "\.";
+	$output = $null;
+	# this isn't SUPER elegant ... but it works (and perf is not an issue).
+	switch ($keys.Count) {
+		1 {
+			$output = $Object.($keys[0]);
+		}
+		2 {
+			$output = $Object.($keys[0]).($keys[1]);
+		}
+		3 {
+			$output = $Object.($keys[0]).($keys[1]).($keys[2]);
+		}
+		4 {
+			$output = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]);
+		}
+		5 {
+			$output = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]);
+		}
+		6 {
+			$output = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]);
+		}
+		7 {
+			$output = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]).($keys[6]);
+		}
+		8 {
+			$output = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]).($keys[6]).($keys[7]);
+		}
+		9 {
+			$output = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]).($keys[6]).($keys[7]).($keys[8]);
+		}
+		10 {
+			$output = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]).($keys[6]).($keys[7]).($keys[8]).($keys[9]);
+		}
+		default {
+			throw "Invalid Key. Too many key segments defined.";
+		}
+	}
+	
+	return $output;
+}
+
+filter Object-SupportsPropertyAtPathLevel {
+	param (
+		[Parameter(Mandatory)]
+		[Object]$Object,
+		[Parameter(Mandatory)]
+		[string]$Path
+	);
+	
+	# as with Extract-ValueFromObjectByPath, this isn't very elegant ... but it works and it's fine/fast.... 	
+	
+	$keys = $Path -split "\.";
+	$property = $keys[$keys.Count - 1];
+	try{
+		switch ($keys.Count) {
+			1 {
+				return $Object.PSObject.Properties -contains $property;
+			}
+			2 {
+				$child = $Object.($keys[0]);
+			}
+			3 {
+				$child = $Object.($keys[0]).($keys[1]);
+			}
+			4 {
+				$child = $Object.($keys[0]).($keys[1]).($keys[2]);
+			}
+			5 {
+				$child = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]);
+			}
+			6 {
+				$child = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]);
+			}
+			7 {
+				$child = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]);
+			}
+			8 {
+				$child = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]).($keys[6]);
+			}
+			9 {
+				$child = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]).($keys[6]).($keys[7]);
+			}
+			10 {
+				$child = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]).($keys[6]).($keys[7]).($keys[8]);
+			}
+			default {
+				throw "Cannot process object support for path: [$Path]. Too many key segments defined.";
+			}
+		}
+		
+		return $child.PSObject.Properties.Name -contains $property;
+	}
+	catch {
+		return $false;
+	}
+}
+
+# ------------------------------------------------------------------------------------
+
+# OLD/NUKE...  (after reviewing the big block of comments in the 'start' of the logic of this func....)
+filter Get-RunTimeGeneratedReturnScript {
+	param (
+		[Parameter(Mandatory, Position = 0)]
+		[Object]$Object,
+		[string]$Path,
+		[string]$PathType
+	);
+	
+<#
+	
+					$expect = $facet.Expect;
+					$script = "return $expect;";
+					
+					# NOTE: I was hoping/thinking that whatever I did via the above would let $expect be ... whatever $expect is/was - i.e., let CLR handle the type-safety and just 'forward it on'
+					# 	and such. 
+					# 		that won't be the case - i.e., in the code above, what if $facet.Expect = "I'm a teapot, short and stout."?
+					# 			if it is... the code above will not 'compile' via Script::CREATE() below. 
+					# 		so... i'm stuck with then trying to figure out if $expect is a string or not... and wrapping accordingly. 
+					
+					# there's ANOTHER option. 
+					# 	and it's borderline insane. But, then again, maybe ... not. 
+					# Assume a $global:PvDictionary<Guid, object>. 
+					# 	 at which point, I could do something like: 
+					$key = Add-DicoValue($facet.Expect); # which spits back a GUID... 
+					$script = "return $($global:PvDictionary.GetValueByKey($key)); ";
+					#  	and... bob's your uncle ...as in, the dico returns 10, "10", 'x', "I'm a teapot, short and stout..";
+					# 	etc... 
+					
+					# other than the SEEMING insanity of the above... I can't really think of any reason it... wouldn't work. 
+					#  	er, well... if I add, say, a string into a dictionary<guid, object> ... and fetch it ... 
+					# 			i don't think I get a string back, i get an object (that can, correctly, be cast to a string). 
+					# 	SO. 
+					# 		another option would be: 
+					# 		get the TYPE of the object here... 
+					# 			and... handle the whole $script = "return ($)"; via some sort of helper func. 
+					# 			as in, pass $expect into Get-ReturnWhatzit ... 
+					# 			and... it'll figure out what to do based on the type? 
+					# 	that PROBABLY makes the most sense actually. 
+					
+					$prop.Expect = [ScriptBlock]::Create($script);	
+	
+#>
+	
+	# TODO: this looks pretty dope actually: 
+	# 	https://github.com/iRon7/ConvertTo-Expression
+	
+	switch ($Object.GetType().FullName) {
+		"System.String" {
+			$script = "return `"$Object`";";
+		}
+		"System.Object[]" {
+			# TODO: this is a REALLY naive implementation and ... it's also casting @(10, "10") to @(10, 10) (as near as I can tell... )
+			$data = $Object -join ",";
+			$script = "return @(" + $data + "); ";
+		}
+		default {
+			if (Has-Value $Path) {
+				if (Object-HasSpecifiedPropertyByPath $Object -Path $Path) {
+					try {
+						# there are 2 options here: 
+						# 	a. $script = "return $object.$path; "
+						# 	b. $output = $object.$path => $scrip = "return $output";
+						
+						# going to use the first option - initially... 
+						# 		$script = "return $Object.$($Path);";
+						#   except ... that really didn't work... 
+						
+						
+						
+						$output = $Object.$Path;
+						$script = "return `"$output`"";
+						
+			Write-Host "script: $script";
+						
+					}
+					catch {
+						throw "context here about what we're doing ... and ... unexpected error trying to assign: $_ etc... "
+					}
+				}
+				else {
+					throw "some context here for whatever... of -PathType ... does NOT have the property (or a child property) of ... -Path specified... ";
+				}
+			}
+			else {
+				$script = "return $Object;";
+			}
+		}
+	}
+	
+	return [ScriptBlock]::Create($script).GetNewClosure();
 }

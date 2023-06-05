@@ -141,6 +141,8 @@ function Set-Declarations {
 		$ModelPath, $TargetPath = $Path, $Path;
 	}
 	
+	# TODO: send in $PvPreferences.PathSeparators as ... a 3rd argument here ... where "." is the default, but things like "\" and "/" could be legit options... 
+	# 		.SetPaths is already set up to handle this, i just need to pass in the actual options (and spin up defaults + ways to set them, etc.)
 	$iDeclarable.SetPaths($ModelPath, $TargetPath);
 	
 	if ($Impact -ne "None") {
@@ -171,67 +173,4 @@ function Set-Declarations {
 	
 	# TODO: Comparison... 
 	# TODO: Processing Order? 
-}
-
-filter Get-ReturnScript {
-	param (
-		[Parameter(Mandatory, Position = 0)]
-		[Object]$Object
-	);
-	
-<#
-	
-					$expect = $facet.Expect;
-					$script = "return $expect;";
-					
-					# NOTE: I was hoping/thinking that whatever I did via the above would let $expect be ... whatever $expect is/was - i.e., let CLR handle the type-safety and just 'forward it on'
-					# 	and such. 
-					# 		that won't be the case - i.e., in the code above, what if $facet.Expect = "I'm a teapot, short and stout."?
-					# 			if it is... the code above will not 'compile' via Script::CREATE() below. 
-					# 		so... i'm stuck with then trying to figure out if $expect is a string or not... and wrapping accordingly. 
-					
-					# there's ANOTHER option. 
-					# 	and it's borderline insane. But, then again, maybe ... not. 
-					# Assume a $global:PvDictionary<Guid, object>. 
-					# 	 at which point, I could do something like: 
-					$key = Add-DicoValue($facet.Expect); # which spits back a GUID... 
-					$script = "return $($global:PvDictionary.GetValueByKey($key)); ";
-					#  	and... bob's your uncle ...as in, the dico returns 10, "10", 'x', "I'm a teapot, short and stoute..";
-					# 	etc... 
-					
-					# other than the SEEMING insanity of the above... I can't really think of any reason it... wouldn't work. 
-					#  	er, well... if I add, say, a string into a dictionary<guid, object> ... and fetch it ... 
-					# 			i don't think I get a string back, i get an object (that can, correctly, be cast to a string). 
-					# 	SO. 
-					# 		another option would be: 
-					# 		get the TYPE of the object here... 
-					# 			and... handle the whole $script = "return ($)"; via some sort of helper func. 
-					# 			as in, pass $expect into Get-ReturnWhatzit ... 
-					# 			and... it'll figure out what to do based on the type? 
-					# 	that PROBABLY makes the most sense actually. 
-					
-					$prop.Expect = [ScriptBlock]::Create($script);	
-	
-#>
-	
-	# TODO: this looks pretty dope actually: 
-	# 	https://github.com/iRon7/ConvertTo-Expression
-
-	
-	switch ($Object.GetType().FullName) {
-		"System.String" {
-			$script = "return `"$Object`";";
-		}
-		"System.Object[]" {
-# TODO: this is a REALLY naive implementation and ... it's also casting @(10, "10") to @(10, 10) (as near as I can tell... )
-			$data = $Object -join ",";
-			$script = "return @(" + $data + "); ";
-		}
-		default {
-			$script = "return $Object;";
-		}
-	}
-	
-	# TODO: should I be using a closure here??  : https://ss64.com/ps/syntax-scriptblock.html
-	return [ScriptBlock]::Create($script);
 }

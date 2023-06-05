@@ -59,6 +59,15 @@ namespace Proviso.Core
 
         public string BoundedString(string input, int length)
         {
+            // TODO: if input == "$null" ... then... wrap it in a different color ... something that makes it clear/obvious that we got a non-object/non-string result. (probably yellow or something?)
+            if (input == "$null")
+            {
+                if (this.HostSupportsColor)
+                    return $"\u001b[36;1m$null\u001b[0m";
+
+                return "$null";
+            }
+
             string cleaned = input.Trim();
             if (cleaned.Length > length)
                 cleaned = cleaned.Substring(0, length - 1) + '…';
