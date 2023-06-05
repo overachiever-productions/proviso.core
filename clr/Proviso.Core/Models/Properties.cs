@@ -32,7 +32,6 @@ namespace Proviso.Core.Models
 
         public IProperty GetInstance()
         {
-            // NOTE: ScriptBlocks are shallow-copied via .MemberwiseClone().
             return (Property)this.MemberwiseClone();
         }
     }
@@ -96,35 +95,34 @@ namespace Proviso.Core.Models
             this._properties = new List<IProperty>();
         }
     }
+
     //public class Inclusion : DeclarableBase, IProperty
     //{
 
     //}
 
-    public class AnonymousProperty : IProperty
+    public class AnonymousProperty : DeclarableBase, IProperty
     {
-        public string Name { get; }
-        public string ParentName { get; }
         public PropertyParentType ParentType { get; }
         public PropertyType PropertyType { get; }
         public bool IsCohort { get; }
         public bool IsVirtual { get; }
 
-        public AnonymousProperty(string parentName, PropertyParentType parentType)
-        {
-            // parentType can only be ... Facet or Cohort, right? 
+        // TODO: possibly add public ScriptBlock Compare ... 
+        //  but... i don't that having a ScriptBlock for Configure will ever make sense, right? 
 
-            this.Name = $"{parentName}.Property";
-            this.ParentName = parentName;
+        public AnonymousProperty(PropertyParentType parentType, string parentName) : base($"{parentName}.Property", parentName)
+        {
             this.ParentType = parentType;
 
+            this.PropertyType = PropertyType.Property;
             this.IsVirtual = false; // false != anonymous
             this.IsCohort = false;
         }
 
         public IProperty GetInstance()
         {
-            throw new NotImplementedException();
+            return (AnonymousProperty)this.MemberwiseClone();
         }
     }
 

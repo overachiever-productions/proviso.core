@@ -144,7 +144,7 @@ function Execute-Pipeline {
 					# setup facet-level context info/details... 
 					# e.g., $global:PvContext.Facet.xxxx props and such. 
 					
-					Write-Debug "		Iterating Properties.";
+					Write-Debug "		Iterating Properties...";
 					foreach ($property in $facet.Properties) { #note that at this point we'll always have 1 or more props, even if the prop in question is anonymous... 
 						
 						# TODO: additional context info/setup... 
@@ -233,7 +233,7 @@ function Process-PropertyOperations {
 		
 		# TODO: might need to end up making this an IProperty (to account for Inclusion|Property (but never cohort/etc.))
 		[Parameter(Mandatory)]
-		[Proviso.Core.Models.Property]$Property,
+		[Proviso.Core.IProperty]$Property,
 		
 		$Results,
 		

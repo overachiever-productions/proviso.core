@@ -13,7 +13,7 @@
 #write-host "--------------------------------------------------"
 
 	Facets {
-		Facet "My First Facet" -TargetPath "Prop1" { 
+		Facet "My First Facet" { 
 			Property "Count" -DisplayFormat "hmmm" {
 				Extract {
 					return $global:target.Length;
@@ -45,6 +45,25 @@
 write-host "--------------------------------------------------"
 	Read-Facet "This doesn't exist";
 
+#>
+
+<# 
+	# Anonymous Property / Minimally-Viable Facets
+
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+	
+	Facets {
+		Facet "Minimally Viable" { }
+	}
+	
+	#$f = Get-Facet -Name "Minimally Viable";
+	#$f
+	#$instance = [Proviso.Core.Models.Facet]::GetInstance($f);
+	#Write-host "------------------"
+	#$instance;
+
+#$global:DebugPreference = "Continue";
+	Read-Facet "Minimally Viable" -Target "11";
 
 #>
 
@@ -57,7 +76,8 @@ write-host "--------------------------------------------------"
 		Facet "User Details Facet" { 
 			Property "Username via Path" -TargetPath "UserName" -ModelPath "User_Name" { }
 			Property "Email via Path" -Path "Email" { }
-			Property "ZipCode via Path" -Path "Address.Zip" { }
+# TODO: when the property below is not commented out... it THROWS in command-line/Posh7, but does NOT throw in Sapien PowerShell Studio... 
+			#Property "ZipCode via Path" -Path "Address.Zip" { }
 			Property "Nullable Street2 via Path" -Path "Address.Street2" { }
 		}
 	}
@@ -212,7 +232,6 @@ function Read-Facet {
 		[Parameter(ParameterSetName = 'Servers')]
 		[Alias('Target')]
 		[object[]]$Targets,
-		
 		
 # TODO: add in a param (and ... param-set details) for $Model, right? 
 # 		er, NO: if this were a Test or Invoke operation, then ... yup. 

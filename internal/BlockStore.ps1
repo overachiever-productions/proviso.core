@@ -20,6 +20,7 @@ function Store-Pattern {
 }
 
 function Get-FacetFromBlockStore {
+	[CmdletBinding()]
 	param (
 		[string]$Name,
 		[string]$ParentName
