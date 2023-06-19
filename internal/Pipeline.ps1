@@ -74,6 +74,10 @@ function Execute-Pipeline {
 		#region Validation 
 		Write-Debug "	Starting Pipeline Validations.";
 		
+# GEDANKEN: If $currentWhatzit.HasCohorts... then... verify that we've got a legit Enumerate, Add, Remove (for whatever kind of operation we're running now). 
+# 		arguably, some of these validations would have been tackled during registration..
+		
+		
 		# NOTE: no need to evaluate the verb for READs - we'll ALWAYS at LEAST do READ (can't Test (Compare) or Invoke (Configure) without READ-ing).
 		TrySet-TargetAsImplicitExtractForNonExplicitExtractProperties -Surfaces $surfaces -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 		
@@ -151,7 +155,21 @@ function Execute-Pipeline {
 
 						
 						if ($property.IsCohort) {
-			Write-Host "I'm a cohort... "
+			Write-Host "I'm a cohort... ";
+							
+							# TODO: actually... don't just loop through each nestedProperty in $property.Properties.
+							# instead: a) get the 'enumerate' for this cohort ... 
+							#   	and... for each item in the enumerate ... list through each of the nested properties. 
+							# 		e.g., if I have "members of local admins" as the cohort, with 2x properties inside the cohort... 
+							# 		then for each member of the output of the 'Enumerate {}' block... 
+							# 			iterate over each of the properties. 
+							# 				so. if I have "DOMAIN\dbas", "DOMAIN\mike", "DOMAIN\sec_ops" as the 3x members of the iteration... 
+							# 					i 'walk' each of those through both of the properties. 
+							# 				and, note: $Target and $Model stay the same for each of these 6x 'iterations' mentioned above. 
+							# 				but what does/will change would be the $PvContext.Current.Enumerator or ... something similar.
+							# 		might make sense to do $PvContext.CurrentCohort.Members and $Context.Current.Cohort.Current.Member or whatever... 
+							# 		i.e., need some way of accessing ALL members, and ... the current/iterated/enumerated member.
+							
 							foreach ($nestedProperty in $property.Properties) {
 								Process-PropertyOperations -Verb $Verb -Property $nestedProperty -Results $results `
 									-Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;

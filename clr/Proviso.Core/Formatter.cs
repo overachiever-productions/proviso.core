@@ -28,7 +28,8 @@ namespace Proviso.Core
             string output = new String('-', length);
 
             if (this.HostSupportsColor)
-                output = $"\u001b[36;1m{output}\u001b[0m";
+                //output = $"\u001b[36;1m{output}\u001b[0m";
+                output = $"{PSStyle.Instance.Foreground.BrightCyan}{output}{PSStyle.Instance.Reset}";
 
             return output;
         }
@@ -42,7 +43,7 @@ namespace Proviso.Core
                 output = new String(' ', leftPadding) + output;
 
             if (this.HostSupportsColor)
-                output = $"\u001b[36;1m{output}\u001b[0m";
+                output = $"{PSStyle.Instance.Foreground.BrightCyan}{output}{PSStyle.Instance.Reset}";
 
             return output;
         }
@@ -52,18 +53,17 @@ namespace Proviso.Core
             string output = new String(' ', leftPadding) + this.SizedDash(length);
 
             if(this.HostSupportsColor)
-                output = $"\u001b[36;1m{output}\u001b[0m";
+                output = $"{PSStyle.Instance.Foreground.BrightCyan}{output}{PSStyle.Instance.Reset}";
 
             return output;
         }
 
         public string BoundedString(string input, int length)
         {
-            // TODO: if input == "$null" ... then... wrap it in a different color ... something that makes it clear/obvious that we got a non-object/non-string result. (probably yellow or something?)
             if (input == "$null")
             {
                 if (this.HostSupportsColor)
-                    return $"\u001b[36;1m$null\u001b[0m";
+                    return $"{PSStyle.Instance.Foreground.BrightCyan}$null{PSStyle.Instance.Reset}";
 
                 return "$null";
             }

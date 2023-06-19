@@ -74,7 +74,7 @@ namespace Proviso.Core.Models
             return $"{this.Name}::{this.ParentName}".GetHashCode();
         }
 
-        private void ClearProperties()
+        public void ClearProperties()
         {
             this._properties = new List<IProperty>();
         }

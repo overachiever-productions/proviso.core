@@ -188,6 +188,7 @@ namespace Proviso.Core
                 {
                     NodeName = "Cohort",
                     Tracked = true,
+                    RequiresName = false,
                     AllowedParents = new List<string> { "Facet", "Pattern", "Cohorts" },
                     AllowedChildren = new List<string> { "Enumerate", "Property" }
                 }, 

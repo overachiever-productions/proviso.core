@@ -75,7 +75,7 @@ function Property {
 	};
 	
 	process {
-		$currentProperty = New-Object Proviso.Core.Models.Property($Name, ([Proviso.Core.FacetParentType](Get-ParentBlockType)), (Get-ParentBlockName));
+		$currentProperty = New-Object Proviso.Core.Models.Property($Name, ([Proviso.Core.PropertyParentType](Get-ParentBlockType)), (Get-ParentBlockName));
 		
 		Set-Declarations $currentProperty -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
 						 -Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -NoConfig:$NoConfig `

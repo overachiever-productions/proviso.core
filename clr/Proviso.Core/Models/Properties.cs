@@ -47,7 +47,7 @@ namespace Proviso.Core.Models
 
         public List<IProperty> Properties => this._properties;
 
-        public Cohort(string name, string parentName, PropertyParentType parentType) : base(name, parentName)
+        public Cohort(string name, PropertyParentType parentType, string parentName) : base(name, parentName)
         {
             this.ParentType = parentType;
 

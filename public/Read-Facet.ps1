@@ -106,7 +106,7 @@ write-host "--------------------------------------------------"
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 
 	Facets {
-		Facet "Fake Firewall Facet" -TargetPath "Prop1" { 
+		Facet "Fake Firewall Facet" { 
 			Property "No Explicit Anything Prop" { }
 		}
 	}
@@ -133,7 +133,7 @@ write-host "--------------------------------------------------"
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 
 	Facets {
-		Facet "Fake Firewall Facet" -TargetPath "Prop1" { 
+		Facet "Fake Firewall Facet" { 
 			Property "No Explicit Anything Prop" { }
 		}
 	}
