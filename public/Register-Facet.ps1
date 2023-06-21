@@ -13,7 +13,7 @@
 	Facets {
 		Facet "My First Facet" { 
 
-			Property "Count" -DisplayFormat "hmmm" {
+			Property "Count" -Display "hmmm" {
 				Extract {
 					return $global:target.Length;
 				}
@@ -22,7 +22,7 @@
 #				}
 			}
 
-#			Collection "Per Member" -DisplayFormat "should inherit 'down' to each child prop" -Expect $true {
+#			Collection "Per Member" -Display "should inherit 'down' to each child prop" -Expect $true {
 ##				Enumerate {
 ##					return $global:target;
 ##				}

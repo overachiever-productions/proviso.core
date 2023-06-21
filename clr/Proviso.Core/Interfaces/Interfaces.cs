@@ -36,13 +36,13 @@ namespace Proviso.Core
         string TargetPath { get; set; }
         bool Skip { get; }
         string SkipReason { get; }
-        string DisplayFormat { get; }
+        string Display { get; }
 
         ScriptBlock Expect { get; set; }
         ScriptBlock Extract { get; set; }
         //ScriptBlock Compare { get; }
 
-        void SetDisplayFormat(string format);
+        void SetDisplay(string display);
         void SetPaths(string model, string target);
         void SetSkipped(string reason);
     }
@@ -126,7 +126,7 @@ namespace Proviso.Core
         public string TargetPath { get; set; }
         public bool Skip { get; private set; }
         public string SkipReason { get; private set; }
-        public string DisplayFormat { get; private set; }
+        public string Display { get; private set; }
         public ScriptBlock Expect { get; set; }
         public ScriptBlock Extract { get; set; }
 
@@ -138,10 +138,10 @@ namespace Proviso.Core
             this.Skip = false;
         }
 
-        public void SetDisplayFormat(string format)
+        public void SetDisplay(string display)
         {
-            if (!string.IsNullOrWhiteSpace(format))
-                this.DisplayFormat = format;
+            if (!string.IsNullOrWhiteSpace(display))
+                this.Display = display;
         }
 
         public void SetPaths(string model, string target)

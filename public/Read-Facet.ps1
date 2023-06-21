@@ -14,7 +14,7 @@
 
 	Facets {
 		Facet "My First Facet" { 
-			Property "Count" -DisplayFormat "hmmm" {
+			Property "Count" -Display "hmmm" {
 				Extract {
 					return $global:target.Length;
 				}
@@ -124,7 +124,7 @@ write-host "--------------------------------------------------"
 	#	[PSCustomObject]@{ ObjectName = "Object 3" }
 	#);
 
-	Read-Facet "Fake Firewall Facet" -Targets $targetsObjects;
+#	Read-Facet "Fake Firewall Facet" -Targets $targetsObjects;
 #>
 
 <#

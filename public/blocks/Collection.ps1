@@ -48,8 +48,6 @@ $global:DebugPreference = "Continue";
 
 #>
 
-
-
 function Collection {
 	[CmdletBinding()]
 	param (
@@ -65,7 +63,7 @@ function Collection {
 		[string]$Impact = "None",
 		[switch]$Skip = $false,
 		[string]$Ignore = $null,
-		[string]$DisplayFormat = $null,
+		[string]$Display = $null,
 		
 		[switch]$UsesAdd = $false,
 		[switch]$UsesAddRemove = $false
@@ -88,7 +86,7 @@ function Collection {
 		
 		Set-Declarations $currentCollection -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
 						 -Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -NoConfig:$NoConfig `
-						 -ThrowOnConfigure $ThrowOnConfigure -DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
+						 -ThrowOnConfigure $ThrowOnConfigure -Display $Display -Verbose:$xVerbose -Debug:$xDebug;
 		
 		# TODO: address ... -UsesAdd/UsesAddRemove 
 		# TODO:  -DefineMembers and -ListMembers ... if they're present ... then build 'anonymous' returns/funcs for them. 

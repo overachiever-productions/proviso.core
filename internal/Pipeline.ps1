@@ -183,41 +183,24 @@ function Execute-Pipeline {
 								Write-Debug "					Setting Context Data for Current Collection Member/Members.";
 								Set-PvContext_CollectionData -Members $enumeratorValues -CurrentMember $currentValue;
 								
-								# TODO: I'm almost positive that -Target doesn't change here... 
 								foreach ($nestedProperty in $property.Properties) {
-									
-									
+									if (-not $nestedProperty.Display) {
+										$defaultEnumeratedPropertyDisplay = "$($nestedProperty.Name)::$($currentValue)";  # vNEXT: use equivalent of string.format ... (i.e., "{0}{1}") and allow a GLOBAL preference here for something like $PvPreferences.DefaultCollectionPropertiesFormatThingy = "{0}.{1}" ... or whatever. 
+										$nestedProperty.SetDisplay($defaultEnumeratedPropertyDisplay);
+									}
 									
 									Process-PropertyOperations -Verb $Verb -Property $nestedProperty -Results $results `
 															   -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 								}
+								
 								Remove-PvContext_CollectionData;
 							}
 							
-							
-							# TODO: actually... don't just loop through each nestedProperty in $property.Properties.
-							# instead: a) get the 'enumerate' for this cohort ... 
-							#   	and... for each item in the enumerate ... list through each of the nested properties. 
-							# 		e.g., if I have "members of local admins" as the cohort, with 2x properties inside the cohort... 
-							# 		then for each member of the output of the 'Enumerate {}' block... 
-							# 			iterate over each of the properties. 
-							# 				so. if I have "DOMAIN\dbas", "DOMAIN\mike", "DOMAIN\sec_ops" as the 3x members of the iteration... 
-							# 					i 'walk' each of those through both of the properties. 
-							# 				and, note: $Target and $Model stay the same for each of these 6x 'iterations' mentioned above. 
-							# 				but what does/will change would be the $PvContext.Current.Enumerator or ... something similar.
-							# 		might make sense to do $PvContext.CurrentCohort.Members and $Context.Current.Cohort.Current.Member or whatever... 
-							# 		i.e., need some way of accessing ALL members, and ... the current/iterated/enumerated member.
-							
-#							foreach ($nestedProperty in $property.Properties) {
-#								Process-PropertyOperations -Verb $Verb -Property $nestedProperty -Results $results `
-#									-Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
-#							}
 						}
 						else {
 							Process-PropertyOperations -Verb $Verb -Property $property -Results $results `
 													   -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 						}
-						
 						
 						# free-up/clear any context info as needed. 
 					}
@@ -315,7 +298,7 @@ function Process-PropertyOperations {
 		[Proviso.Core.ExtractResult]$extract = [Proviso.Core.ExtractResult]::FailedExtractResult($_);
 	}
 	
-	[Proviso.Core.PropertyReadResult]$read = New-Object Proviso.Core.PropertyReadResult(($Property.Name), ($Property.DisplayFormat), $extract);
+	[Proviso.Core.PropertyReadResult]$read = New-Object Proviso.Core.PropertyReadResult(($Property.Name), ($Property.Display), $extract);
 	$Results.PropertyReadResults.Add($read);
 	# TODO: if $Results is ... SurfaceXXX (vs FacetXXX) ... add $read to list of SURFACE-level $Props... 
 	# TODO: if $Results is ... RunbookXXX (vs FacetXXX) ... ad $read to list of RUNBOOK-level $props... 

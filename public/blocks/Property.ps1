@@ -56,7 +56,7 @@ function Property {
 		[string]$Impact = "None",
 		[switch]$Skip = $false,
 		[string]$Ignore = $null,
-		[string]$DisplayFormat = $null,
+		[string]$Display = $null,
 		[object]$Expect,
 		[object]$Extract,
 		[Alias('PreventConfig', 'PreventConfiguration', 'DisableConfig')]
@@ -79,7 +79,7 @@ function Property {
 		
 		Set-Declarations $currentProperty -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
 						 -Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -NoConfig:$NoConfig `
-						 -ThrowOnConfigure $ThrowOnConfigure -DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
+						 -ThrowOnConfigure $ThrowOnConfigure -Display $Display -Verbose:$xVerbose -Debug:$xDebug;
 		
 		# BIND:
 		switch ((Get-ParentBlockType)) {
