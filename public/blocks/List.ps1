@@ -1,19 +1,14 @@
 ﻿Set-StrictMode -Version 1.0;
 
-<#
-	Wrapper for globally defined (re-usable) properties. 
-
-#>
-
-
-function Properties {
+function List {
 	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Named')]
-		[string]$Name,
-		[Parameter(Mandatory, Position = 1, ParameterSetName = 'Named')]
+		[string]$Name = $null,
+		
+		[Parameter(Position = 1, ParameterSetName = 'Named')]
 		[parameter(Mandatory, Position = 0, ParameterSetName = 'Anonymous')]
-		[ScriptBlock]$PropertiesBlock
+		[ScriptBlock]$ListBlock
 	);
 	
 	begin {
@@ -24,11 +19,12 @@ function Properties {
 	};
 	
 	process {
-		
-		& $PropertiesBlock;
+		# SET:
+		Write-Debug "$(Get-DebugIndent)   Binding List to Membership.";
+		$currentMembership.SetListBlock($ListBlock);
 	};
 	
 	end {
-		Exit-Block $MyInvocation.MyCommand -Name $null -Verbose:$xVerbose -Debug:$xDebug;
+		Exit-Block $MyInvocation.MyCommand -Name $Name -Verbose:$xVerbose -Debug:$xDebug;
 	};
 }

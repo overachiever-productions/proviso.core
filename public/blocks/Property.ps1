@@ -19,8 +19,7 @@
 			}
 			Property "Test Prop 2" -TargetPath "EmailAddress" -ModelPath "email" -Skip {
 			}
-#			Cohort "Cohort 1" {
-#
+#			Collection "Cohort 1" {
 #			}
 		}
 
@@ -31,7 +30,8 @@
 		}
 	}
 
-	$facet = $global:PvBlockStore.GetFacetByName("Global_Basic", "");
+	$facet = Get-Facet -Name "Global_Basic";
+	#$facet = $global:PvBlockStore.GetFacetByName("Global_Basic", "");
 	write-host "Properties Count: $($facet.Properties.Count) "
 	
 	foreach($p in $facet.Properties) {
@@ -56,7 +56,7 @@ function Property {
 		[string]$Impact = "None",
 		[switch]$Skip = $false,
 		[string]$Ignore = $null,
-		[string]$DisplayFormat = $null,
+		[string]$Display = $null,
 		[object]$Expect,
 		[object]$Extract,
 		[Alias('PreventConfig', 'PreventConfiguration', 'DisableConfig')]
@@ -75,21 +75,20 @@ function Property {
 	};
 	
 	process {
-		$currentProperty = New-Object Proviso.Core.Models.Property($Name, ([Proviso.Core.FacetParentType](Get-ParentBlockType)), (Get-ParentBlockName));
+		$currentProperty = New-Object Proviso.Core.Models.Property($Name, ([Proviso.Core.PropertyParentType](Get-ParentBlockType)), (Get-ParentBlockName));
 		
 		Set-Declarations $currentProperty -BlockType ($MyInvocation.MyCommand) -ModelPath $ModelPath -TargetPath $TargetPath `
 						 -Impact $Impact -Skip:$Skip -Ignore $Ignore -Expect $Expect -Extract $Extract -NoConfig:$NoConfig `
-						 -ThrowOnConfigure $ThrowOnConfigure -DisplayFormat $DisplayFormat -Verbose:$xVerbose -Debug:$xDebug;
+						 -ThrowOnConfigure $ThrowOnConfigure -Display $Display -Verbose:$xVerbose -Debug:$xDebug;
 		
 		# BIND:
 		switch ((Get-ParentBlockType)) {
 			"Properties" {
 				Write-Debug "$(Get-DebugIndent)	NOT Binding Property: [$($currentProperty.Name)] to parent, because parent is a Properties wrapper.";
 			}
-			"Cohort" {
-				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($currentProperty.Name)] to Cohort: [$($currentProperty.ParentName)] - within grandparent named: [$($currentCohort.ParentName)].";
-				
-				$currentCohort.AddCohortProperty($currentProperty);
+			"Members" {
+				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($currentProperty.Name)] to Collection: [$($currentCollection.Name)] - within grandparent named: [$($currentCollection.ParentName)].";
+				$currentCollection.AddMemberProperty($currentProperty);
 			}
 			"Facet" {
 				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($currentProperty.Name)] to Facet, named: [$($currentProperty.ParentName)], with grandparent named: [$grandParentName].";

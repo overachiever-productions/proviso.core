@@ -1,10 +1,10 @@
 ﻿namespace Proviso.Core
 {
-    public enum EnumeratorParentType
-    {
-        Enumerators,
-        Cohort
-    }
+    //public enum EnumeratorParentType
+    //{
+    //    Enumerators,
+    //    Collection
+    //}
 
     public enum FacetParentType
     {
@@ -43,11 +43,11 @@
         Explicit
     }
 
-    public enum ModalityType
-    {
-        Enumerator,
-        Iterator
-    }
+    //public enum ModalityType
+    //{
+    //    Enumerator,
+    //    Iterator
+    //}
 
     public enum OperationType
     {
@@ -59,8 +59,7 @@
     public enum PropertyParentType
     {
         Properties, 
-        Cohorts,
-        Cohort, 
+        Members, 
         Facet, 
         Pattern
     }
@@ -75,10 +74,10 @@
 
     public enum PropertyType
     {
-        Cohort,
+        Collection,
         Inclusion,
         Property, 
-        VirtualCohort, 
+        //VirtualCollection, 
         VirtualProperty
     }
 

@@ -10,7 +10,7 @@
 						<CustomItem>
 							<Text>  </Text>
 							<ExpressionBinding>
-								<ScriptBlock>$PvFormatter.BoundedString($_.GetPropertyName(), 40)</ScriptBlock>
+								<ScriptBlock>$PvFormatter.BoundedString($_.GetPropertyDisplayName(), 40)</ScriptBlock>
                             </ExpressionBinding>
 							<Text>   </Text>
 							<ExpressionBinding>
