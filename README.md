@@ -12,15 +12,25 @@ It's still 'early days' - so this roadmap is a guestimate at this point.
     - 0.4.4 - Results-Handling (for Read/Test/Invoke of simple blocks).
     - 0.4.5 - Custom Results Formatting/output (MVP).
     - 0.4.6 - Miscellaneous Tweaks/Improvements.
-    - 0.4.7 - Addition of Cohorts.
-    - 0.4.8 - Addition of Patterns.
-    - 0 4.9 - Injection of Context Properties (for code-interaction).
-- 0.5 - Expansion of Core Functionality
-    - 0.5.0 - Expect + Compare Functionality (MVP - for Facets/Patterns).
-    - 0.5.1 - Surfaces.
-    - 0.5.2 - etc.
+    - 0.4.7 - Addition of Collections.
+    - 0 4.8 - $Context + Context.<STATE> (for code-interaction).
+    - 0.4.9 - Display Formatting (output/results).
+- 0.5 - Finalize Core Architecture
+    - 0.5.0 - Remoting / -TargetServers.
+    ?
+    - 0.5.3 - Patterns (Iterators).
+    - 0.5.4 - Expect (vs merely extract).
+    - 0.5.5 - Compare (and comparison types)
+    - 0.5.6 - Configure. 
+    - 0.5.7 - Add/Remove vs Configure.
+    - 0.5.8 - Initialize/Finalize. 
+- 0.6 - Expansion of Features/Capabilities
+    - 0.6.0 - Surfaces.
+    - 0.6.1 - Asserts. 
+    - 0.6.2 - Core/Basic/Canned Assertions. + Assertion scaffolding.
+    - 0.6.5 - Runbooks.
 
-- 0.6 - Config Scaffolding/Proxies
-- 0.7 - Secrets, Assertions/Setups/Cleanups supported. 
+- 0.7 - Config Scaffolding/Proxies
+- 0.8 - Secrets, Assertions/Setups/Cleanups supported. 
 - 0.9 - Docs. 
 - 1.0 - Perf-Testing, Bug-Fixes, etc for viable v1 release. 
