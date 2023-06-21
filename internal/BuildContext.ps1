@@ -121,7 +121,7 @@ function Set-Declarations {
 		[string]$Impact = "None",
 		[switch]$Skip = $false,
 		[string]$Ignore = $null,
-		[string]$DisplayFormat = $null,
+		[string]$Display = $null,
 		[object]$Expect = $null,
 		[object]$Extract = $null,
 		[switch]$NoConfig = $false,
@@ -147,6 +147,10 @@ function Set-Declarations {
 	
 	if ($Impact -ne "None") {
 		$iDeclarable.SetImpact(([Proviso.Core.Impact]$Impact));
+	}
+	
+	if ($Display) {
+		$iDeclarable.SetDisplay($Display);
 	}
 	
 	if ($Expect) {

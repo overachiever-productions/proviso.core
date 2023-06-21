@@ -84,22 +84,33 @@ namespace Proviso.Core
         public DateTime End { get; set; }
 
         public string PropertyName { get; set; }
-        public string DisplayFormat { get; set; }
+        public string Display { get; set; }
         //public PropertyPipelineProcessingOutcome Outcome { get; set; }
 
         public ExtractResult ExtractionResult { get; set; }
 
-        public PropertyReadResult(string name, string format, ExtractResult result)
+        public PropertyReadResult(string name, string display, ExtractResult result)
         {
             this.PropertyName = name;
-            this.DisplayFormat = format;
+            this.Display = display;
             this.ExtractionResult = result;
         }
 
-        public string GetPropertyName()
+        public string GetPropertyDisplayName()
         {
-            // TODO: Implement DislapyFormat functionality... 
-            return this.PropertyName;
+            // So, this'll be a bit messy. 
+            //      this IS the place to get the .Display ... only:
+            //      1) it might not be set - in which case, easy-peasy, we just output the PropertyName. 
+            //      2) it MIGHT have 'tokens' or place-holders in it. 
+            //          in which case, this object (the prop-read-result probably has 'no idea' of the context of those operations). 
+            //          so, it probably makes more sense to run whatever DISPLAY value we get from this func... through 
+            //              a wrapper/helper func within the Formatter itself. 
+            //                  something that can check for 'tokens', and replace them with $PvContext.XXXX as needed.
+
+            if (string.IsNullOrWhiteSpace(this.Display))
+                return this.PropertyName;
+
+            return this.Display;
         }
 
         public string GetReadDetail()
@@ -143,7 +154,7 @@ namespace Proviso.Core
         //      i.e., it's more streamlined and less 'complex' than surface/runbook operations... 
         public string GetFacetName()
         {
-            // TODO: implement .DisplayFormat functionality if/when present. 
+            // TODO: implement .Display functionality if/when present. 
             return this.FacetName;
         }
     }

@@ -74,6 +74,10 @@ function Execute-Pipeline {
 		#region Validation 
 		Write-Debug "	Starting Pipeline Validations.";
 		
+# GEDANKEN: If $currentWhatzit.HasCohorts... then... verify that we've got a legit Enumerate, Add, Remove (for whatever kind of operation we're running now). 
+# 		arguably, some of these validations would have been tackled during registration..
+		
+		
 		# NOTE: no need to evaluate the verb for READs - we'll ALWAYS at LEAST do READ (can't Test (Compare) or Invoke (Configure) without READ-ing).
 		TrySet-TargetAsImplicitExtractForNonExplicitExtractProperties -Surfaces $surfaces -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 		
@@ -150,18 +154,53 @@ function Execute-Pipeline {
 						# TODO: additional context info/setup... 
 
 						
-						if ($property.IsCohort) {
-			Write-Host "I'm a cohort... "
-							foreach ($nestedProperty in $property.Properties) {
-								Process-PropertyOperations -Verb $Verb -Property $nestedProperty -Results $results `
-									-Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+						if ($property.IsCollection) {
+							Write-Debug "			Processing Collection.";
+							
+							# TODO: i'm always going to read ... which is the same as processing of Extract. 
+							# 		only... while Extract => List... 
+							# 		do I want to do my 'foreach' down below against ... the List{} or agaisnt the define{}?
+							# 			seems like the DEFINE would make more sense - unless ... the verb is READ. 
+							# 			yeah. it's verb dependent. sigh. 
+							# 			IF the verb is Read ... then I can ONLY enumerate what's there... (er... wait... so confused)
+							# 			but, if the verb is Test/Invoke then ... i need to see the Define... 							
+							$enumerator = $property.Membership.List;
+							
+							try {
+								Write-Debug "				Enumerating Collection Members.";
+								$enumeratorValues = & $enumerator;
+								Write-Debug "				  Enumeration of Collection Members Complete. Found $($enumeratorValues.Count) members.";
 							}
+							catch {
+								Write-Host "I need better error handling... but, this is a failure that happened in ... getting List{} results from Membership: $_ ";
+							}
+							
+							if ($enumeratorValues.Count -le 1) {
+								throw "List failed... didn't get 1 or more results..";
+							}
+							
+							foreach ($currentValue in $enumeratorValues) {
+								Write-Debug "					Setting Context Data for Current Collection Member/Members.";
+								Set-PvContext_CollectionData -Members $enumeratorValues -CurrentMember $currentValue;
+								
+								foreach ($nestedProperty in $property.Properties) {
+									if (-not $nestedProperty.Display) {
+										$defaultEnumeratedPropertyDisplay = "$($nestedProperty.Name)::$($currentValue)";  # vNEXT: use equivalent of string.format ... (i.e., "{0}{1}") and allow a GLOBAL preference here for something like $PvPreferences.DefaultCollectionPropertiesFormatThingy = "{0}.{1}" ... or whatever. 
+										$nestedProperty.SetDisplay($defaultEnumeratedPropertyDisplay);
+									}
+									
+									Process-PropertyOperations -Verb $Verb -Property $nestedProperty -Results $results `
+															   -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+								}
+								
+								Remove-PvContext_CollectionData;
+							}
+							
 						}
 						else {
 							Process-PropertyOperations -Verb $Verb -Property $property -Results $results `
-								-Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+													   -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 						}
-						
 						
 						# free-up/clear any context info as needed. 
 					}
@@ -259,7 +298,7 @@ function Process-PropertyOperations {
 		[Proviso.Core.ExtractResult]$extract = [Proviso.Core.ExtractResult]::FailedExtractResult($_);
 	}
 	
-	[Proviso.Core.PropertyReadResult]$read = New-Object Proviso.Core.PropertyReadResult(($Property.Name), ($Property.DisplayFormat), $extract);
+	[Proviso.Core.PropertyReadResult]$read = New-Object Proviso.Core.PropertyReadResult(($Property.Name), ($Property.Display), $extract);
 	$Results.PropertyReadResults.Add($read);
 	# TODO: if $Results is ... SurfaceXXX (vs FacetXXX) ... add $read to list of SURFACE-level $Props... 
 	# TODO: if $Results is ... RunbookXXX (vs FacetXXX) ... ad $read to list of RUNBOOK-level $props... 
@@ -295,7 +334,7 @@ function TrySet-TargetAsImplicitExtractForNonExplicitExtractProperties {
 	foreach ($surface in $Surfaces) {
 		foreach ($facet in $surface.Facets) {
 			foreach ($prop in $facet.Properties) {
-				if ($prop.IsCohort) {
+				if ($prop.IsCollection) {
 					foreach ($nestedProp in $prop.Properties) {
 						if (-not ($nestedProp.Extract)) {
 							if (Is-Empty $Target) {

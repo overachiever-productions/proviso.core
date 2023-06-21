@@ -25,7 +25,7 @@ filter Import-Types {
 		#"$ScriptRoot\clr\Proviso.Core\Definitions\BlockDefinitions.cs"
 		#"$ScriptRoot\clr\Proviso.Core\Mapper.cs"
 		
-		"$ScriptRoot\clr\Proviso.Core\Models\Enumerator.cs"
+		"$ScriptRoot\clr\Proviso.Core\Models\Membership.cs"
 		"$ScriptRoot\clr\Proviso.Core\Models\Iterator.cs"
 		
 		"$ScriptRoot\clr\Proviso.Core\Models\Properties.cs"

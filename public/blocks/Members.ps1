@@ -1,19 +1,19 @@
 ﻿Set-StrictMode -Version 1.0;
 
 <#
-	Wrapper for globally defined (re-usable) properties. 
+
+	Wrapper for Properties within a Collection.
 
 #>
 
-
-function Properties {
+function Members {
 	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Named')]
 		[string]$Name,
 		[Parameter(Mandatory, Position = 1, ParameterSetName = 'Named')]
 		[parameter(Mandatory, Position = 0, ParameterSetName = 'Anonymous')]
-		[ScriptBlock]$PropertiesBlock
+		[ScriptBlock]$MembersBlock
 	);
 	
 	begin {
@@ -25,7 +25,7 @@ function Properties {
 	
 	process {
 		
-		& $PropertiesBlock;
+		& $MembersBlock;
 	};
 	
 	end {

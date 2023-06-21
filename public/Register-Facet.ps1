@@ -13,47 +13,47 @@
 	Facets {
 		Facet "My First Facet" { 
 
-			Property "Count" -DisplayFormat "hmmm" {
+			Property "Count" -Display "hmmm" {
 				Extract {
 					return $global:target.Length;
 				}
-				Configure {
-					throw "not supported - and this could/should be in a -param.";
-				}
+#				Configure {
+#					throw "not supported - and this could/should be in a -param.";
+#				}
 			}
 
-			Cohort "Per Member" -DisplayFormat "should inherit 'down' to each child prop" -Expect $true {
-				Enumerate {
-					return $global:target;
-				}
-				Add {
-					#$global:target += uhhhhh. ... guess there could/should be some sort of context data here? 
-				}
-				Remove {
-					# yeah... remove what? 
-				}
-
-				# Inclusion goes here, right? 
-				# 			might even make sense to call Inclusion something like Membership { } 
-
-
-				Property "Is Upper Case" {
-					Extract {
-						# couple of ways to determin 'isUpperCase'. I don't REALLY care about that.
-						# 	I care about ... iterating over $context.enumerator.Current or whatever... 
-					}
-				}
-
-				Property "Is Vowel" {
-					Extract {
-						# return $context.whatever.current.EnumValue -in a,e,i,o,u (case insensitive)
-					}
-				}
-
-				Property "Should be Skipped" -Skip {
-					# add some code here... 
-				}
-			}
+#			Collection "Per Member" -Display "should inherit 'down' to each child prop" -Expect $true {
+##				Enumerate {
+##					return $global:target;
+##				}
+##				Add {
+##					#$global:target += uhhhhh. ... guess there could/should be some sort of context data here? 
+##				}
+##				Remove {
+##					# yeah... remove what? 
+##				}
+#
+#				# Inclusion goes here, right? 
+#				# 			might even make sense to call Inclusion something like Membership { } 
+#
+#
+#				Property "Is Upper Case" {
+#					Extract {
+#						# couple of ways to determin 'isUpperCase'. I don't REALLY care about that.
+#						# 	I care about ... iterating over $context.enumerator.Current or whatever... 
+#					}
+#				}
+#
+#				Property "Is Vowel" {
+#					Extract {
+#						# return $context.whatever.current.EnumValue -in a,e,i,o,u (case insensitive)
+#					}
+#				}
+#
+#				Property "Should be Skipped" -Skip {
+#					# add some code here... 
+#				}
+#			}
 
 			Property "Contains 'Cee'" -Expect $true { 
 				Extract {
@@ -123,26 +123,56 @@ function Register-Facet {
 		# 			d) if we're at NO properties at this point... 
 		# 				then ... create an ANONYMOUS property ... 
 		
+		[Proviso.Core.IProperty[]]$runtimeProperties = @();
 		if ($facet.Properties.Count -eq 0) {
 			$anonymousProp = New-Object Proviso.Core.Models.AnonymousProperty(([Proviso.Core.PropertyParentType]"Facet"), $facet.Name);
-			$facet.AddProperty($anonymousProp)
+			$runtimeProperties += $anonymousProp;
 		}
 		else {
-			# might need to iterate props here and ... find cohorts and ...expand them on up/into the parent or??? 
-			
-			# i.e., I can do something like this without too much effort: 
-			foreach ($p in $facet.Properties) {
-				if ($p.IsCohort) {
-					foreach ($pp in $p.Properties) {
-						Write-Host "i'm a nested property.";
+			foreach ($prop in $facet.Properties) {
+				if ($prop.IsCohort) {
+					foreach ($nestedProp in $prop.Properties) {
+						# TODO: I need to somehow know that this is a COHORT property ... as in, it belongs to a parent cohort, with ... details that can inherit/override 
+						# 			and so that I can use the Enumerate, Add, Remove ... as needed.... 
+						
+						# arguably... i could create some sort of .ToCohortProperty() something here... and add that into the array of runtime properties.
+						$runtimeProperties += $nestedProp;
+						
+						# GEDANKEN: 
+						# assume I create a CohortProperty() out of this nestedProp... 
+						# it would be: 
+						# 	- copy of all relevant property details. 
+						#   	- extract, compare, paths, impact, skip, throwOnConfig... 
+						# 		- display
+						# 		- parent... hmmm... parentType (yeah... cohort vs cohort's parent)
+						# 	- it would need to find/define/register: 
+						# 		- enumerate (script block) 
+						# 				if this didn't exist as a block and we had a -Members(hip) arg... we could build one. 
+						# 				if this didn't exist and there was a named Enumerator matching what was specified ... we'd load that 
+						# 		- add / remove (script blocks)
 					}
 				}
+				else {
+					$runtimeProperties += $prop;
+				}
 			}
-			# only... 	all'z the above does is iterate over these ... i need a cohesive, bundled/weaponized, implementation. 
-			
 		}
 		
+		$facet.ClearProperties();
+		foreach ($prop in $runtimeProperties) {
+			$facet.AddProperty($prop);
+		}
+		
+		
 		foreach ($prop in $facet.Properties) {
+#Write-Host "REGISTRATION STUFF FOR PROPERTY: [$($prop.Name)]"
+			# GEDANKEN
+			# 		IF $prop.IsCohortProp ... $parent = $prop.Cohort or whatever... 
+			# 		ELSE $parent = $facet ... 
+			# 			i.e., tackle some assignment operations here and ... go that route for inherit and override operations. 
+			# 		 	likewise... i could simply add another layer of abstraction to something like: Do-InheritanceAndOverrides -Parent $cohortOrFacetOrWhatever -Child $prop
+			# 				and IT would do all of the logic/calls below. 
+			
 			# INHERITANCE:
 			Inherit -Parent $facet -Child $prop -Property "Expect";
 			Inherit -Parent $facet -Child $prop -Property "Extract";

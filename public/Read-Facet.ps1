@@ -14,7 +14,7 @@
 
 	Facets {
 		Facet "My First Facet" { 
-			Property "Count" -DisplayFormat "hmmm" {
+			Property "Count" -Display "hmmm" {
 				Extract {
 					return $global:target.Length;
 				}
@@ -106,7 +106,7 @@ write-host "--------------------------------------------------"
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 
 	Facets {
-		Facet "Fake Firewall Facet" -TargetPath "Prop1" { 
+		Facet "Fake Firewall Facet" { 
 			Property "No Explicit Anything Prop" { }
 		}
 	}
@@ -124,7 +124,7 @@ write-host "--------------------------------------------------"
 	#	[PSCustomObject]@{ ObjectName = "Object 3" }
 	#);
 
-	Read-Facet "Fake Firewall Facet" -Targets $targetsObjects;
+#	Read-Facet "Fake Firewall Facet" -Targets $targetsObjects;
 #>
 
 <#
@@ -133,7 +133,7 @@ write-host "--------------------------------------------------"
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 
 	Facets {
-		Facet "Fake Firewall Facet" -TargetPath "Prop1" { 
+		Facet "Fake Firewall Facet" { 
 			Property "No Explicit Anything Prop" { }
 		}
 	}
