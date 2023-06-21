@@ -19,8 +19,7 @@
 			}
 			Property "Test Prop 2" -TargetPath "EmailAddress" -ModelPath "email" -Skip {
 			}
-#			Cohort "Cohort 1" {
-#
+#			Collection "Cohort 1" {
 #			}
 		}
 
@@ -31,7 +30,8 @@
 		}
 	}
 
-	$facet = $global:PvBlockStore.GetFacetByName("Global_Basic", "");
+	$facet = Get-Facet -Name "Global_Basic";
+	#$facet = $global:PvBlockStore.GetFacetByName("Global_Basic", "");
 	write-host "Properties Count: $($facet.Properties.Count) "
 	
 	foreach($p in $facet.Properties) {
@@ -86,10 +86,9 @@ function Property {
 			"Properties" {
 				Write-Debug "$(Get-DebugIndent)	NOT Binding Property: [$($currentProperty.Name)] to parent, because parent is a Properties wrapper.";
 			}
-			"Cohort" {
-				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($currentProperty.Name)] to Cohort: [$($currentProperty.ParentName)] - within grandparent named: [$($currentCohort.ParentName)].";
-				
-				$currentCohort.AddCohortProperty($currentProperty);
+			"Members" {
+				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($currentProperty.Name)] to Collection: [$($currentCollection.Name)] - within grandparent named: [$($currentCollection.ParentName)].";
+				$currentCollection.AddMemberProperty($currentProperty);
 			}
 			"Facet" {
 				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($currentProperty.Name)] to Facet, named: [$($currentProperty.ParentName)], with grandparent named: [$grandParentName].";

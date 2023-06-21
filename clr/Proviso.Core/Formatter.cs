@@ -61,12 +61,7 @@ namespace Proviso.Core
         public string BoundedString(string input, int length)
         {
             if (input == "$null")
-            {
-                if (this.HostSupportsColor)
-                    return $"{PSStyle.Instance.Foreground.BrightCyan}$null{PSStyle.Instance.Reset}";
-
-                return "$null";
-            }
+                return this.GetBoundedPowerShellNull(length);
 
             string cleaned = input.Trim();
             if (cleaned.Length > length)
@@ -75,6 +70,17 @@ namespace Proviso.Core
             string padding = new String(' ', length);
 
             return $"{cleaned}{padding}".Substring(0, length);
+        }
+
+        private string GetBoundedPowerShellNull(int length)
+        {
+            string output = "$null";
+            string padding = new String(' ', length);
+
+            if (this.HostSupportsColor)
+                output = $"{PSStyle.Instance.Foreground.BrightCyan}$null{PSStyle.Instance.Reset}";
+
+            return $"{output}{padding}".Substring(0, length);
         }
 
         //public string ToEmpty(string input)

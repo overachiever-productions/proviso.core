@@ -91,7 +91,7 @@ namespace Proviso.Core
                     Rootable = false,
                     Tracked = true,
                     AllowedParents = new List<string> { "Surface", "Aspect", "Facets" },  
-                    AllowedChildren = new List<string> { "Cohort", "Property" }
+                    AllowedChildren = new List<string> { "Collection", "Property" }
                 },
                 new Taxonomy
                 {
@@ -99,7 +99,7 @@ namespace Proviso.Core
                     Rootable = true,
                     Tracked = true,
                     AllowedParents = new List<string> { "Surface", "Aspect", "Facets" },  // "Facets" is block-name for global parents (but can be aliased as Patterns).  
-                    AllowedChildren = new List<string> { "Cohort", "Property" }
+                    AllowedChildren = new List<string> { "Collection", "Property" }
                 },
                 new Taxonomy
                 {
@@ -113,30 +113,56 @@ namespace Proviso.Core
                     AllowedParents = new List<string> { "Pattern", "Iterators"},
                     AllowedChildren = new List<string> { "Add", "Remove" }
                 },
+                //new Taxonomy
+                //{
+                //    NodeName = "Enumerator",
+                //    AllowedParents = new List<string> { "Cohort", "Enumerators" },
+                //    AllowedChildren = new List<string> { "Add", "Remove" }
+                //},
+                //new Taxonomy
+                //{
+                //    NodeName = "Enumerate",
+                //    RequiresName = false,
+                //    NameAllowed = true,  
+                //    Rootable = true,
+                //    AllowedParents = new List<string> { "Cohort" },
+                //    AllowedChildren = new List<string> { "Add", "Remove" }
+                //},
                 new Taxonomy
                 {
-                    NodeName = "Enumerator",
-                    AllowedParents = new List<string> { "Cohort", "Enumerators" },
-                    AllowedChildren = new List<string> { "Add", "Remove" }
+                    NodeName = "Membership", 
+                    RequiresName = false, 
+                    NameAllowed = true, 
+                    Rootable = false, 
+                    AllowedParents = new List<string> { "Collection" }, 
+                    AllowedChildren = new List<string> { "List", "Define", "Initialize", "Finalize", "Add", "Remove" }
                 },
                 new Taxonomy
                 {
-                    NodeName = "Enumerate",
+                    NodeName = "List", 
                     RequiresName = false,
-                    NameAllowed = true,  
-                    Rootable = true,
-                    AllowedParents = new List<string> { "Cohort" },
-                    AllowedChildren = new List<string> { "Add", "Remove" }
+                    NameAllowed = true, 
+                    Rootable = false, 
+                    AllowedParents = new List<string> { "Membership" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Members", 
+                    RequiresName = false,
+                    NameAllowed = true, 
+                    Rootable = false, 
+                    AllowedParents = new List<string>{ "Collection" }, 
+                    AllowedChildren = new List<string>{ "Property", "Inclusion"}
                 },
                 new Taxonomy
                 {
                     NodeName = "Add", 
-                    AllowedParents = new List<string> { "Pattern", "Cohort" }
+                    AllowedParents = new List<string> { "Pattern", "Collection" }
                 },
                 new Taxonomy
                 {
                     NodeName = "Remove",
-                    AllowedParents = new List<string> { "Pattern", "Cohort" }
+                    AllowedParents = new List<string> { "Pattern", "Collection" }
                 },
                 new Taxonomy
                 {
@@ -152,12 +178,12 @@ namespace Proviso.Core
                     Rootable = true,
                     AllowedChildren = new List<string>{ "Property" }
                 },
-                new Taxonomy
-                {
-                    NodeName = "Cohorts",
-                    Rootable = true,
-                    AllowedChildren = new List<string>{ "Cohort" }
-                },
+                //new Taxonomy
+                //{
+                //    NodeName = "Cohorts",
+                //    Rootable = true,
+                //    AllowedChildren = new List<string>{ "Cohort" }
+                //},
                 new Taxonomy
                 {
                     NodeName = "Facets",
@@ -181,15 +207,15 @@ namespace Proviso.Core
                 {
                     NodeName = "Property",
                     Tracked = true,
-                    AllowedParents = new List<string> { "Facet", "Pattern", "Cohort", "Properties" },
+                    AllowedParents = new List<string> { "Facet", "Pattern", "Members", "Properties" },
                     AllowedChildren = new List<string> { "Inclusion", "Expect", "Extract", "Compare", "Configure" }
                 },
                 new Taxonomy
                 {
-                    NodeName = "Cohort",
+                    NodeName = "Collection",
                     Tracked = true,
                     RequiresName = false,
-                    AllowedParents = new List<string> { "Facet", "Pattern", "Cohorts" },
+                    AllowedParents = new List<string> { "Facet", "Pattern" },
                     AllowedChildren = new List<string> { "Enumerate", "Property" }
                 }, 
                 new Taxonomy

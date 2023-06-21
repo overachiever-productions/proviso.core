@@ -1,49 +1,54 @@
 ﻿Set-StrictMode -Version 1.0;
 
+<#
+
+
+#>
+
 [PSCustomObject]$global:ProvisoContext = New-Object -TypeName PSCustomObject;
 $global:PvCurrent = $ProvisoContext;
 
-filter Set-EnumeratorData {
+filter Set-PvContext_CollectionData {
 	param (
 		[Object[]]$Members,
-		[Object]$CurrentValue
+		[Object]$CurrentMember
 	);
 	
-	if (($ProvisoContext.Properties -contains "Enumerator") -or ($null -ne $ProvisoContext.Enumerator)) {
-		Remove-EnumeratorData;
+	if (($ProvisoContext.Properties -contains "Collection") -or ($null -ne $ProvisoContext.Collection)) {
+		Remove-PvContext_CollectionData;
 	}
 	
-	$enumerator = @{
+	$collection = @{
 		Members = $Members
-		Value = $CurrentValue
+		Member = $CurrentMember
 	};
 	
-	Add-Member -InputObject $ProvisoContext -MemberType NoteProperty -Name Enumerator -Value $enumerator -Force;
+	Add-Member -InputObject $ProvisoContext -MemberType NoteProperty -Name Collection -Value $collection -Force;
 }
 
-filter Remove-EnumeratorData {
-	$ProvisoContext.PSObject.Properties.Remove('Enumerator');
+filter Remove-PvContext_CollectionData {
+	$ProvisoContext.PSObject.Properties.Remove('Collection');
 }
 
 <#
 
-	Set-EnumeratorData -Members @("one", "two", "four") -CurrentValue 'one';
-	Write-Host "All: $($PvCurrent.Enumerator.Members)";
-	Write-Host "	Current: $($PvCurrent.Enumerator.Value)";
+	Set-PvContext_CollectionData -Members @("one", "two", "four") -CurrentMember 'one';
+	Write-Host "All: $($PvCurrent.Collection.Members)";
+	Write-Host "	Current: $($PvCurrent.Collection.Member)";
 
 	Write-Host "-------------------------------------------"
-	Set-EnumeratorData -Members @("one", "two", "four") -CurrentValue 'two';
-	Write-Host "All: $($PvCurrent.Enumerator.Members)";
-	Write-Host "	Current: $($PvCurrent.Enumerator.Value)";
+	Set-PvContext_CollectionData -Members @("one", "two", "four") -CurrentMember 'two';
+	Write-Host "All: $($PvCurrent.Collection.Members)";
+	Write-Host "	Current: $($PvCurrent.Collection.Member)";
 
 	Write-Host "-------------------------------------------"
-	Set-EnumeratorData -Members @("one", "two", "four") -CurrentValue 'four';
-	Write-Host "All: $($PvCurrent.Enumerator.Members)";
-	Write-Host "	Current: $($PvCurrent.Enumerator.Value)";
+	Set-PvContext_CollectionData -Members @("one", "two", "four") -CurrentMember 'four';
+	Write-Host "All: $($PvCurrent.Collection.Members)";
+	Write-Host "	Current: $($PvCurrent.Collection.Member)";
 
 	Write-Host "-------------------------------------------"
-	Remove-EnumeratorData;
-	Write-Host "All: $($PvCurrent.Enumerator.Members)";
-	Write-Host "	Current: $($PvCurrent.Enumerator.Value)";
+	Remove-PvContext_CollectionData;
+	Write-Host "All: $($PvCurrent.Collection.Members)";
+	Write-Host "	Current: $($PvCurrent.Collection.Member)";
 
 #>

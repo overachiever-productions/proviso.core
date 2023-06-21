@@ -9,7 +9,7 @@ namespace Proviso.Core.Models
     {
         public PropertyParentType ParentType { get; }
         public PropertyType PropertyType { get; private set; }
-        public bool IsCohort { get; }
+        public bool IsCollection { get; }
         public bool IsVirtual { get; }
 
         public ScriptBlock Compare { get; set; }
@@ -20,7 +20,7 @@ namespace Proviso.Core.Models
             this.ParentType = parentType;
 
             this.PropertyType = PropertyType.Property;
-            this.IsCohort = false;
+            this.IsCollection = false;
             this.IsVirtual = false;
         }
 
@@ -36,29 +36,30 @@ namespace Proviso.Core.Models
         }
     }
 
-    public class Cohort : DeclarableBase, IProperty, IBuildValidated
+    public class Collection : DeclarableBase, IProperty, IBuildValidated
     {
         private List<IProperty> _properties = new List<IProperty>();
 
         public PropertyParentType ParentType { get; }
         public PropertyType PropertyType { get; }
-        public bool IsCohort { get; }
+        public bool IsCollection { get; }
         public bool IsVirtual { get; }
 
+        public Membership Membership { get; private set; }
         public List<IProperty> Properties => this._properties;
 
-        public Cohort(string name, PropertyParentType parentType, string parentName) : base(name, parentName)
+        public Collection(string name, PropertyParentType parentType, string parentName) : base(name, parentName)
         {
             this.ParentType = parentType;
 
-            this.PropertyType = PropertyType.Cohort;
-            this.IsCohort = true;
+            this.PropertyType = PropertyType.Collection;
+            this.IsCollection = true;
             this.IsVirtual = false;
         }
 
-        public void AddCohortProperty(IProperty added)
+        public void AddMemberProperty(IProperty added)
         {
-            if (added.IsCohort)
+            if (added.IsCollection)
                 throw new InvalidOperationException("Build Error. Cohorts may NOT be nested.");
 
             if (added.PropertyType == PropertyType.Inclusion)
@@ -74,18 +75,29 @@ namespace Proviso.Core.Models
             this._properties.Add(added);
         }
 
+        public void SetMembership(Membership concrete)
+        {
+            // TODO: I might need to reframe this method to allow IMembership - so'z I can pass in VIRTUAL memberships (i.e., promises)
+            //      vs what I have now - which is JUST the ability to specify concrete memberships.
+
+            this.Membership = concrete;
+        }
+
         public void Validate()
         {
-            // cohorts ... require a name or don't they? 
+            // might just be a check to see if we've got the right details for our Membership - i.e., if membership = -Strict/-Naive
+            //      do we have the right methods/blocks (e.g., we're always going to need a List{} block... 
+            //      and always going to need an Add{} block ... but only need a Remove{} block if -Strict 
+            //      and so on... 
         }
 
         public IProperty GetInstance()
         {
-            var output = (Cohort)this.MemberwiseClone();
+            var output = (Collection)this.MemberwiseClone();
 
             output.ClearProperties();
             foreach (IProperty prop in this.Properties)
-                output.AddCohortProperty(prop.GetInstance());
+                output.AddMemberProperty(prop.GetInstance());
 
             return output;
         }
@@ -105,7 +117,7 @@ namespace Proviso.Core.Models
     {
         public PropertyParentType ParentType { get; }
         public PropertyType PropertyType { get; }
-        public bool IsCohort { get; }
+        public bool IsCollection { get; }
         public bool IsVirtual { get; }
 
         // TODO: possibly add public ScriptBlock Compare ... 
@@ -117,7 +129,7 @@ namespace Proviso.Core.Models
 
             this.PropertyType = PropertyType.Property;
             this.IsVirtual = false; // false != anonymous
-            this.IsCohort = false;
+            this.IsCollection = false;
         }
 
         public IProperty GetInstance()
@@ -132,7 +144,7 @@ namespace Proviso.Core.Models
         public string ParentName { get; }
         public PropertyParentType ParentType { get; }
         public PropertyType PropertyType { get; }
-        public bool IsCohort { get; }
+        public bool IsCollection { get; }
         public bool IsVirtual { get; }
 
         public VirtualProperty(string name, string parentName, PropertyParentType parentType)
@@ -142,7 +154,7 @@ namespace Proviso.Core.Models
             this.ParentType = parentType;
 
             this.PropertyType = PropertyType.VirtualProperty;
-            this.IsCohort = false;
+            this.IsCollection = false;
             this.IsVirtual = false;
         }
 
@@ -152,29 +164,29 @@ namespace Proviso.Core.Models
         }
     }
 
-    public class VirtualCohort : IProperty
-    {
-        public string Name { get; }
-        public string ParentName { get; }
-        public PropertyParentType ParentType { get; }
-        public PropertyType PropertyType { get; }
-        public bool IsCohort { get; }
-        public bool IsVirtual { get; }
+    //public class VirtualCohort : IProperty
+    //{
+    //    public string Name { get; }
+    //    public string ParentName { get; }
+    //    public PropertyParentType ParentType { get; }
+    //    public PropertyType PropertyType { get; }
+    //    public bool IsCollection { get; }
+    //    public bool IsVirtual { get; }
 
-        public VirtualCohort(string name, string parentName, PropertyParentType parentType)
-        {
-            this.Name = name;
-            this.ParentName = parentName;
-            this.ParentType = parentType;
+    //    public VirtualCohort(string name, string parentName, PropertyParentType parentType)
+    //    {
+    //        this.Name = name;
+    //        this.ParentName = parentName;
+    //        this.ParentType = parentType;
 
-            this.PropertyType = PropertyType.VirtualCohort;
-            this.IsCohort = true;
-            this.IsVirtual = true;
-        }
+    //        this.PropertyType = PropertyType.VirtualCohort;
+    //        this.IsCollection = true;
+    //        this.IsVirtual = true;
+    //    }
 
-        public IProperty GetInstance()
-        {
-            throw new NotImplementedException();
-        }
-    }
+    //    public IProperty GetInstance()
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+    //}
 }

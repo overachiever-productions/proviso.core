@@ -154,8 +154,46 @@ function Execute-Pipeline {
 						# TODO: additional context info/setup... 
 
 						
-						if ($property.IsCohort) {
-			Write-Host "I'm a cohort... ";
+						if ($property.IsCollection) {
+							Write-Debug "			Processing Collection.";
+							
+							# TODO: i'm always going to read ... which is the same as processing of Extract. 
+							# 		only... while Extract => List... 
+							# 		do I want to do my 'foreach' down below against ... the List{} or agaisnt the define{}?
+							# 			seems like the DEFINE would make more sense - unless ... the verb is READ. 
+							# 			yeah. it's verb dependent. sigh. 
+							# 			IF the verb is Read ... then I can ONLY enumerate what's there... (er... wait... so confused)
+							# 			but, if the verb is Test/Invoke then ... i need to see the Define... 							
+							$enumerator = $property.Membership.List;
+							
+							try {
+								Write-Debug "				Enumerating Collection Members.";
+								$enumeratorValues = & $enumerator;
+								Write-Debug "				  Enumeration of Collection Members Complete. Found $($enumeratorValues.Count) members.";
+							}
+							catch {
+								Write-Host "I need better error handling... but, this is a failure that happened in ... getting List{} results from Membership: $_ ";
+							}
+							
+							if ($enumeratorValues.Count -le 1) {
+								throw "List failed... didn't get 1 or more results..";
+							}
+							
+							foreach ($currentValue in $enumeratorValues) {
+								Write-Debug "					Setting Context Data for Current Collection Member/Members.";
+								Set-PvContext_CollectionData -Members $enumeratorValues -CurrentMember $currentValue;
+								
+								# TODO: I'm almost positive that -Target doesn't change here... 
+								foreach ($nestedProperty in $property.Properties) {
+									
+									
+									
+									Process-PropertyOperations -Verb $Verb -Property $nestedProperty -Results $results `
+															   -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+								}
+								Remove-PvContext_CollectionData;
+							}
+							
 							
 							# TODO: actually... don't just loop through each nestedProperty in $property.Properties.
 							# instead: a) get the 'enumerate' for this cohort ... 
@@ -170,14 +208,14 @@ function Execute-Pipeline {
 							# 		might make sense to do $PvContext.CurrentCohort.Members and $Context.Current.Cohort.Current.Member or whatever... 
 							# 		i.e., need some way of accessing ALL members, and ... the current/iterated/enumerated member.
 							
-							foreach ($nestedProperty in $property.Properties) {
-								Process-PropertyOperations -Verb $Verb -Property $nestedProperty -Results $results `
-									-Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
-							}
+#							foreach ($nestedProperty in $property.Properties) {
+#								Process-PropertyOperations -Verb $Verb -Property $nestedProperty -Results $results `
+#									-Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+#							}
 						}
 						else {
 							Process-PropertyOperations -Verb $Verb -Property $property -Results $results `
-								-Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+													   -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 						}
 						
 						
@@ -313,7 +351,7 @@ function TrySet-TargetAsImplicitExtractForNonExplicitExtractProperties {
 	foreach ($surface in $Surfaces) {
 		foreach ($facet in $surface.Facets) {
 			foreach ($prop in $facet.Properties) {
-				if ($prop.IsCohort) {
+				if ($prop.IsCollection) {
 					foreach ($nestedProp in $prop.Properties) {
 						if (-not ($nestedProp.Extract)) {
 							if (Is-Empty $Target) {

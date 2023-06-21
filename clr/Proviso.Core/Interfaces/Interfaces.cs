@@ -58,7 +58,7 @@ namespace Proviso.Core
         string ParentName { get; }
         PropertyParentType ParentType { get; }
         PropertyType PropertyType { get; }
-        bool IsCohort { get; }
+        bool IsCollection { get; }
         bool IsVirtual { get; }
 
         IProperty GetInstance();

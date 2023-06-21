@@ -17,43 +17,43 @@
 				Extract {
 					return $global:target.Length;
 				}
-				Configure {
-					throw "not supported - and this could/should be in a -param.";
-				}
+#				Configure {
+#					throw "not supported - and this could/should be in a -param.";
+#				}
 			}
 
-			Cohort "Per Member" -DisplayFormat "should inherit 'down' to each child prop" -Expect $true {
-				Enumerate {
-					return $global:target;
-				}
-				Add {
-					#$global:target += uhhhhh. ... guess there could/should be some sort of context data here? 
-				}
-				Remove {
-					# yeah... remove what? 
-				}
-
-				# Inclusion goes here, right? 
-				# 			might even make sense to call Inclusion something like Membership { } 
-
-
-				Property "Is Upper Case" {
-					Extract {
-						# couple of ways to determin 'isUpperCase'. I don't REALLY care about that.
-						# 	I care about ... iterating over $context.enumerator.Current or whatever... 
-					}
-				}
-
-				Property "Is Vowel" {
-					Extract {
-						# return $context.whatever.current.EnumValue -in a,e,i,o,u (case insensitive)
-					}
-				}
-
-				Property "Should be Skipped" -Skip {
-					# add some code here... 
-				}
-			}
+#			Collection "Per Member" -DisplayFormat "should inherit 'down' to each child prop" -Expect $true {
+##				Enumerate {
+##					return $global:target;
+##				}
+##				Add {
+##					#$global:target += uhhhhh. ... guess there could/should be some sort of context data here? 
+##				}
+##				Remove {
+##					# yeah... remove what? 
+##				}
+#
+#				# Inclusion goes here, right? 
+#				# 			might even make sense to call Inclusion something like Membership { } 
+#
+#
+#				Property "Is Upper Case" {
+#					Extract {
+#						# couple of ways to determin 'isUpperCase'. I don't REALLY care about that.
+#						# 	I care about ... iterating over $context.enumerator.Current or whatever... 
+#					}
+#				}
+#
+#				Property "Is Vowel" {
+#					Extract {
+#						# return $context.whatever.current.EnumValue -in a,e,i,o,u (case insensitive)
+#					}
+#				}
+#
+#				Property "Should be Skipped" -Skip {
+#					# add some code here... 
+#				}
+#			}
 
 			Property "Contains 'Cee'" -Expect $true { 
 				Extract {
@@ -165,7 +165,7 @@ function Register-Facet {
 		
 		
 		foreach ($prop in $facet.Properties) {
-Write-Host "REGISTRATION STUFF FOR PROPERTY: $($prop.Name)"
+#Write-Host "REGISTRATION STUFF FOR PROPERTY: [$($prop.Name)]"
 			# GEDANKEN
 			# 		IF $prop.IsCohortProp ... $parent = $prop.Cohort or whatever... 
 			# 		ELSE $parent = $facet ... 
