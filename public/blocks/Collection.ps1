@@ -24,7 +24,7 @@ $global:LocalAdmins = @("Administrator", "BUILTIN\Admins");
 					Property "Account Exists" -Expect $true {
 						Extract {
 							$target = $PvCurrent.Collection.Member;
-							write-host "checking to see if [$target] is a member of [$($global:LocalUsers)]";
+							#write-host "checking to see if [$target] is a member of [$($global:LocalUsers)]";
 							
 							return $global:LocalUsers -contains $target;
 		
