@@ -14,11 +14,11 @@ It's still 'early days' - so this roadmap is a guestimate at this point.
     - 0.4.6 - Miscellaneous Tweaks/Improvements.
     - 0.4.7 - Addition of Collections.
     - 0 4.8 - $Context + Context.<STATE> (for code-interaction).
-    - 0.4.9 - Display Formatting (output/results).
+    - 0.4.9 - Display Tokens / Formatting (output).
 - 0.5 - Finalize Core Architecture
-    - 0.5.0 - Remoting / -TargetServers.
+    - 0.5.0 - Patterns (Iterators).
+    - 0.5.1 - Remoting / -TargetServers.
     ?
-    - 0.5.3 - Patterns (Iterators).
     - 0.5.4 - Expect (vs merely extract).
     - 0.5.5 - Compare (and comparison types)
     - 0.5.6 - Configure. 
