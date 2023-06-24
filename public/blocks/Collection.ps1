@@ -11,8 +11,8 @@ $global:LocalAdmins = @("Administrator", "BUILTIN\Admins");
 	
 	Facets {
 		Facet "Local Administrators" {
-			Collection -ModelPath "Host\LocalAdministrators" {
-				Membership -Naive {
+			Collection "Dingus" -ModelPath "Host\LocalAdministrators" {
+				Membership -Strict {
 					List {
 						return $global:LocalAdmins;					
 					} 
@@ -23,17 +23,14 @@ $global:LocalAdmins = @("Administrator", "BUILTIN\Admins");
 				Members {
 					Property "Account Exists" -Expect $true {
 						Extract {
-							$target = $PvCurrent.Collection.Member;
-							write-host "checking to see if [$target] is a member of [$($global:LocalUsers)]";
-							
+							$target = $PVCurrent.Collection.CurrentMember;
+
 							return $global:LocalUsers -contains $target;
-		
 						}
 					}
 					Property "Is Local Admin" -Expect $true {
 						Extract {
-							$target = $PvCurrent.Collection.Member;
-							write-host "checking to see if [$target] is a member of [$($global:LocalAdmins)]";
+							$target = $PVCurrent.Collection.CurrentMember;
 							
 							return $global:LocalAdmins -contains $target;
 						}
@@ -67,9 +64,6 @@ function Collection {
 		
 		[switch]$UsesAdd = $false,
 		[switch]$UsesAddRemove = $false
-		
-		# TODO: account for -Naive and -Strict. 
-			# and NOTE: these aren't for the collection itself ... they 'inherit down (override)' the Membership's -Define and -List relationships
 		
 		# TODO: enable syntactic sugar options for -UsesMembership "Name of globally defined membership here" and -UsesStrictMembership "ditto - but strict."
 	);

@@ -340,11 +340,14 @@ function Process-ReadFacet {
 	process {
 		$instance = [Proviso.Core.Models.Facet]::GetInstance($Facet);
 		
-		$global:PvPipelineContext_CurentOperationName = "Read-Facet";  # TODO: turn this into an actual object...  ALTHOUGH... the pipeline can/will 'know' this via $Verb-$OperationType ... so, NOT needed.
+		Set-PvContext_OperationData -Verb Read -Noun Facet -BlockName ($instance.Name) -TargetServer $ServerName -Target $Target;
+		
 		$result = Execute-Pipeline -Verb "Read" -OperationType Facet -Block $instance -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 	};
 	
 	end {
+		Remove-PvContext_OperationData;
+		
 		return $result;
 	};
 }

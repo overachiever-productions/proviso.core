@@ -5,12 +5,33 @@ namespace Proviso.Core.Models
 {
     public class Membership
     {
-        public ScriptBlock List { get; private set; }
-
-
-        public Membership(string name, string parentName)
+        public string Name { get; private set; }
+        public string ParentName { get; private set; }
+        public bool IsStrict { get; private set; }
+        public bool SupportsRemove
         {
+            get
+            {
+                if (this.IsStrict)
+                {
+                    if (this.Remove != null)
+                        return true;
+                }
 
+                return false;
+            }
+        }
+
+        public ScriptBlock List { get; private set; }
+        public ScriptBlock Add { get; set; }
+        public ScriptBlock Remove { get; set; }
+        
+        public Membership(string name, string parentName, bool isStrict)
+        {
+            this.Name = name;
+            this.ParentName = parentName;
+
+            this.IsStrict = isStrict;
         }
 
         public void SetListBlock(ScriptBlock list)
