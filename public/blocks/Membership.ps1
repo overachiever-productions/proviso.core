@@ -14,15 +14,16 @@ function Membership {
 		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Named')]
 		[string]$Name = $null,
 		
-		[Parameter(Position = 1, ParameterSetName = 'Named')]
+		[Parameter(Mandatory, Position = 1, ParameterSetName = 'Named')]
 		[parameter(Mandatory, Position = 0, ParameterSetName = 'Anonymous')]
 		[ScriptBlock]$MembershipBlock,
 		
-		[Switch]$Naive = $true,
-		[Switch]$Strict = $false,
+#		[Switch]$Naive = $false,
+		
+		[Switch]$Strict = $false #,
 		
 		# TODO: this might not even make sense. It's implemented as a STRING for now.
-		[string]$OrderBy = $null 
+		#[string]$OrderBy = $null 
 	);
 	
 	begin {
@@ -33,15 +34,7 @@ function Membership {
 	};
 	
 	process {
-		if ($Naive -and $Strict) {
-			throw "ruh row!!";
-		}
-		
-		
-		$currentMembership = New-Object Proviso.Core.Models.Membership($Name, (Get-ParentBlockName));
-		
-		
-		
+		$currentMembership = New-Object Proviso.Core.Models.Membership($Name, (Get-ParentBlockName), $Strict);
 		
 		# STORE:
 		# TODO: if/when I allow 'global' Memberships (topologies?) ... then, a) the .ctor for Membership will need to know that parentType = "Memberships" and b) I'll need to store the current membership in the Build-Store.

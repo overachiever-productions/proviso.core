@@ -152,6 +152,9 @@ function Execute-Pipeline {
 					foreach ($property in $facet.Properties) { #note that at this point we'll always have 1 or more props, even if the prop in question is anonymous... 
 						
 						# TODO: additional context info/setup... 
+						# 		only... what could I need here? 
+						# 		I'm going to need: .extractedValue and .expectedValue for ... when property-code-blocks need this info...
+						# 			but, that's going to come down LATER.. (i.e., inside of the processing blocks down below)
 
 						
 						if ($property.IsCollection) {
@@ -181,7 +184,7 @@ function Execute-Pipeline {
 							
 							foreach ($currentValue in $enumeratorValues) {
 								Write-Debug "					Setting Context Data for Current Collection Member/Members.";
-								Set-PvContext_CollectionData -Members $enumeratorValues -CurrentMember $currentValue;
+								Set-PvContext_CollectionData -Name ($property.Name) -Membership ($property.Membership) -Members $enumeratorValues -CurrentMember $currentValue;
 								
 								foreach ($nestedProperty in $property.Properties) {
 									if (-not $nestedProperty.Display) {
