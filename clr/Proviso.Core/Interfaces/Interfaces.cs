@@ -120,13 +120,23 @@ namespace Proviso.Core
 
     public class DeclarableBase : IDeclarable
     {
+        private string _display;
+
         public string ParentName { get; private set; }
         public string Name { get; private set; }
         public string ModelPath { get; set; }
         public string TargetPath { get; set; }
         public bool Skip { get; private set; }
         public string SkipReason { get; private set; }
-        public string Display { get; private set; }
+
+        public string Display
+        {
+            get
+            {
+                return this._display ?? this.Name;
+            }
+        }
+
         public ScriptBlock Expect { get; set; }
         public ScriptBlock Extract { get; set; }
 
@@ -141,7 +151,7 @@ namespace Proviso.Core
         public void SetDisplay(string display)
         {
             if (!string.IsNullOrWhiteSpace(display))
-                this.Display = display;
+                this._display = display;
         }
 
         public void SetPaths(string model, string target)

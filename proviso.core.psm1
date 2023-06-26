@@ -25,7 +25,6 @@ foreach ($file in (@(Get-ChildItem -Path (Join-Path -Path $PSScriptRoot -ChildPa
 	}
 }
 
-
 foreach ($file in (@(Get-ChildItem -Path (Join-Path -Path $PSScriptRoot -ChildPath 'public/*.ps1') -Recurse -ErrorAction Stop))) {
 	try {
 		. $file.FullName;
