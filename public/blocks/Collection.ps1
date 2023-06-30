@@ -28,7 +28,7 @@ $global:LocalAdmins = @("Administrator", "BUILTIN\Admins");
 							return $global:LocalUsers -contains $target;
 						}
 					}
-					Property "Is Local Admin" -Expect $true {
+					Property "IsLocalAdmin" -Expect $true -Display "{{{COLLECTION.MEMBER}.{SELF}}}" {
 						Extract {
 							$target = $PVCurrent.Collection.CurrentMember;
 							

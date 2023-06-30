@@ -238,3 +238,109 @@ filter Override-ThrowOnConfig {
 		}
 	}
 }
+
+filter Extract-ValueFromObjectByPath {
+	param (
+		[Parameter(Mandatory)]
+		[Object]$Object,
+		[Parameter(Mandatory)]
+		[string]$Path
+	);
+	
+	$keys = $Path -split "\.";
+	$output = $null;
+	# this isn't SUPER elegant ... but it works (and perf is not an issue).
+	switch ($keys.Count) {
+		1 {
+			$output = $Object.($keys[0]);
+		}
+		2 {
+			$output = $Object.($keys[0]).($keys[1]);
+		}
+		3 {
+			$output = $Object.($keys[0]).($keys[1]).($keys[2]);
+		}
+		4 {
+			$output = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]);
+		}
+		5 {
+			$output = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]);
+		}
+		6 {
+			$output = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]);
+		}
+		7 {
+			$output = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]).($keys[6]);
+		}
+		8 {
+			$output = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]).($keys[6]).($keys[7]);
+		}
+		9 {
+			$output = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]).($keys[6]).($keys[7]).($keys[8]);
+		}
+		10 {
+			$output = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]).($keys[6]).($keys[7]).($keys[8]).($keys[9]);
+		}
+		default {
+			throw "Invalid Key. Too many key segments defined.";
+		}
+	}
+	
+	return $output;
+}
+
+filter Object-SupportsPropertyAtPathLevel {
+	param (
+		[Parameter(Mandatory)]
+		[Object]$Object,
+		[Parameter(Mandatory)]
+		[string]$Path
+	);
+	
+	# as with Extract-ValueFromObjectByPath, this isn't very elegant ... but it works and it's fine/fast.... 	
+	
+	$keys = $Path -split "\.";
+	$property = $keys[$keys.Count - 1];
+	try {
+		switch ($keys.Count) {
+			1 {
+				return $Object.PSObject.Properties -contains $property;
+			}
+			2 {
+				$child = $Object.($keys[0]);
+			}
+			3 {
+				$child = $Object.($keys[0]).($keys[1]);
+			}
+			4 {
+				$child = $Object.($keys[0]).($keys[1]).($keys[2]);
+			}
+			5 {
+				$child = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]);
+			}
+			6 {
+				$child = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]);
+			}
+			7 {
+				$child = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]);
+			}
+			8 {
+				$child = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]).($keys[6]);
+			}
+			9 {
+				$child = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]).($keys[6]).($keys[7]);
+			}
+			10 {
+				$child = $Object.($keys[0]).($keys[1]).($keys[2]).($keys[3]).($keys[4]).($keys[5]).($keys[6]).($keys[7]).($keys[8]);
+			}
+			default {
+				throw "Cannot process object support for path: [$Path]. Too many key segments defined.";
+			}
+		}
+		
+		return $child.PSObject.Properties.Name -contains $property;
+	}
+	catch {
+		return $false;
+	}
+}
