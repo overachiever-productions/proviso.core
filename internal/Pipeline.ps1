@@ -154,20 +154,19 @@ function Execute-Pipeline {
 				}
 				
 				foreach ($facet in $surface.Facets) {
+					
+					# TODO: ... if($facet.IsPattern)... then... get the iterator... 
+					# 			and fore each instance... loop through the pattern's properties.   (i.e., use Extract or Expect)
+					# 			Also. Might make sense to push the logic down below (i.e., the for-each prop) into a func... that'd ... do 'higher-level' stuff
+					# 			per each prop, then either do the prop OR each child prop via calls to Process-Property.
+					
 					# setup facet-level context info/details... 
 					# e.g., $global:PvContext.Facet.xxxx props and such. 
+					# and clear any $PVContext.get/setFacet-LevelStorage/State stuff as well. 
+					
 					
 					Write-Debug "		Iterating Properties...";
-					foreach ($property in $facet.Properties) { #note that at this point we'll always have 1 or more props, even if the prop in question is anonymous... 
-						
-						# TODO: additional context info/setup... 
-						# 		only... what could I need here? 
-						# 		I'm going to need: .extractedValue and .expectedValue for ... when property-code-blocks need this info...
-						# 			but, that's going to come down LATER.. (i.e., inside of the processing blocks down below)
-						
-						# NOTE: Child/Collection-Properties (if present) will override this context info down below:
-						Set-PvContext_PropertyData -PropertyName ($property.Name) -ParentName ($property.ParentName);
-						
+					foreach ($property in $facet.Properties) { 
 						if ($property.IsCollection) {
 							Write-Debug "			Processing Collection.";
 							
@@ -199,18 +198,17 @@ function Execute-Pipeline {
 								
 								foreach ($nestedProperty in $property.Properties) {
 									
-									# RESET/OVERRIDE current Property Context Data:
-									Set-PvContext_PropertyData -PropertyName ($nestedProperty.Name) -ParentName ($nestedProperty.ParentName);
-									
+									# TODO: look at moving this INTO `Process-Property` ... as in, i should be able to tell, inside that func, IF we're dealing with a CollectionProp or not. 
+									# 		i could, obviously, just check for $PVContext.Collection exists or ... not... OR, I could also, potentially, throw in ... an -IsCollectionProp switch or 
+									# 			whatever that'd be set in this path/fork/if to $true and to $false in the else? 
+									# 		the other thing I need to address is ... that I'll want/have-to? do something similar for iterator details too, right?
 									if (-not $nestedProperty.Display) {
-										$defaultEnumeratedPropertyDisplay = "$($nestedProperty.Name)::$($currentValue)";  # vNEXT: use equivalent of string.format ... (i.e., "{0}{1}") and allow a GLOBAL preference here for something like $PvPreferences.DefaultCollectionPropertiesFormatThingy = "{0}.{1}" ... or whatever. 
+										$defaultEnumeratedPropertyDisplay = "$($nestedProperty.Name)::$($currentValue)"; # vNEXT: use equivalent of string.format ... (i.e., "{0}{1}") and allow a GLOBAL preference here for something like $PvPreferences.DefaultCollectionPropertiesFormatThingy = "{0}.{1}" ... or whatever. 
 										$nestedProperty.SetDisplay($defaultEnumeratedPropertyDisplay);
 									}
 									
-									Process-PropertyOperations -Verb $Verb -Property $nestedProperty -Results $results `
+									Process-Property -Verb $Verb -Property $nestedProperty -Results $results `
 															   -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
-									
-									Remove-PvContext_PropertyData;
 								}
 								
 								Remove-PvContext_CollectionData;
@@ -218,13 +216,11 @@ function Execute-Pipeline {
 							
 						}
 						else {
-							Process-PropertyOperations -Verb $Verb -Property $property -Results $results `
+							Process-Property -Verb $Verb -Property $property -Results $results `
 													   -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 						}
-						
-						Remove-PvContext_PropertyData;
 					}
-					Write-Debug "		Property Iteration Complete.";
+					Write-Debug "		  Property Iteration Complete.";
 				}
 				
 				if ($surface.Cleanup) {
@@ -283,7 +279,7 @@ function Initialize-ResultsObject {
 	return New-Object Proviso.Core.FacetReadResult($name, $format);
 }
 
-function Process-PropertyOperations {
+function Process-Property {
 	[CmdletBinding()]
 	param (
 		[ValidateSet("Read", "Test", "Invoke")]
@@ -303,46 +299,57 @@ function Process-PropertyOperations {
 		[Object]$Target
 	);
 	
-	try {
-		$block = $Property.Extract;
-		[Object]$output = & $block;
-		
-		if ($null -eq $output) {
-			[Proviso.Core.ExtractResult]$extract = [Proviso.Core.ExtractResult]::NullResult();
-		}
-		else {
-			[Proviso.Core.ExtractResult]$extract = [Proviso.Core.ExtractResult]::SuccessfulExtractResult(($output.GetType().FullName), $output);
-		}
-	}
-	catch {
-		[Proviso.Core.ExtractResult]$extract = [Proviso.Core.ExtractResult]::FailedExtractResult($_);
+	begin {
+		Set-PvContext_PropertyData -PropertyName ($Property.Name) -ParentName ($Property.ParentName);
 	}
 	
-	[string]$tokenReplacedDisplay = Process-DisplayTokenReplacements -Display ($Property.Display);
+	process {
+		try {
+			$block = $Property.Extract;
+			[Object]$output = & $block;
+			
+			if ($null -eq $output) {
+				[Proviso.Core.ExtractResult]$extract = [Proviso.Core.ExtractResult]::NullResult();
+			}
+			else {
+				[Proviso.Core.ExtractResult]$extract = [Proviso.Core.ExtractResult]::SuccessfulExtractResult(($output.GetType().FullName), $output);
+			}
+		}
+		catch {
+			[Proviso.Core.ExtractResult]$extract = [Proviso.Core.ExtractResult]::FailedExtractResult($_);
+		}
 		
-	[Proviso.Core.PropertyReadResult]$read = New-Object Proviso.Core.PropertyReadResult(($Property.Name), $tokenReplacedDisplay, $extract);
-	$Results.PropertyReadResults.Add($read);
-	# TODO: if $Results is ... SurfaceXXX (vs FacetXXX) ... add $read to list of SURFACE-level $Props... 
-	# TODO: if $Results is ... RunbookXXX (vs FacetXXX) ... ad $read to list of RUNBOOK-level $props... 
-
-	if ($Verb -in ("Test", "Invoke")) {
-		# do compare stuff. 
-		# 	 specifically: 
-		# 		1. get Extract (or current/actual value)
-		# 		2. get Expect (the value we just got above ... and which should be in $PvContext.PRoperty.Current or whatever... )
-		# 		3. use the current property's .Compare block/func to determine if Extract(ed) and Expect(ed) are the same or not... 
-		# 		4. bundle-up/keep the results (along with any exceptions along the way)
-	}
-
-	if ("Invoke" -eq $Verb) {
-		# if the outcome of Test is not an exception (or even if it is?) and if the outcome of Test is ... NOT SAME... 
-		# then: 
-		# 		1. invoke current prop's .Configure{} block (in a try-catch)
-		# 		2. re-run extract
-		# 		3. re-compare against expect(ed)
-		# 		4. report on outcome/results/etc. 
+		# TODO: bind $output from above as $PVContext.Current.Property.ExtractValue or whatever... 
+		
+		[string]$tokenizedDisplay = Process-DisplayTokenReplacements -Display ($Property.Display) -Name ($Property.Name);
+		
+		[Proviso.Core.PropertyReadResult]$read = New-Object Proviso.Core.PropertyReadResult(($Property.Name), $tokenizedDisplay, $extract);
+		$Results.PropertyReadResults.Add($read);
+		# TODO: if $Results is ... SurfaceXXX (vs FacetXXX) ... add $read to list of SURFACE-level $Props... 
+		# TODO: if $Results is ... RunbookXXX (vs FacetXXX) ... ad $read to list of RUNBOOK-level $props... 
+		
+		if ($Verb -in ("Test", "Invoke")) {
+			# do compare stuff. 
+			# 	 specifically: 
+			# 		1. get Extract (or current/actual value)
+			# 		2. get Expect (the value we just got above ... and which should be in $PvContext.PRoperty.Current or whatever... )
+			# 		3. use the current property's .Compare block/func to determine if Extract(ed) and Expect(ed) are the same or not... 
+			# 		4. bundle-up/keep the results (along with any exceptions along the way)
+		}
+		
+		if ("Invoke" -eq $Verb) {
+			# if the outcome of Test is not an exception (or even if it is?) and if the outcome of Test is ... NOT SAME... 
+			# then: 
+			# 		1. invoke current prop's .Configure{} block (in a try-catch)
+			# 		2. re-run extract
+			# 		3. re-compare against expect(ed)
+			# 		4. report on outcome/results/etc. 
+		}
 	}
 	
+	end {
+		Remove-PvContext_PropertyData;
+	}
 }
 
 function Validate-PropertyDisplayTokens {

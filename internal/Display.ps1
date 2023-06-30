@@ -157,6 +157,8 @@ function Process-DisplayTokenReplacements {
 	param (
 		[Parameter(Mandatory)]
 		[string]$Display,
+		[Parameter(Mandatory)]
+		[string]$Name,     # used only if/when there's a failure in processing tokens within -Display
 		$Tokens = ($global:PVDisplayTokenizer.Tokens),  
 		$Context = ($global:PVContext.Current)
 	);
@@ -178,19 +180,26 @@ function Process-DisplayTokenReplacements {
 					$output = $output -replace $match, $replacementValue;
 				}
 				catch {
-					# doh... do, roughly, the same as the todo/else below... i.e., output something like !propertyname! ... vs whatever would have been here. 
+					# vNEXT: see the vNEXT commend below for else logic - about possibly adding in ... iterator/current-member and such... 
+					$problem = "EXCEPTION Processing Token: [$match] within -Display: [$Display]. Using !*`$Name*! as default -Display. Root Exception: `n$_";
+					Write-Debug $problem;
+					Write-Verbose $problem;
+					
+					# TODO: Look at possibly adding $_ to $PVContext.Current.Exceptions or ... whatever... (not via THROW... but as an exception detail that can 
+					# 		be easily reviewed by caller/user. THEN... make sure there's an [EX:#] as part of the -Display... so that if this was, say, EX:2 out of 
+					# 		whatever is being done, then EX:2. 'down below' properties and such could/would show the root exception.)
+					
+					$output = "!*$($Name)*!";
 				}
 			}
 			else {
-				# Pre-validation failed which... hmm. But, we don't have a matching token - ergo, no directive to tell us to do anything other than throw:
-				throw "TODO: there's a framework error-condition that needs to be handled gracefully-ish.";
-				# reason for not sure if it's a great idea to throw here is ... what if we're doing a configure - and got PART of the way through - or, hell
-				# 		all of the way through???? if that's the case... seems silly to throw errors and more-or-less 'stop everything' just cuz the display value
-				# 		is/was flubbed. 
-				# 	might make more sense to require the NAME of the PROPERTY in question + optional Instance + Member details
-				# 		and use THOSE here instead.... 
-				# 		e.g., instead of throw "it all comes crashing down"
-				# 			maybe jsut output "!MSSQLSERVER::Bilbo:IsAdmin!" ... 
+				# WEIRD. Pre-validation apparently failed. So, verbose + debug the info and ... send back a !placeholder!:
+				$problem = "WARNING: No matching token for: [$match] was found for -Display value of: [$Display]. Using !`$Name! as default -Display.";
+				Write-Debug $problem;
+				Write-Verbose $problem;
+				
+				# vNEXT: potentially look at including Iterator + Enumerator + name entries so that something like, say: "!MSSQLSERVER::Bilbo:Is Member of SysAdmins!" could be spit out (where the last 'chunk' of the example in question is the $Name)
+				$output = "!$($Name)!";
 			}
 		}
 	}
