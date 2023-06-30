@@ -1,8 +1,11 @@
 ﻿Set-StrictMode -Version 1.0;
 
 <#
-	Wrapper for globally defined (re-usable) properties. 
-
+	2 Locations / Uses:
+		A. Members of a Pattern (i.e., list of properties to apply against the Instances node)
+		B. Wrapper for globally defined (re-usable) properties. 
+			AND. I Might change this to GlobalProperties or ReusableProperties instead of mere 'Properties'.
+			either way, this is a vNEXT or a 'nah/never' kind of thing.
 #>
 
 

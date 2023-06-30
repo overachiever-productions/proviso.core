@@ -17,7 +17,8 @@ It's still 'early days' - so this roadmap is a guestimate at this point.
     - 0.4.9 - Display Tokens / Formatting (output).
 - 0.5 - Finalize Core Architecture
     - 0.5.0 - Patterns (Iterators).
-    - 0.5.1 - Remoting / -TargetServers.
+    - 0.5.1 - Additional Context + Refactoring and Unit Tests.
+    - 0.5.2 - Remoting / -TargetServers.
     ?
     - 0.5.4 - Expect (vs merely extract).
     - 0.5.5 - Compare (and comparison types)
