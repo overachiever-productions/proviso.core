@@ -26,6 +26,7 @@ filter Import-Types {
 		#"$ScriptRoot\clr\Proviso.Core\Mapper.cs"
 		
 		"$ScriptRoot\clr\Proviso.Core\Models\Membership.cs"
+		"$ScriptRoot\clr\Proviso.Core\Models\Instances.cs"
 		"$ScriptRoot\clr\Proviso.Core\Models\Iterator.cs"
 		
 		"$ScriptRoot\clr\Proviso.Core\Models\Properties.cs"

@@ -3,7 +3,16 @@ using System.Management.Automation;
 
 namespace Proviso.Core.Models
 {
-    public class Membership
+    // REFACTOR: I think that 'Instances' is probably the best name for the code-block within Proviso... 
+    //      there might be a better option like... InstanceMembership ... or something that denotes that we're specifying instances ... 
+    //      e.g., InstanceManagement or InstanceSpecifiers. (Though, honestly, InstanceMembership is probably closest). 
+    //      and... of course: ITERATOR might make the most sense. 
+    //  AT ANY RATE: while "Instances" makes sense for Proviso.Core PS code-blocks... 
+    //      it blows chunks for an 'object' name within C#... so... a) settle on a Posh block-name, b) posh-block name does NOT
+    //          have to have 1-to-1 (perfect) correspondence with whatever I call this 'thing' within C#...
+    // REFACTOR: Note, too, that this is roughly an IDENTICAL implementation (copy + paste + minor tweak) to the 
+    //      implementation for Membership(s).
+    public class Instances
     {
         public string Name { get; private set; }
         public string ParentName { get; private set; }
@@ -26,8 +35,8 @@ namespace Proviso.Core.Models
         public ScriptBlock Enumerate { get; private set; }  // Expect
         public ScriptBlock Add { get; set; }
         public ScriptBlock Remove { get; set; }
-        
-        public Membership(string name, string parentName, bool isStrict)
+
+        public Instances(string name, string parentName, bool isStrict)
         {
             this.Name = name;
             this.ParentName = parentName;
@@ -41,10 +50,4 @@ namespace Proviso.Core.Models
             this.List = list;
         }
     }
-
-    // TODO: create a 'virtual membership' for ... referenced or 'promised' memberships (i.e., re-usable/global) memberships.
-    //  e.g., if i have a collection:  Collection "my Collection" -UsersStrictMembership "LocalAdmins" ... 
-    //          then, "LocalAdmins" is presumed to be an extant/viable "membership" by the time that compilation/parsing is 
-    //          done - meaning that 'discovery' phase can/will be able to map/replace a 'virtualMembership' of "LocalAdmins" with ... 
-    //              the actual, global, definition.
 }

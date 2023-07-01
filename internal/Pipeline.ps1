@@ -32,7 +32,9 @@ function Execute-Pipeline {
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		
-		Write-Debug "Starting Pipeline Operations.";
+		Reset-PipelineDebugIndents;
+		
+		Write-Debug "$(Get-PipelineDebugIndent -Key "Root")Starting Pipeline Operations.";
 		Write-Verbose "Starting Pipeline Operations.";
 		
 		[bool]$isRunbook = $false;
@@ -68,11 +70,11 @@ function Execute-Pipeline {
 			}
 		}
 		catch {
-			Write-Debug "	Processing Pipeline: Exception During Setup: $($_.Exception.Message) -Stack: $($_.ScriptStackTrace)";
+			Write-Debug "$(Get-PipelineDebugIndent -Key "SetupException")Processing Pipeline: Exception During Setup: $($_.Exception.Message) -Stack: $($_.ScriptStackTrace)";
 			# TODO: implement this throw... stuff
 			throw "Processing Setup Exception: $_";
 		}
-		Write-Debug "	Pipeline Setup Operations Complete.";
+		Write-Debug "$(Get-PipelineDebugIndent -Key "SetupDone")Pipeline Setup Operations Complete.";
 		
 		#endregion
 		
@@ -155,72 +157,34 @@ function Execute-Pipeline {
 				
 				foreach ($facet in $surface.Facets) {
 					
-					# TODO: ... if($facet.IsPattern)... then... get the iterator... 
-					# 			and fore each instance... loop through the pattern's properties.   (i.e., use Extract or Expect)
-					# 			Also. Might make sense to push the logic down below (i.e., the for-each prop) into a func... that'd ... do 'higher-level' stuff
-					# 			per each prop, then either do the prop OR each child prop via calls to Process-Property.
-					
-					# setup facet-level context info/details... 
-					# e.g., $global:PvContext.Facet.xxxx props and such. 
-					# and clear any $PVContext.get/setFacet-LevelStorage/State stuff as well. 
-					
-					
-					Write-Debug "		Iterating Properties...";
-					foreach ($property in $facet.Properties) { 
-						if ($property.IsCollection) {
-							Write-Debug "			Processing Collection.";
-							
-							# TODO: i'm always going to read ... which is the same as processing of Extract. 
-							# 		only... while Extract => List... 
-							# 		do I want to do my 'foreach' down below against ... the List{} or agaisnt the define{}?
-							# 			seems like the DEFINE would make more sense - unless ... the verb is READ. 
-							# 			yeah. it's verb dependent. sigh. 
-							# 			IF the verb is Read ... then I can ONLY enumerate what's there... (er... wait... so confused)
-							# 			but, if the verb is Test/Invoke then ... i need to see the Define... 							
-							$enumerator = $property.Membership.List;
-							
-							try {
-								Write-Debug "				Enumerating Collection Members.";
-								$enumeratorValues = & $enumerator;
-								Write-Debug "				  Enumeration of Collection Members Complete. Found $($enumeratorValues.Count) members.";
-							}
-							catch {
-								Write-Host "I need better error handling... but, this is a failure that happened in ... getting List{} results from Membership: $_ ";
-							}
-							
-							if ($enumeratorValues.Count -le 1) {
-								throw "List failed... didn't get 1 or more results..";
-							}
-							
-							foreach ($currentValue in $enumeratorValues) {
-								Write-Debug "					Setting Context Data for Current Collection Member/Members.";
-								Set-PvContext_CollectionData -Name ($property.Name) -Membership ($property.Membership) -Members $enumeratorValues -CurrentMember $currentValue;
-								
-								foreach ($nestedProperty in $property.Properties) {
-									
-									# TODO: look at moving this INTO `Process-Property` ... as in, i should be able to tell, inside that func, IF we're dealing with a CollectionProp or not. 
-									# 		i could, obviously, just check for $PVContext.Collection exists or ... not... OR, I could also, potentially, throw in ... an -IsCollectionProp switch or 
-									# 			whatever that'd be set in this path/fork/if to $true and to $false in the else? 
-									# 		the other thing I need to address is ... that I'll want/have-to? do something similar for iterator details too, right?
-									if (-not $nestedProperty.Display) {
-										$defaultEnumeratedPropertyDisplay = "$($nestedProperty.Name)::$($currentValue)"; # vNEXT: use equivalent of string.format ... (i.e., "{0}{1}") and allow a GLOBAL preference here for something like $PvPreferences.DefaultCollectionPropertiesFormatThingy = "{0}.{1}" ... or whatever. 
-										$nestedProperty.SetDisplay($defaultEnumeratedPropertyDisplay);
-									}
-									
-									Process-Property -Verb $Verb -Property $nestedProperty -Results $results `
-															   -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
-								}
-								
-								Remove-PvContext_CollectionData;
-							}
-							
+					if ($facet.IsPattern) {
+						$iterator = $facet.Instances.Enumerate;
+						if ("Read" -eq $Verb) {
+							Write-Debug "			Iterating Pattern Instances.";
+							$iterator = $facet.Instances.List;
 						}
-						else {
-							Process-Property -Verb $Verb -Property $property -Results $results `
-													   -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+						
+						try {
+							$iteratorValues = & $iterator;
+						}
+						catch {
+							throw "need better error handling. But there was an exception enumerating ... instances for Pattern. Error: $_";
+						}
+						
+						if ($iteratorValues.Count -le 1) {
+							# this is where we'd look for a DEFAULT instance:
+							# 		it ... COULD be in the path? that was the original idea. 
+							# 		but... i don't see why the Instances {} block itself couldn't have a -DefaultInstanceName property/argument as well... 
+							throw "implement the above... ";  # and if there's no DEFAULT specified... throw... 
+						}
+						
+						foreach ($instance in $iteratorValues) {
+							Iterate-FacetProperties -FacetOrPattern $facet -InstanceName $instance;
 						}
 					}
-					Write-Debug "		  Property Iteration Complete.";
+					else {
+						Iterate-FacetProperties -FacetOrPattern $facet;
+					}
 				}
 				
 				if ($surface.Cleanup) {
@@ -251,13 +215,36 @@ function Execute-Pipeline {
 	}
 	
 	end {
-		Write-Debug "Pipeline Operations Complete.";
+		Write-Debug "$(Get-PipelineDebugIndent -Key "Root")Pipeline Operations Complete.";
 		Write-Verbose "Pipeline Operations Complete.";
 		
 		# TODO: if there was an unhandled exception or full-blown problem... DON'T return results?
 		# 		or ... do, but load it with exception info? e.g., this is EASY to TEST (just throw somewhere early in the pipeline (in the Process block) - or ... put a RETURN in the process block somewhere... 
 		return $results;
 	}
+}
+
+function Reset-PipelineDebugIndents {
+	$script:pipelineIndentManager = New-Object Collections.Generic.List[String];
+}
+
+function Get-PipelineDebugIndent {
+	param (
+		[string]$Key
+	);
+	
+	if ($script:pipelineIndentManager.Contains($Key)) {
+		$output = "`t" * ($script:pipelineIndentManager.Count - 1) + "  ";
+		
+		$script:pipelineIndentManager.Remove($Key);
+	}
+	else {
+		$script:pipelineIndentManager.Add($Key);
+		
+		$output = "`t" * ($script:pipelineIndentManager.Count - 1);
+	}
+	
+	return $output;
 }
 
 function Initialize-ResultsObject {
@@ -277,6 +264,78 @@ function Initialize-ResultsObject {
 	$format = $Block.Format;
 	
 	return New-Object Proviso.Core.FacetReadResult($name, $format);
+}
+
+function Iterate-FacetProperties {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Models.Facet]$FacetOrPattern,   # facetOrPattern... 
+		[string]$InstanceName  # if there is one... 
+	);
+	
+	begin {
+		# setup facet-level context info/details... 
+		# e.g., $global:PvContext.Facet.xxxx props and such. 
+		# and clear any $PVContext.get/setFacet-LevelStorage/State stuff as well. 		
+	};
+	
+	process {
+		Write-Debug "		Iterating Properties...";
+		foreach ($property in $FacetOrPattern.Properties) {
+			if ($property.IsCollection) {
+				Write-Debug "			Processing Collection.";
+				
+				$enumerator = $property.Membership.Enumerate;
+				if ("Read" -eq $Verb) {
+					$enumerator = $property.Membership.List;
+				}
+				
+				try {
+					Write-Debug "				Enumerating Collection Members.";
+					$enumeratorValues = & $enumerator;
+					Write-Debug "				  Enumeration of Collection Members Complete. Found $($enumeratorValues.Count) members.";
+				}
+				catch {
+					Write-Host "I need better error handling... but, this is a failure that happened in ... getting List{} results from Membership: $_ ";
+				}
+				
+				if ($enumeratorValues.Count -le 1) {
+					throw "List failed... didn't get 1 or more results..";
+				}
+				
+				foreach ($currentValue in $enumeratorValues) {
+					Write-Debug "					Setting Context Data for Current Collection Member/Members.";
+					Set-PvContext_CollectionData -Name ($property.Name) -Membership ($property.Membership) -Members $enumeratorValues -CurrentMember $currentValue;
+					
+					foreach ($nestedProperty in $property.Properties) {
+						
+						# TODO: look at moving this INTO `Process-Property` ... as in, i should be able to tell, inside that func, IF we're dealing with a CollectionProp or not. 
+						# 		i could, obviously, just check for $PVContext.Collection exists or ... not... OR, I could also, potentially, throw in ... an -IsCollectionProp switch or 
+						# 			whatever that'd be set in this path/fork/if to $true and to $false in the else? 
+						# 		the other thing I need to address is ... that I'll want/have-to? do something similar for iterator details too, right?
+						if (-not $nestedProperty.Display) {
+							$defaultEnumeratedPropertyDisplay = "$($nestedProperty.Name)::$($currentValue)"; # vNEXT: use equivalent of string.format ... (i.e., "{0}{1}") and allow a GLOBAL preference here for something like $PvPreferences.DefaultCollectionPropertiesFormatThingy = "{0}.{1}" ... or whatever. 
+							$nestedProperty.SetDisplay($defaultEnumeratedPropertyDisplay);
+						}
+						
+						Process-Property -Verb $Verb -Property $nestedProperty -Results $results `
+										 -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+					}
+					
+					Remove-PvContext_CollectionData;
+				}
+			}
+			else {
+				Process-Property -Verb $Verb -Property $property -Results $results `
+								 -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+			}
+		}
+		Write-Debug "		  Property Iteration Complete.";		
+	};
+	
+	end {
+		# clear ... facet-level context stuff? 
+	}
 }
 
 function Process-Property {

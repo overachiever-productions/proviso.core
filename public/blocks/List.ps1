@@ -19,9 +19,22 @@ function List {
 	};
 	
 	process {
-		# SET:
-		Write-Debug "$(Get-DebugIndent)   Binding List to Membership.";
-		$currentMembership.SetListBlock($ListBlock);
+		# BIND:
+		switch ((Get-ParentBlockType)) {
+			"Instances" {
+				Write-Debug "$(Get-DebugIndent)   Binding List to Pattern-Instance.";
+				$currentInstance.SetListBlock($ListBlock);
+			}
+			"Membership" {
+				Write-Debug "$(Get-DebugIndent)   Binding List to Membership.";
+				$currentMembership.SetListBlock($ListBlock);
+			}
+			default {
+				throw "woah";
+			}
+		}
+		
+		
 	};
 	
 	end {

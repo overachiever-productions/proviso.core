@@ -99,20 +99,20 @@ namespace Proviso.Core
                     Rootable = true,
                     Tracked = true,
                     AllowedParents = new List<string> { "Surface", "Aspect", "Facets" },  // "Facets" is block-name for global parents (but can be aliased as Patterns).  
-                    AllowedChildren = new List<string> { "Collection", "Property" }
+                    AllowedChildren = new List<string> { "Instances", "Properties" }
                 },
-                new Taxonomy
-                {
-                    NodeName = "Iterate",
-                    AllowedParents = new List<string> { "Pattern" },
-                    AllowedChildren = new List<string> { "Add", "Remove" }
-                },
-                new Taxonomy
-                {
-                    NodeName = "Iterator",
-                    AllowedParents = new List<string> { "Pattern", "Iterators"},
-                    AllowedChildren = new List<string> { "Add", "Remove" }
-                },
+                //new Taxonomy
+                //{
+                //    NodeName = "Iterate",
+                //    AllowedParents = new List<string> { "Pattern" },
+                //    AllowedChildren = new List<string> { "Add", "Remove" }
+                //},
+                //new Taxonomy
+                //{
+                //    NodeName = "Iterator",
+                //    AllowedParents = new List<string> { "Pattern", "Iterators"},
+                //    AllowedChildren = new List<string> { "Add", "Remove" }
+                //},
                 //new Taxonomy
                 //{
                 //    NodeName = "Enumerator",
@@ -130,6 +130,24 @@ namespace Proviso.Core
                 //},
                 new Taxonomy
                 {
+                    NodeName = "Instances", 
+                    RequiresName = false, 
+                    NameAllowed = true, 
+                    Rootable = false, 
+                    AllowedParents = new List<string>{ "Pattern" },
+                    AllowedChildren = new List<string> { "List", "Define", "Initialize", "Finalize", "Add", "Remove" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Properties",
+                    RequiresName = false,
+                    NameAllowed = true,
+                    Rootable = false,
+                    AllowedParents = new List<string>{ "Pattern" },
+                    AllowedChildren = new List<string> { "Property", "Collection", "Inclusion" }
+                },
+                new Taxonomy
+                {
                     NodeName = "Membership", 
                     RequiresName = false, 
                     NameAllowed = true, 
@@ -143,7 +161,17 @@ namespace Proviso.Core
                     RequiresName = false,
                     NameAllowed = true, 
                     Rootable = false, 
-                    AllowedParents = new List<string> { "Membership" }
+                    AllowedParents = new List<string> { "Membership", "Instances" }
+                },
+                new Taxonomy
+                {
+                    // REFACTOR: https://www.onelook.com/thesaurus/?s=define 
+                    // SERIOUSLY, why not just use Enumerate? 
+                    NodeName = "Define",  // DAMNIT. Goal was that Extract was to List as Expect was to Define... but DEFINE is a keyword in Posh... 
+                    RequiresName = false,
+                    NameAllowed = true,
+                    Rootable = false,
+                    AllowedParents = new List<string> { "Membership", "Instances" }
                 },
                 new Taxonomy
                 {
@@ -171,38 +199,6 @@ namespace Proviso.Core
                     AllowedParents = new List<string> { "Surface" }, 
                     AllowedChildren = new List<string> { "Import", "Facet", "Pattern" }
                 },
-                #region Globally Defined Resources
-                new Taxonomy
-                {
-                    NodeName = "Properties", 
-                    Rootable = true,
-                    AllowedChildren = new List<string>{ "Property" }
-                },
-                //new Taxonomy
-                //{
-                //    NodeName = "Cohorts",
-                //    Rootable = true,
-                //    AllowedChildren = new List<string>{ "Cohort" }
-                //},
-                new Taxonomy
-                {
-                    NodeName = "Facets",
-                    Rootable = true,
-                    AllowedChildren = new List<string>{ "Facet" }
-                },
-                new Taxonomy
-                {
-                    NodeName = "Iterators",
-                    Rootable = true,
-                    AllowedChildren = new List<string>{ "Iterator", "Add", "Remove" }
-                },
-                new Taxonomy
-                {
-                    NodeName = "Enumerators",
-                    Rootable = true,
-                    AllowedChildren = new List<string>{ "Enumerator", "Add", "Remove" }
-                },
-                #endregion
                 new Taxonomy
                 {
                     NodeName = "Property",
@@ -237,7 +233,42 @@ namespace Proviso.Core
                 {
                     NodeName = "Configure",
                     AllowedParents = new List<string> { "Property" }
+                },
+
+                #region Globally Defined Resources
+                new Taxonomy
+                {
+                    NodeName = "Facets",  // TODO: Should I call these "GlobalFacets" instead of merely "Facets"? 
+                    Rootable = true,
+                    AllowedChildren = new List<string>{ "Facet" }
                 }
+                
+                //new Taxonomy
+                //{
+                //    NodeName = "GlobalProperties",  // was, originally, properties ... but there's no sense overloading names of blocks... 
+                //    Rootable = true,
+                //    AllowedChildren = new List<string>{ "Property" }
+                //},
+                //new Taxonomy
+                //{
+                //    NodeName = "Cohorts",
+                //    Rootable = true,
+                //    AllowedChildren = new List<string>{ "Cohort" }
+                //},
+                
+                //new Taxonomy
+                //{
+                //    NodeName = "Iterators", // GlobalInstanceIterators? or ... just Iterators? 
+                //    Rootable = true,
+                //    AllowedChildren = new List<string>{ "Iterator", "Add", "Remove" }
+                //},
+                //new Taxonomy
+                //{
+                //    NodeName = "Enumerators",  // Hmm? not sure what to call this.
+                //    Rootable = true,
+                //    AllowedChildren = new List<string>{ "Enumerator", "Add", "Remove" }
+                //},
+                #endregion
             };
         }
     }

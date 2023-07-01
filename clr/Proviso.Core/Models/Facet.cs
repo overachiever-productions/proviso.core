@@ -84,11 +84,18 @@ namespace Proviso.Core.Models
     {
         public MembershipType MembershipType { get; set; }
 
+        public Instances Instances { get; private set; }
+
         public Pattern(string name, string id, FacetParentType parentType, string parentName) 
             : base(name, id, parentType, parentName)
         {
-
             base.IsPattern = true;
+        }
+
+        public void SetInstances(Instances concrete)
+        {
+            // TODO: ... there might come a point where I need ... a virtual instanceS thingy.. 
+            this.Instances = concrete;
         }
 
         public new void Validate()
