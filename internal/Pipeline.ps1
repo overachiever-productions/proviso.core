@@ -82,14 +82,14 @@ function Execute-Pipeline {
 		# 2. Runtime Validation 
 		# ====================================================================================================
 		#region Validation 
-		Write-Debug "	Starting Pipeline Validations.";
+		Write-Debug "$(Get-PipelineDebugIndent -Key "Validation")Starting Pipeline Validations.";
 		
-# GEDANKEN: If $currentWhatzit.HasCohorts... then... verify that we've got a legit Enumerate, Add, Remove (for whatever kind of operation we're running now). 
-# 		arguably, some of these validations would have been tackled during registration..
+		# TODO: 
+		# 	- Pre-Validate Collections. Based on $Verb, do we have the right Expect (Enumerate) or Extract (List)? methods? As well as Add/Remove and such - as might be needed (based on $Verb)?
+		# 	- Pre-Validate Patterns. ~ ditto to the above. 
 		
 		Validate-PropertyDisplayTokens;
 		
-		# NOTE: no need to evaluate the verb for READs - we'll ALWAYS at LEAST do READ (can't Test (Compare) or Invoke (Configure) without READ-ing).
 		TrySet-TargetAsImplicitExtractForNonExplicitExtractProperties -Surfaces $surfaces -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 		
 		if ($Verb -in ("Test", "Invoke")) {
@@ -106,8 +106,8 @@ function Execute-Pipeline {
 			# 2. Validate -Impact of each property ... vs -PipelineAllowedImpact (or whatever) I'm going to call that. 
 			# 		obviously, if an impact for a single property is 'greater than' what the user has specified/allowed... we'll have to throw here. 
 		}
- 
-		Write-Debug "	  Pipeline Validations Complete.";
+		
+		Write-Debug "$(Get-PipelineDebugIndent -Key "Validation")Pipeline Validations Complete.";
 		#endregion
 		
 		# ====================================================================================================
@@ -115,7 +115,7 @@ function Execute-Pipeline {
 		# ====================================================================================================		
 		#region Processing 
 		
-		Write-Debug "	Starting Pipeline Processing.";
+		Write-Debug "$(Get-PipelineDebugIndent -Key "Processing")Starting Pipeline Processing.";
 		try {
 			if ($isRunbook) {
 				# A. 
@@ -158,9 +158,12 @@ function Execute-Pipeline {
 				foreach ($facet in $surface.Facets) {
 					
 					if ($facet.IsPattern) {
+						Write-Debug "$(Get-PipelineDebugIndent -Key "Instances")Iterating Pattern Instances.";
+						
+						# TODO: for EACH iterator... (as in, there CAN be > 1 iterator...)	
+						
 						$iterator = $facet.Instances.Enumerate;
 						if ("Read" -eq $Verb) {
-							Write-Debug "			Iterating Pattern Instances.";
 							$iterator = $facet.Instances.List;
 						}
 						
@@ -172,15 +175,19 @@ function Execute-Pipeline {
 						}
 						
 						if ($iteratorValues.Count -le 1) {
-							# this is where we'd look for a DEFAULT instance:
-							# 		it ... COULD be in the path? that was the original idea. 
-							# 		but... i don't see why the Instances {} block itself couldn't have a -DefaultInstanceName property/argument as well... 
-							throw "implement the above... ";  # and if there's no DEFAULT specified... throw... 
+							if (Has-Value $facet.Instances.DefaultInstanceName) {
+								$iteratorValues = @(($facet.Instances.DefaultInstanceName));
+							}
+							else {
+								throw "no instances found and no default specified.";
+							}
 						}
 						
 						foreach ($instance in $iteratorValues) {
 							Iterate-FacetProperties -FacetOrPattern $facet -InstanceName $instance;
 						}
+						
+						Write-Debug "$(Get-PipelineDebugIndent -Key "Instances")Instance Iteration Complete.";
 					}
 					else {
 						Iterate-FacetProperties -FacetOrPattern $facet;
@@ -201,7 +208,7 @@ function Execute-Pipeline {
 		catch {
 			throw "Error in ... Pipeline Processing (step 3): $_ ";
 		}
-		Write-Debug "	  Pipeline Processing Complete.";
+		Write-Debug "$(Get-PipelineDebugIndent -Key "Processing")Pipeline Processing Complete.";
 		#endregion
 		
 		# ====================================================================================================
@@ -222,29 +229,6 @@ function Execute-Pipeline {
 		# 		or ... do, but load it with exception info? e.g., this is EASY to TEST (just throw somewhere early in the pipeline (in the Process block) - or ... put a RETURN in the process block somewhere... 
 		return $results;
 	}
-}
-
-function Reset-PipelineDebugIndents {
-	$script:pipelineIndentManager = New-Object Collections.Generic.List[String];
-}
-
-function Get-PipelineDebugIndent {
-	param (
-		[string]$Key
-	);
-	
-	if ($script:pipelineIndentManager.Contains($Key)) {
-		$output = "`t" * ($script:pipelineIndentManager.Count - 1) + "  ";
-		
-		$script:pipelineIndentManager.Remove($Key);
-	}
-	else {
-		$script:pipelineIndentManager.Add($Key);
-		
-		$output = "`t" * ($script:pipelineIndentManager.Count - 1);
-	}
-	
-	return $output;
 }
 
 function Initialize-ResultsObject {
@@ -280,7 +264,7 @@ function Iterate-FacetProperties {
 	};
 	
 	process {
-		Write-Debug "		Iterating Properties...";
+		Write-Debug "$(Get-PipelineDebugIndent -Key "Properties")Iterating Properties...";
 		foreach ($property in $FacetOrPattern.Properties) {
 			if ($property.IsCollection) {
 				Write-Debug "			Processing Collection.";
@@ -330,7 +314,7 @@ function Iterate-FacetProperties {
 								 -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 			}
 		}
-		Write-Debug "		  Property Iteration Complete.";		
+		Write-Debug "$(Get-PipelineDebugIndent -Key "Properties")Property Iteration Complete.";		
 	};
 	
 	end {
@@ -583,11 +567,47 @@ filter Get-ReturnScript {
 	return [ScriptBlock]::Create($script).GetNewClosure();
 }
 
+function Reset-PipelineDebugIndents {
+	$script:pipelineIndentManager = New-Object Collections.Generic.List[String];
+}
 
+function Get-PipelineDebugIndent {
+	param (
+		[string]$Key
+	);
+	
+	$Key = $Key.ToLower();
+	
+	[string]$pad = "";
+	[int]$count = 0;
+	if ($script:pipelineIndentManager.Contains($Key)) {
+		[int]$count = $script:pipelineIndentManager.Count;
+		$pad = " ";
+		$script:pipelineIndentManager.Remove($Key) | Out-Null;
+	}
+	else {
+		$script:pipelineIndentManager.Add($Key) | Out-Null;
+		[int]$count = $script:pipelineIndentManager.Count;
+	}
+	
+	return "$("`t" * ($count - 1))$pad";
+}
+
+#Reset-PipelineDebugIndents;
+#
+#Write-Host "Anchor";
+#Write-Host "$(Get-PipelineDebugIndent -Key "Tier1")Start Tier 1";
+#Write-Host "$(Get-PipelineDebugIndent -Key "Tier2")Start Tier 2";
+#
+#
+#Write-Host "$(Get-PipelineDebugIndent -Key "TiEr2")End Tier 2";
+#Write-Host "$(Get-PipelineDebugIndent -Key "TiEr1")End Tier 1";
 
 # ------------------------------------------------------------------------------------
 
 # OLD/NUKE...  (after reviewing the big block of comments in the 'start' of the logic of this func....)
+
+<#
 filter Get-RunTimeGeneratedReturnScript {
 	param (
 		[Parameter(Mandatory, Position = 0)]
@@ -596,7 +616,6 @@ filter Get-RunTimeGeneratedReturnScript {
 		[string]$PathType
 	);
 	
-<#
 	
 					$expect = $facet.Expect;
 					$script = "return $expect;";
@@ -629,7 +648,6 @@ filter Get-RunTimeGeneratedReturnScript {
 					
 					$prop.Expect = [ScriptBlock]::Create($script);	
 	
-#>
 	
 	# TODO: this looks pretty dope actually: 
 	# 	https://github.com/iRon7/ConvertTo-Expression
@@ -679,3 +697,4 @@ filter Get-RunTimeGeneratedReturnScript {
 	
 	return [ScriptBlock]::Create($script).GetNewClosure();
 }
+#>

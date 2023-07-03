@@ -9,6 +9,9 @@ function Instances {
 		[parameter(Mandatory, Position = 0, ParameterSetName = 'Anonymous')]
 		[ScriptBlock]$InstancesBlock,
 		
+		[Alias('DefaultInstanceName')]
+		[string]$DefaultInstance,
+		
 		#[Switch]$Naive = $false,
 		
 		[Switch]$Strict = $false #,
@@ -25,7 +28,7 @@ function Instances {
 	};
 	
 	process {
-		$currentInstance = New-Object Proviso.Core.Models.Instances($Name, (Get-ParentBlockName), $Strict);
+		$currentInstance = New-Object Proviso.Core.Models.Instances($Name, (Get-ParentBlockName), $Strict, $DefaultInstance);
 		
 		# STORE:
 		# TODO: tackle this if/when I address the idea of 'globally-defined' ... instance(selectors)/iterators ... whatever

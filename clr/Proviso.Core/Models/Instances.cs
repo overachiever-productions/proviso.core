@@ -16,6 +16,7 @@ namespace Proviso.Core.Models
     {
         public string Name { get; private set; }
         public string ParentName { get; private set; }
+        public string DefaultInstanceName { get; private set; }
         public bool IsStrict { get; private set; }
         public bool SupportsRemove
         {
@@ -36,10 +37,11 @@ namespace Proviso.Core.Models
         public ScriptBlock Add { get; set; }
         public ScriptBlock Remove { get; set; }
 
-        public Instances(string name, string parentName, bool isStrict)
+        public Instances(string name, string parentName, bool isStrict, string defaultInstanceName)
         {
             this.Name = name;
             this.ParentName = parentName;
+            this.DefaultInstanceName = defaultInstanceName;
 
             this.IsStrict = isStrict;
         }

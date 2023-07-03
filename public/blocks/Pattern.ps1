@@ -6,6 +6,7 @@
 
 	$global:DebugPreference = "Continue";
 
+
 $global:PretendActualXeSessions = @{
 	"BlockedProcesses" = @{
 		StartWithOS = $true	
@@ -24,10 +25,12 @@ $global:PretendActualXeSessions = @{
 
 	Facets {
 		Pattern "My First Pattern" {
-			Instances {
+			Instances -DefaultInstance "BlockedProcesses" {
 				List {
 					# pretend this is a func that iterates over all, actual/existing (vs desired or expected) XeSessions on the box:
-					return $global:PretendActualXeSessions.Keys;
+					#return $global:PretendActualXeSessions.Keys;
+
+					return $null;
 				}
 				#Define {
 				#}
