@@ -160,32 +160,91 @@ function Execute-Pipeline {
 					if ($facet.IsPattern) {
 						Write-Debug "$(Get-PipelineDebugIndent -Key "Instances")Iterating Pattern Instances.";
 						
-						# TODO: for EACH iterator... (as in, there CAN be > 1 iterator...)	
+						# TODO: ensure (up within the validations section) that there is at least 1x instance.list|enumerate. 
 						
-						$iterator = $facet.Instances.Enumerate;
-						if ("Read" -eq $Verb) {
-							$iterator = $facet.Instances.List;
-						}
-						
-						try {
-							$iteratorValues = & $iterator;
-						}
-						catch {
-							throw "need better error handling. But there was an exception enumerating ... instances for Pattern. Error: $_";
-						}
-						
-						if ($iteratorValues.Count -le 1) {
-							if (Has-Value $facet.Instances.DefaultInstanceName) {
-								$iteratorValues = @(($facet.Instances.DefaultInstanceName));
+						# REFACTOR: this is mega-cheesy. I mean, I MIGHT stick with it ... but some sort of recursive func would make a lot more sense... 
+						# 			er. well. a recursive func... might get SUPER complicated in a hurry. it'd be a bunch of foreach(xxxx) ... in a recursion. I dunno... 
+						switch ($facet.Instances.Count) {
+							0 {
+								throw "some kind of weird validation problem - should've detected this before now... "
 							}
-							else {
-								throw "no instances found and no default specified.";
+							1 {
+								$members = Get-PatternIterationMembers -Pattern $facet -Verb $Verb;
+								foreach ($m in $members) {
+									# set ... context... 
+									
+									Iterate-FacetProperties -FacetOrPattern $facet;
+								}
+							}
+							2 {
+								$parents = Get-PatternIterationMembers -Pattern $facet -Verb $Verb;
+								$parentInstancesName = $facet.Instances[0].Name;
+								$parentInstancesDefaultInstanceName = $facet.Instances[0].DefaultInstanceName;
+								foreach ($parent in $parents) {
+									Set-PvContext_InstanceData -InstanceName $parentInstancesName -Members $parents -CurrentMember $parent -DefaultInstanceName $parentInstancesDefaultInstanceName;
+									
+									$children = Get-PatternIterationMembers -Pattern $facet -Depth 1 -Verb $Verb;
+									$childrenInstancesName = $facet.Instances[1].Name;
+									$childrenInstancesDefaultInstanceName = $facet.Instances[1].DefaultInstanceName;
+									foreach ($child in $children) {
+										Set-PvContext_InstanceData -InstanceName $childrenInstancesName -Members $children -CurrentMember $child -DefaultInstanceName $childrenInstancesDefaultInstanceName;
+										
+										Iterate-FacetProperties -FacetOrPattern $facet;
+									}
+								}
+							}
+							3 {
+								# TODO: implement as above - but with ... grand-children (sheesh)
+							}
+							default {
+								throw "only 3x leves supported for now."; # and... honestly, > 3x starts getting pretty complex, no?
 							}
 						}
 						
-						foreach ($instance in $iteratorValues) {
-							Iterate-FacetProperties -FacetOrPattern $facet -InstanceName $instance;
-						}
+#						$parents = Get-PatternIterationMembers -Pattern $facet -Verb $Verb;
+#						foreach ($parentInstance in $parents) {
+#							if ($facet.Instances.Count -gt 1) {
+#								Write-Host "found a sub-group to iterate over..."
+#							}
+#							else {
+#								Write-Host "i'm a the current instance: $parentInstance"
+#							}
+#						}
+						
+						
+						#						$parentIterator = $facet.Instances[0].Enumerate;
+#						if ("Read" -eq $Verb) {
+#							$parentIterator = $facet.Instances[0].List;
+#						}
+#						
+#						Write-Host "got here."
+#						
+#						#region Get-InstanceIteratorStuff
+#						$iterator = $facet.Instances.Enumerate;
+#						if ("Read" -eq $Verb) {
+#							$iterator = $facet.Instances.List;
+#						}
+#						
+#						try {
+#							$iteratorValues = & $iterator;
+#						}
+#						catch {
+#							throw "need better error handling. But there was an exception enumerating ... instances for Pattern. Error: $_";
+#						}
+#						
+#						if ($iteratorValues.Count -le 1) {
+#							if (Has-Value $facet.Instances.DefaultInstanceName) {
+#								$iteratorValues = @(($facet.Instances.DefaultInstanceName));
+#							}
+#							else {
+#								throw "no instances found and no default specified.";
+#							}
+#						}
+#						#endregion
+#						
+#						foreach ($instance in $iteratorValues) {
+#							Iterate-FacetProperties -FacetOrPattern $facet -InstanceName $instance;
+#						}
 						
 						Write-Debug "$(Get-PipelineDebugIndent -Key "Instances")Instance Iteration Complete.";
 					}
@@ -250,11 +309,37 @@ function Initialize-ResultsObject {
 	return New-Object Proviso.Core.FacetReadResult($name, $format);
 }
 
+function Get-PatternIterationMembers {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Models.Facet]$Pattern,
+		[int]$Depth = 0,
+		[string]$Verb
+	);
+	
+	$iteratorBlock = $Pattern.Instances[$Depth].Enumerate;
+	if ("Read" -eq $Verb) {
+		$iteratorBlock = $Pattern.Instances[$Depth].List;
+	}
+	
+	try {
+		$iteratorMembers = & $iteratorBlock;
+	}
+	catch {
+		throw "Exception attempting to iterate over <iterator-name-here>. Exception: $_ ";
+	}
+	
+	if ($iteratorMembers.Count -le 1) {
+		Write-Host "need to look for a default instance name here... and throw if REQUIRED but ..  be DONE if there's nothing... "
+	}
+	
+	return $iteratorMembers;
+}
+
 function Iterate-FacetProperties {
 	[CmdletBinding()]
 	param (
-		[Proviso.Core.Models.Facet]$FacetOrPattern,   # facetOrPattern... 
-		[string]$InstanceName  # if there is one... 
+		[Proviso.Core.Models.Facet]$FacetOrPattern   # facetOrPattern... 
 	);
 	
 	begin {
@@ -398,14 +483,19 @@ function Process-Property {
 function Validate-PropertyDisplayTokens {
 	foreach ($surface in $Surfaces) {
 		foreach ($facet in $surface.Facets) {
+			[bool]$isPattern = $false;
+			if ($facet.IsPattern) {
+				$isPattern = $true;
+			}
+			
 			foreach ($prop in $facet.Properties) {
 				if ($prop.IsCollection) {
 					foreach ($nestedProp in $prop.Properties) {
-						Validate-DisplayTokenUse -Display $nestedProp.Display -IsCollection;
+						Validate-DisplayTokenUse -Display $nestedProp.Display -IsCollection -IsInstance:$isPattern;
 					}
 				}
 				else {
-					Validate-DisplayTokenUse -Display $prop.Display;
+					Validate-DisplayTokenUse -Display $prop.Display -IsInstance:$isPattern;
 				}
 			}
 		}

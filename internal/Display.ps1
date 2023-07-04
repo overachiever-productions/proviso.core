@@ -105,7 +105,17 @@ function Validate-DisplayTokenUse {
 		$pattern = '\{[^}]+\}';
 		$regex = [Regex]::New($pattern);
 		foreach ($match in $regex.Matches($current)) {
-			$token = $Tokens[$match.Value];
+			[string]$matchValue = $match.Value;
+			
+			if ($matchValue -like '*`[*`]*') {
+				$key = Get-MatchSubstringKey -Token ($match.Value);
+				
+				if (Has-Value $key) {
+					$matchValue = $matchValue.Replace($key, "*");
+				}
+			}
+			
+			$token = $Tokens[$matchValue];
 			if ($null -eq $token) {
 				$validationFailures += "Invalid Display Token. Token: [$match] has NOT been defined. Remember to escape { and } with {{ and }} if you want to use curly-brackets in -Name or -Display values for Properties.";
 			}
@@ -152,6 +162,17 @@ function Validate-DisplayTokenUse {
 	}
 }
 
+filter Get-MatchSubstringKey {
+	param (
+		[string]$Token
+	);
+	
+	$start = $Token.IndexOf('[') + 1;
+	$end = $Token.IndexOf(']');
+	
+	return $Token.Substring($start, ($end - $start));
+}
+
 function Process-DisplayTokenReplacements {
 	[CmdletBinding()]
 	param (
@@ -164,24 +185,38 @@ function Process-DisplayTokenReplacements {
 	);
 	
 	[string]$output = $Display;
-	
 	if ($Display -like '*{*') {
 		$escaped = ($Display -replace '{{', '') -replace '}}', '';
 		
 		$pattern = '\{[^}]+\}';
 		$regex = [Regex]::New($pattern);
 		foreach ($match in $regex.Matches($escaped)) {
-			if ($Tokens.Keys -contains $match) {
+			[string]$matchValue = $match.Value;
+			
+			if ($matchValue -like '*`[*`]*') {
+				$key = Get-MatchSubstringKey -Token ($match.Value);
+				
+				if (Has-Value $key) {
+					$matchValue = $matchValue.Replace($key, "*");
+				}
+			}
+			
+			if ($Tokens.Keys -contains $matchValue) {
 				try {
-					$token = $Tokens[$match.Value];
+					$token = $Tokens[$matchValue];
 					$path = $token.Location;
+					if (Has-Value $key) {
+						$path = $path.Replace('*', $key);
+						$matchValue = $matchValue.Replace('*', $key);
+					}
+					
 					$replacementValue = Extract-ValueFromObjectByPath -Object $PVCurrent -Path $path;
 					
-					$output = $output -replace $match, $replacementValue;
+					$output = $output.Replace($matchValue, $replacementValue);
 				}
 				catch {
 					# vNEXT: see the vNEXT commend below for else logic - about possibly adding in ... iterator/current-member and such... 
-					$problem = "EXCEPTION Processing Token: [$match] within -Display: [$Display]. Using !*`$Name*! as default -Display. Root Exception: `n$_";
+					$problem = "EXCEPTION Processing Token: [$matchValue] within -Display: [$Display]. Using !*`$Name*! as default -Display. Root Exception: `n$_";
 					Write-Debug $problem;
 					Write-Verbose $problem;
 					
@@ -194,7 +229,7 @@ function Process-DisplayTokenReplacements {
 			}
 			else {
 				# WEIRD. Pre-validation apparently failed. So, verbose + debug the info and ... send back a !placeholder!:
-				$problem = "WARNING: No matching token for: [$match] was found for -Display value of: [$Display]. Using !`$Name! as default -Display.";
+				$problem = "WARNING: No matching token for: [$matchValue] was found for -Display value of: [$Display]. Using !`$Name! as default -Display.";
 				Write-Debug $problem;
 				Write-Verbose $problem;
 				
@@ -209,9 +244,17 @@ function Process-DisplayTokenReplacements {
 	return $output;
 }
 
+
+# vNEXT: for instances (and collections?) add in the ability to specify tokens with - in the front - e.g., {-INSTANCE[*].NAME} 
+# 			and, if - is found ... and there's ONLY 1x instance... then instead of replacing {-INSTANCE[*].NAME} with, say, "MSSQLSERVER", just replace with ""
+# 			as in... specify OPTIONAL instance-names/formatting (that only shows up when > 1x instance.)
+
 # Core Display Tokens: 
 Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{SELF}" -Location "Property.Name");
 Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{COLLECTION.MEMBER}" -Location "Collection.CurrentMember" -RequiresCollection) -Aliases "{CURRENT.MEMBER.NAME}", "{COLLECTION.CURRENT.MEMBER}";
+Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{INSTANCE[*].NAME}" -Location "*.Name" -RequiresInstance);
+Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{INSTANCE.NAME}" -Location "Instances.Name" -RequiresInstance);  # similar to the above - but non-keyed (i.e., for a single, anonymous, instance vs cases where > 1 instance or an instance is explicitly named)
+
 #Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{INSTANCE.MEMBER}" -Location "Instance.Name" -RequiresInstance); 
 #Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{PARENT.NAME}" -Location "hmmmm" -Requires????  );
 

@@ -99,7 +99,7 @@ namespace Proviso.Core
                     Rootable = true,
                     Tracked = true,
                     AllowedParents = new List<string> { "Surface", "Aspect", "Facets" },  // "Facets" is block-name for global parents (but can be aliased as Patterns).  
-                    AllowedChildren = new List<string> { "Instances", "Properties" }
+                    AllowedChildren = new List<string> { "Topology", "Properties" }
                 },
                 //new Taxonomy
                 //{
@@ -128,14 +128,32 @@ namespace Proviso.Core
                 //    AllowedParents = new List<string> { "Cohort" },
                 //    AllowedChildren = new List<string> { "Add", "Remove" }
                 //},
+                //new Taxonomy
+                //{
+                //    NodeName = "Instance", 
+                //    RequiresName = false, 
+                //    NameAllowed = true, 
+                //    Rootable = false, 
+                //    AllowedParents = new List<string>{ "Pattern" },
+                //    AllowedChildren = new List<string> { "List", "Define", "Initialize", "Finalize", "Add", "Remove" }
+                //},
                 new Taxonomy
                 {
-                    NodeName = "Instances", 
-                    RequiresName = false, 
+                    NodeName = "Topology",
+                    RequiresName = false,
+                    NameAllowed = false, 
+                    Rootable = false, 
+                    AllowedParents = new List<string> { "Pattern" }, 
+                    AllowedChildren = new List<string>{ "Instance" }
+                },
+                new Taxonomy
+                {
+                    NodeName = "Instance", 
+                    RequiresName = false,  
                     NameAllowed = true, 
                     Rootable = false, 
-                    AllowedParents = new List<string>{ "Pattern" },
-                    AllowedChildren = new List<string> { "List", "Define", "Initialize", "Finalize", "Add", "Remove" }
+                    AllowedParents = new List<string> { "Topology", "Topologies" },  // "Topologies would be globally defined ... iterators.. 
+                    AllowedChildren = new List<string>{ "List", "Enumerate", "Initialize", "Finalize", "Add", "Remove" }
                 },
                 new Taxonomy
                 {
@@ -153,7 +171,7 @@ namespace Proviso.Core
                     NameAllowed = true, 
                     Rootable = false, 
                     AllowedParents = new List<string> { "Collection" }, 
-                    AllowedChildren = new List<string> { "List", "Define", "Initialize", "Finalize", "Add", "Remove" }
+                    AllowedChildren = new List<string> { "List", "Enumerate", "Initialize", "Finalize", "Add", "Remove" }
                 },
                 new Taxonomy
                 {
@@ -161,17 +179,15 @@ namespace Proviso.Core
                     RequiresName = false,
                     NameAllowed = true, 
                     Rootable = false, 
-                    AllowedParents = new List<string> { "Membership", "Instances" }
+                    AllowedParents = new List<string> { "Membership", "Instance" }
                 },
                 new Taxonomy
                 {
-                    // REFACTOR: https://www.onelook.com/thesaurus/?s=define 
-                    // SERIOUSLY, why not just use Enumerate? 
-                    NodeName = "Define",  // DAMNIT. Goal was that Extract was to List as Expect was to Define... but DEFINE is a keyword in Posh... 
+                    NodeName = "Enumerate",  
                     RequiresName = false,
                     NameAllowed = true,
                     Rootable = false,
-                    AllowedParents = new List<string> { "Membership", "Instances" }
+                    AllowedParents = new List<string> { "Membership", "Instance" }
                 },
                 new Taxonomy
                 {
@@ -192,13 +208,13 @@ namespace Proviso.Core
                     NodeName = "Remove",
                     AllowedParents = new List<string> { "Pattern", "Collection" }
                 },
-                new Taxonomy
-                {
-                    NodeName = "Aspect", 
-                    NameAllowed = true,
-                    AllowedParents = new List<string> { "Surface" }, 
-                    AllowedChildren = new List<string> { "Import", "Facet", "Pattern" }
-                },
+                //new Taxonomy
+                //{
+                //    NodeName = "Aspect", 
+                //    NameAllowed = true,
+                //    AllowedParents = new List<string> { "Surface" }, 
+                //    AllowedChildren = new List<string> { "Import", "Facet", "Pattern" }
+                //},
                 new Taxonomy
                 {
                     NodeName = "Property",

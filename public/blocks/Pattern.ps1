@@ -3,56 +3,103 @@
 <#
 
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
-
 	$global:DebugPreference = "Continue";
 
-
 $global:PretendActualXeSessions = @{
-	"BlockedProcesses" = @{
-		StartWithOS = $true	
-		Enabled = $true
-		Definition = "Pretend SQL Would Go Here"
-		XelFilePath = "D:\Traces\blocked_processes.xel"
+	"MSSQLSERVER" = @{
+		"BlockedProcesses" = @{
+			Name = "blocked_processes"
+			StartWithOS = $true	
+			Enabled = $true
+			Definition = "Pretend SQL Would Go Here"
+			XelFilePath = "D:\Traces\blocked_processes.xel"
+		}
+		
+		"LongRunningOperations" = @{
+			Name = "long_running_operations"
+			StartWithOS = $true
+			Enabled = $false
+			Definition = "Pretend SQL def here too"
+			XelFilePath = "G:\Traces\long.xel"
+		}
 	}
-	
-	"Long-RunningOperations" = @{
-		StartWithOS = $true
-		Enabled = $false
-		Definition = "Pretend SQL def here too"
-		XelFilePath = "G:\Traces\long.xel"
+	"X3" = @{
+		"BlockedProcesses" = @{
+			Name = "BlockedProcesses"  
+			StartWithOS = $true	
+			Enabled = $true
+			Definition = "Pretend SQL Would Go Here"
+			XelFilePath = "D:\Traces\blocked_processes.xel"
+		}
 	}
 }
 
-	Facets {
-		Pattern "My First Pattern" {
-			Instances -DefaultInstance "BlockedProcesses" {
-				List {
-					# pretend this is a func that iterates over all, actual/existing (vs desired or expected) XeSessions on the box:
-					#return $global:PretendActualXeSessions.Keys;
+# PRETEND FUNCTIONS. (i.e., pretend that these interact with an actual OS and such...)
+function Get-PrmInstalledSqlInstances {
+	return $global:PretendActualXeSessions.Keys;
+}
 
-					return $null;
+function Get-PrmXeSessionNamesBySqlInstance {
+	param(
+		[string]$SqlInstance
+	);
+	return $global:PretendActualXeSessions[$sqlInstance].Keys;
+}
+
+function Get-PrmXeSessionDetailsForSqlInstance {
+	param(
+		[string]$SqlInstance, 
+		[string]$XeSessionName
+	); 
+
+	# obviously, the logic for this 'in the real world' would be a bit more complex... 
+	return $global:PretendActualXeSessions.$SqlInstance.$XeSessionName;
+};
+
+	Facets {
+		Pattern "XE Sessions by SQL Instance" {
+			Topology {
+				Instance "SQLInstances" -DefaultInstance "MSSQLSERVER" {
+					List {
+						return Get-PrmInstalledSqlInstances;
+					}
 				}
-				#Define {
-				#}
-				# Add {}
-				# Remove {}
+
+				Instance "XeSessions" {
+					List {
+						# NOTE: Because this is the SECOND instance defined, it's a CHILD, and requires that we enumerate values from/for the current PARENT instance:
+						$sqlInstance = $PvCurrent.SqlInstances.Name;
+						
+						return Get-PrmXeSessionNamesBySqlInstance -SqlInstance $sqlInstance;
+						# and... note that the above COULD, in theory, be EMPTY. As in, I need to determine how to let 'authors' specify that or not. 
+					}
+				}
 			}
 			Properties {
-#				Property "something" -Extract 11 -Display "hard-coded 11 thing" {
-#				}
-#				Property "something else" -Extract 12 {
-#				}
-				Property "Xe Session Name" -Extract "name goes here" {
+				# TODO: turn this into an inclusion... 
+				Property "Exists" -Display "{INSTANCE[SqlInstances].NAME}.{INSTANCE[XeSessions].NAME}.SessionName" {
+					Extract {
+						$session = Get-PrmXeSessionDetailsForSqlInstance -SqlInstance ($PvCurrent.SqlInstances.Name) -XeSessionName ($PvCurrent.XeSessions.Name);
+						return $session.Name;
+					}
 				}
-				Property "StartsWithOS" -Extract $true {
+				Property "StartsWithOS" -Display "{INSTANCE[SqlInstances].NAME}.{INSTANCE[XeSessions].NAME}.{SELF}" {
+					Extract {
+						$session = Get-PrmXeSessionDetailsForSqlInstance -SqlInstance ($PvCurrent.SqlInstances.Name) -XeSessionName ($PvCurrent.XeSessions.Name);
+						return $session.StartWithOS;
+					}
 				}
-				Property "Enabled" -Extract $true {
+				Property "Enabled" -Display "{INSTANCE[SqlInstances].NAME}.{INSTANCE[XeSessions].NAME}.{SELF}"{
+					Extract {
+						$session = Get-PrmXeSessionDetailsForSqlInstance -SqlInstance ($PvCurrent.SqlInstances.Name) -XeSessionName ($PvCurrent.XeSessions.Name);
+						return $session.Enabled;
+					}
 				}
 			}
 		}
 	}
 
-	Read-Facet "My First Pattern";
+	Read-Facet "XE Sessions by SQL Instance";
 
 #>
 

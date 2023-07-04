@@ -1,13 +1,13 @@
 ﻿Set-StrictMode -Version 1.0;
 
-function Instances {
+function Instance {
 	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory, Position = 0, ParameterSetName = 'Named')]
 		[string]$Name = $null,
 		[Parameter(Mandatory, Position = 1, ParameterSetName = 'Named')]
 		[parameter(Mandatory, Position = 0, ParameterSetName = 'Anonymous')]
-		[ScriptBlock]$InstancesBlock,
+		[ScriptBlock]$InstanceBlock,
 		
 		[Alias('DefaultInstanceName')]
 		[string]$DefaultInstance,
@@ -28,16 +28,16 @@ function Instances {
 	};
 	
 	process {
-		$currentInstance = New-Object Proviso.Core.Models.Instances($Name, (Get-ParentBlockName), $Strict, $DefaultInstance);
+		$currentInstance = New-Object Proviso.Core.Models.Instance($Name, (Get-GrandParentBlockName), $Strict, $DefaultInstance);
 		
 		# STORE:
 		# TODO: tackle this if/when I address the idea of 'globally-defined' ... instance(selectors)/iterators ... whatever
 		
 		# BIND: 
-		Write-Debug "$(Get-DebugIndent)	Binding Instances Block to parent Pattern: [$((Get-ParentBlockName))].";
-		$currentPattern.SetInstances($currentInstance);
+		Write-Debug "$(Get-DebugIndent)	Binding Instance-Block: [$Name] to Pattern: [$((Get-GrandParentBlockName))].";
+		$currentPattern.AddInstance($currentInstance);
 		
-		& $InstancesBlock;
+		& $InstanceBlock;
 	};
 	
 	end {

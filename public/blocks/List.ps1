@@ -21,7 +21,7 @@ function List {
 	process {
 		# BIND:
 		switch ((Get-ParentBlockType)) {
-			"Instances" {
+			"Instance" {
 				Write-Debug "$(Get-DebugIndent)   Binding List to Pattern-Instance.";
 				$currentInstance.SetListBlock($ListBlock);
 			}
@@ -30,11 +30,9 @@ function List {
 				$currentMembership.SetListBlock($ListBlock);
 			}
 			default {
-				throw "woah";
+				throw "Proviso Framework Error. Invalid Parent: [$($currentCohort.ParentType)] specified for List-Block.";
 			}
 		}
-		
-		
 	};
 	
 	end {
