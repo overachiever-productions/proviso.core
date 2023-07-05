@@ -7,8 +7,6 @@ namespace Proviso.Core.Models
     {
         private List<IProperty> _properties = new List<IProperty>();
         private List<IIterator> _iterators = new List<IIterator>();
-        private List<IteratorAdd> _adds = new List<IteratorAdd>();
-        private List<IteratorRemove> _removes = new List<IteratorRemove>();
 
         public string Id { get; }
         public FacetParentType FacetParentType { get; }
@@ -84,11 +82,20 @@ namespace Proviso.Core.Models
     {
         public MembershipType MembershipType { get; set; }
 
+        public List<Instance> Instances { get; private set; }
+
         public Pattern(string name, string id, FacetParentType parentType, string parentName) 
             : base(name, id, parentType, parentName)
         {
-
             base.IsPattern = true;
+
+            this.Instances = new List<Instance>();
+        }
+
+        public void AddInstance(Instance concrete)
+        {
+            // TODO: ... there might come a point where I need ... a virtual instanceS thingy.. 
+            this.Instances.Add(concrete);
         }
 
         public new void Validate()

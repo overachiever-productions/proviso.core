@@ -118,6 +118,28 @@ filter Set-PvContext_CollectionData {
 	Add-Member -InputObject $PVCurrent -MemberType NoteProperty -Name Collection -Value $collection -Force;
 }
 
+filter Set-PvContext_InstanceData {
+	param (
+		[string]$InstanceName = "Instances",  	# TODO: might make more sense to set it to $null and ... 'go that route' (just make sure to handle REMOVE-func... )
+		[Object[]]$Members,
+		[Object]$CurrentMember,
+		[string]$DefaultInstanceName
+	);
+	
+	if (($PVCurrent.Properties -contains $InstanceName) -or ($null -ne $PVCurrent.$InstanceName)) {
+		Remove-PvContext_InstanceData -InstancesName $InstanceName;
+	}
+	
+	$instance = @{
+		Name = $CurrentMember
+		Members = $Members
+		#DefaultInstance = $DefaultInstanceName
+	}
+	
+	Add-Member -InputObject $PVCurrent -MemberType NoteProperty -Name $InstanceName -Value $instance -Force;
+}
+
+
 filter Set-PvContext_PropertyData {
 	param (
 		[string]$PropertyName,
@@ -148,6 +170,15 @@ filter Remove-PvContext_OperationData {
 filter Remove-PvContext_PropertyData {
 	$PVCurrent.PSObject.Properties.Remove('Property');
 }
+
+filter Remove-PvContext_InstanceData {
+	param (
+		[string]$InstancesName
+	);
+	
+	$PVCurrent.PSObject.Properties.Remove($InstancesName);
+}
+
 
 <#
 

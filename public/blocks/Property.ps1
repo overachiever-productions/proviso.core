@@ -83,9 +83,9 @@ function Property {
 		
 		# BIND:
 		switch ((Get-ParentBlockType)) {
-			"Properties" {
-				Write-Debug "$(Get-DebugIndent)	NOT Binding Property: [$($currentProperty.Name)] to parent, because parent is a Properties wrapper.";
-			}
+#			"GlobalProperties" {
+#				Write-Debug "$(Get-DebugIndent)	NOT Binding Property: [$($currentProperty.Name)] to parent, because parent is a Properties wrapper.";
+#			}
 			"Members" {
 				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($currentProperty.Name)] to Collection: [$($currentCollection.Name)] - within grandparent named: [$($currentCollection.ParentName)].";
 				$currentCollection.AddMemberProperty($currentProperty);
@@ -95,7 +95,7 @@ function Property {
 				
 				$currentFacet.AddProperty($currentProperty);
 			}
-			"Pattern" {
+			"Properties" {
 				Write-Debug "$(Get-DebugIndent)	Binding Property: [$($currentProperty.Name)] to Pattern, named: [$($currentProperty.ParentName)], with grandparent named: [$grandParentName].";
 				
 				$currentPattern.AddProperty($currentProperty);
