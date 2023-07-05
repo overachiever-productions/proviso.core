@@ -141,6 +141,7 @@ Describe "Functionality Tests" -Tag "Execution" {
 			$outcome.PropertyReadResults.Count | Should -Be 1;
 			$outcome.PropertyReadResults[0].Display | Should -Be "35-Test";
 			
+			$outcome.PropertyReadResults[0].ExtractionResult.Result | Should -Be 35;
 		}
 	}
 }
