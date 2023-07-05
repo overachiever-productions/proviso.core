@@ -126,8 +126,8 @@ namespace Proviso.Core
         public string Name { get; private set; }
         public string ModelPath { get; set; }
         public string TargetPath { get; set; }
-        public bool Skip { get; private set; }
-        public string SkipReason { get; private set; }
+        public bool Skip { get; set; }
+        public string SkipReason { get; set; }
 
         public string Display
         {

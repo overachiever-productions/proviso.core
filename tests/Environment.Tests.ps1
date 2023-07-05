@@ -1,8 +1,8 @@
 ﻿Set-StrictMode -Version 1.0;
 
 BeforeAll {
-	$UnitName = (Split-Path -Leaf $PSCommandPath).Replace(".Tests.ps1", "");
-	$uut = $PSCommandPath.Replace(".Tests.ps1", ".ps1").Replace("\tests\", "\");
+	$UnitName = (Split-Path -Leaf $PSCommandPath).Replace(".tests.ps1", "");
+	$uut = $PSCommandPath.Replace(".tests.ps1", ".ps1").Replace("\tests\", "\");
 	$root = ($PSCommandPath.Split("\tests"))[0];
 }
 
@@ -12,10 +12,10 @@ Describe "$UnitName Tests" -Tag "UnitTests" {
 	}
 	
 	It "Correctly Maps Command Name from Path" {
-		$UnitName | Should -Be "Environment";
+		$UnitName | Should -Be "environment";
 	}
 	
 	It "Correctly Derives UUT Path" {
-		$uut | Should -BeLike "*Environment.ps1";
+		$uut | Should -BeLike "*environment.ps1";
 	}
 }

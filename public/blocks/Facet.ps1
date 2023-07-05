@@ -2,33 +2,6 @@
 
 <#
 
-	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
-
-	$global:DebugPreference = "Continue";
-#	$global:VerbosePreference = "Continue";
-
-	Facets {
-		Facet "Global_Basic" -Id "11_22" -Path "Test.Path" -NoConfig -Impact "High" {
-		}
-
-		Facet "Global_Skipped" -Path "Doesn't matter - skipped" -Ignore "Skipped - not ready." { 
-		}
-	}
-
-	$facet = $global:PvBlockStore.GetFacetByName("Global_Basic", "");
-	$facet | fl;
-
-	write-host "-----------------";
-	$facet = $global:PvBlockStore.GetFacetByName("Global_Skipped", "");
-	$facet | fl;
-
-#>
-
-<#
-#	Surface "Bigly" {
-#		Facet "Child" {}
-#	}
-
 #	Facet "Host Ports" {
 #		Property "ICMP" {
 #		}
