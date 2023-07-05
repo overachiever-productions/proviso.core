@@ -8,7 +8,7 @@ BeforeAll {
 	Import-Module -Name "$root" -Force;
 }
 
-Describe "Build Syntax Tests" -Tag "SyntaxValidation" {
+Describe "Syntax-Validation Tests" -Tag "SyntaxValidation" {
 	Context "Root-Nodes" {
 		It "Allows Facets as Root Node" {
 			Facets {
@@ -33,13 +33,17 @@ Describe "Build Syntax Tests" -Tag "SyntaxValidation" {
 	}
 }
 
-Describe "Functionality Tests" -Tag "Functionality" {
+Describe "Build Tests" -Tag "Build" {
 	Context "Facets with Implicit Properties" {
 		It "Builds Facets with Implicit Properties" {
 			Facets {
-				Facet "Implicit Property Test - A" -Impact High -ModelPath "Model.Attribute.A" {}
-				Facet "Implicit Property Test - B" -Path "Model_And_Target.X" -Ignore "Pretend that this is Skipped for now." {}	
-				Facet "Implicit Property Test - C" -Display "{SELF}.Reflexive" -Expect "elevensies" -Extract "12" {}
+				Facet "Implicit Property Test - A" -Impact High -ModelPath "Model.Attribute.A" {
+				}
+				Facet "Implicit Property Test - B" -Path "Model_And_Target.X" -Ignore "Pretend that this is Skipped for now." {
+				}
+				Facet "Implicit Property Test - C" -Display "{SELF}.Reflexive" -Expect "elevensies" -Extract "12" {
+				}
+				Facet "Implicit Property Test - D" -PreventConfig {}
 			}
 		}
 		
@@ -57,50 +61,86 @@ Describe "Functionality Tests" -Tag "Functionality" {
 			$sut = Get-Facet -Name "Implicit Property Test - A";
 			$sut.ModelPath | Should -Be "Model.Attribute.A";
 			
+			$sut.Properties[0].ModelPath | Should -Be "Model.Attribute.A";
+			
 			$sut = Get-Facet -Name "Implicit Property Test - B";
 			$sut.ModelPath | Should -Be "Model_And_Target.X";
 			$sut.TargetPath | Should -Be "Model_And_Target.X";
+			
+			$sut.Properties[0].TargetPath | Should -Be "Model_And_Target.X";
 		}
 		
 		It "Sets -Impact Values for Implicit Properties" {
 			$sut = Get-Facet -Name "Implicit Property Test - A";
-			
 			$sut.Impact | Should -Be "High";
+			
+			$sut.Properties[0].Impact | Should -Be "High";
 		}
 		
 		It "Sets -Display Values for Implicit Properties" {
 			$sut = Get-Facet -Name "Implicit Property Test - C";
 			$sut.Display | Should -Be "{SELF}.Reflexive";
+			
+			$sut.Properties[0].Display | Should -Be "{SELF}.Reflexive";
 		}
 		
 		It "Sets -Expect Values for Implicit Properties" {
 			$sut = Get-Facet -Name "Implicit Property Test - C";
-			$sut.Expect | Should -Contain "elevensies";
+			$sut.Expect | Should -Be "return `"elevensies`";";
+			
+			$sut.Properties[0].Expect | Should -Be "return `"elevensies`";";
 		}
 		
 		It "Sets -Extract Values for Implicit Properties" {
 			$sut = Get-Facet -Name "Implicit Property Test - C";
-			$sut.Expect | Should -Contain "12";
+			$sut.Extract | Should -BeLike "*12*";
+			
+			$sut.Properties[0].Extract | Should -BeLike "*12*";
 		}
 		
-		# TODO: Implement the functionality that'll make this test work:
-		# It "Allows -PreventConfig to be Set for Implicit Properties" {
-		# 	# create implicit facet D? (or maybe just use B?) ... and set -PreventConfig and/or one of the aliases for it... + verify that it 'sets'/sticks/etc. 
-		# }
+		It "Allows -PreventConfig to be Set for Implicit Properties" {
+			$sut = Get-Facet -Name "Implicit Property Test - A";
+			$sut.ThrowOnConfig | Should -Be $false;
+			$sut.Properties[0].ThrowOnConfig | Should -Be $false;
+			
+			$sut = Get-Facet -Name "Implicit Property Test - D";
+			$sut.ThrowOnConfig | Should -Be $true;
+			$sut.Properties[0].ThrowOnConfig | Should -Be $true;
+		}
 	}
 	
 	Context "Basic Facet Tests" {
 		It "Builds a Facet with Trivial Explicit Properties" {
 			Facets {
 				Facet "Simple Facet with 2x Properties" {
-					Property "x" { }
-					Property "y" { }
+					Property "x" {
+					}
+					Property "y" {
+					}
 				}
 			}
 		}
-#		
-#		It "Registers and Returns a Simple Facet with 2x Properties" {
-#			
-#		}
+		#		
+		#		It "Registers and Returns a Simple Facet with 2x Properties" {
+		#			
+		#		}
+	}
+}
+
+Describe "Functionality Tests" -Tag "Execution" {
+	Context "Implicit Facets" {
+		It "Executes Implicit Facets" {
+			Facets {
+				Facet "Implicit Facet - Execution A" -Display "35-Test" -Extract 35 {}
+			}
+			
+			$outcome = Read-Facet "Implicit Facet - Execution A";
+			$outcome | Should -Not -Be $null;
+			$outcome | Should -BeOfType Proviso.Core.FacetReadResult;
+			
+			$outcome.PropertyReadResults.Count | Should -Be 1;
+			$outcome.PropertyReadResults[0].Display | Should -Be "35-Test";
+			
+		}
 	}
 }

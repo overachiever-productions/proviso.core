@@ -253,9 +253,9 @@ function Initialize-ResultsObject {
 	# 			cuz... that's 3-4 lines of code, max ... vs 9x switch/case options... 
 	
 	$name = $Block.Name;
-	$format = $Block.Format;
+	$display = $Block.Display;
 	
-	return New-Object Proviso.Core.FacetReadResult($name, $format);
+	return New-Object Proviso.Core.FacetReadResult($name, $display);
 }
 
 function Get-PatternIterationMembers {

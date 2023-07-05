@@ -98,6 +98,8 @@ namespace Proviso.Core
 
         public string GetPropertyDisplayName()
         {
+
+            // UPDATE: I don't think ANY of the notes below apply anymore... 
             // So, this'll be a bit messy. 
             //      this IS the place to get the .Display ... only:
             //      1) it might not be set - in which case, easy-peasy, we just output the PropertyName. 

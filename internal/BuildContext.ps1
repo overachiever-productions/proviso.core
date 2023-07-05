@@ -133,7 +133,7 @@ function Set-Declarations {
 	}
 	
 	if ((Throws-OnConfig $BlockType -Name $Name -NoConfig:$NoConfig -ThrowOnConfigure $ThrowOnConfigure -Verbose:$xVerbose -Debug:$xDebug)) {
-		# NOTE: the code below is ... nuts/crazy. IDeclarable doesn't expose the methods being called - but the OBJECT being passed in does... 
+		# NOTE: the code below is ... nuts/crazy. IDeclarable doesn't expose the .SetThrowOnConfig - but the OBJECT being passed in does... 
 		$iDeclarable.SetThrowOnConfig($ThrowOnConfigure);
 	}
 	
@@ -150,7 +150,7 @@ function Set-Declarations {
 	}
 	
 	if ($Display) {
-		$iDeclarable.SetDisplay($Display);
+		$iDeclarable.Display = $Display;
 	}
 	
 	if ($Expect) {
@@ -160,7 +160,6 @@ function Set-Declarations {
 	if ($Extract) {
 		$iDeclarable.Extract = (Get-ReturnScript $Extract);
 	}
-	
 
 	#$stack = ((Get-PSCallStack).Command -join ",") -replace "Enter-Block,"
 	

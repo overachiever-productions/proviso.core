@@ -176,6 +176,7 @@ function Register-Facet {
 			# INHERITANCE:
 			Inherit -Parent $facet -Child $prop -Property "Expect";
 			Inherit -Parent $facet -Child $prop -Property "Extract";
+			Inherit -Parent $facet -Child $prop -Property "Display";
 			Inherit -Parent $facet -Child $prop -Property "TargetPath";
 			Inherit -Parent $facet -Child $prop -Property "ModelPath";
 			

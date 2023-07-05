@@ -42,7 +42,6 @@ namespace Proviso.Core
         ScriptBlock Extract { get; set; }
         //ScriptBlock Compare { get; }
 
-        void SetDisplay(string display);
         void SetPaths(string model, string target);
         void SetSkipped(string reason);
     }
@@ -120,22 +119,13 @@ namespace Proviso.Core
 
     public class DeclarableBase : IDeclarable
     {
-        private string _display;
-
         public string ParentName { get; private set; }
         public string Name { get; private set; }
         public string ModelPath { get; set; }
         public string TargetPath { get; set; }
         public bool Skip { get; set; }
         public string SkipReason { get; set; }
-
-        public string Display
-        {
-            get
-            {
-                return this._display ?? this.Name;
-            }
-        }
+        public string Display { get; set; }
 
         public ScriptBlock Expect { get; set; }
         public ScriptBlock Extract { get; set; }
@@ -146,12 +136,6 @@ namespace Proviso.Core
             this.ParentName = parentName;
 
             this.Skip = false;
-        }
-
-        public void SetDisplay(string display)
-        {
-            if (!string.IsNullOrWhiteSpace(display))
-                this._display = display;
         }
 
         public void SetPaths(string model, string target)

@@ -2,23 +2,35 @@
 
 <#
 
-#	Facet "Host Ports" {
-#		Property "ICMP" {
-#		}
-#		Property "RDP" {
-#		}
-#	}
-#
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+	$global:DebugPreference = "Continue";
+	
+	Facets {
+		Facet "Implicit Facet - Execution A" -Display "35-Test" -Extract 35 {}
+	} 
+
+	Read-Facet "Implicit Facet - Execution A";
+
+	write-host "-----------------------------------"
+
+	$facet = Get-Facet -Name "Implicit Facet - Execution A";
+
+	$facet.Display;
+	$facet.Properties[0].Display;
+
+
+#>
+
+<# 
+	PSEUDO SIGNATURES 
+
 #	Surface "Firewall Rules" {
 #		Facet "SQL Server Ports" {
-#			Property "SQL Server" {
-#			}
-#			Property "SQL Server - DAC" {
-#			}
-#			Property "SQL Server - Mirroring" { 
-#			}
+#			Property "SQL Server" {	}
+#			Property "SQL Server - DAC" {}
+#			Property "SQL Server - Mirroring" { }
 #			Cohort "Test Cohort" {
-#				Enumerate {
+#				List {
 #				}
 #			}
 #		}
@@ -43,7 +55,6 @@
 
 		Cleanup { }
 	}
-
 #>
 
 function Facet {
