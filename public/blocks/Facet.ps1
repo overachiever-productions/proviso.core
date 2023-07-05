@@ -116,13 +116,16 @@ function Facet {
 			"Facets" {
 				Write-Debug "$(Get-DebugIndent)Bypassing Binding of Facet: [$($currentFacet.Name)] to Parent, because Parent is a Facets wrapper.";
 			}
-			"Aspect" {
-				Write-Debug "$(Get-DebugIndent) Binding Facet: [$($currentFacet.Name)] to Aspect: [$($currentAspect.Name)].";
-				$currentAspect.AddFacet($currentFacet);
-			}
+#			"Aspect" {
+#				Write-Debug "$(Get-DebugIndent) Binding Facet: [$($currentFacet.Name)] to Aspect: [$($currentAspect.Name)].";
+#				$currentAspect.AddFacet($currentFacet);
+#			}
 			"Surface" {
 				Write-Debug "$(Get-DebugIndent)	Binding Facet: [$($currentFacet.Name)] to Surface: [$($currentSurface.Name)].";
 				$currentSurface.AddFacet($currentFacet);
+			}
+			default {
+				throw;
 			}
 		}
 		

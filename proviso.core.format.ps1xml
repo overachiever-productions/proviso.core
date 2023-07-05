@@ -10,7 +10,7 @@
 						<CustomItem>
 							<Text>  </Text>
 							<ExpressionBinding>
-								<ScriptBlock>$PvFormatter.BoundedString($_.GetPropertyDisplayName(), 40)</ScriptBlock>
+								<ScriptBlock>$PvFormatter.BoundedString($_.GetPropertyDisplayName(), 52)</ScriptBlock>
                             </ExpressionBinding>
 							<Text>   </Text>
 							<ExpressionBinding>
@@ -18,7 +18,7 @@
                             </ExpressionBinding>
 							<Text>   </Text>
 							<ExpressionBinding>
-								<ScriptBlock>$PvFormatter.BoundedString($_.GetReadDetail(), 44)</ScriptBlock>
+								<ScriptBlock>$PvFormatter.BoundedString($_.GetReadDetail(), 32)</ScriptBlock>
                             </ExpressionBinding>
 							<NewLine />
                         </CustomItem>
@@ -79,11 +79,11 @@
 							<NewLine />
 							<NewLine />
 							<ExpressionBinding>
-								<ScriptBlock>$PvFormatter.ColumnHeading(2, "Name", 40) + $PvFormatter.ColumnHeading(3, "Actual", 24) + $PvFormatter.ColumnHeading(3, "Detail", 44)</ScriptBlock>
+								<ScriptBlock>$PvFormatter.ColumnHeading(2, "Name", 52) + $PvFormatter.ColumnHeading(3, "Actual", 24) + $PvFormatter.ColumnHeading(3, "Detail", 32)</ScriptBlock>
                             </ExpressionBinding>
 							<NewLine />
 							<ExpressionBinding>
-								<ScriptBlock>$PvFormatter.ColumnDivider(2, 40) + $PvFormatter.ColumnDivider(3, 24) + $PvFormatter.ColumnDivider(3, 44)</ScriptBlock>
+								<ScriptBlock>$PvFormatter.ColumnDivider(2, 52) + $PvFormatter.ColumnDivider(3, 24) + $PvFormatter.ColumnDivider(3, 32)</ScriptBlock>
                             </ExpressionBinding>
 							<NewLine />
 							<Frame>

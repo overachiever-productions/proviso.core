@@ -26,12 +26,11 @@ filter Import-Types {
 		#"$ScriptRoot\clr\Proviso.Core\Mapper.cs"
 		
 		"$ScriptRoot\clr\Proviso.Core\Models\Membership.cs"
-		"$ScriptRoot\clr\Proviso.Core\Models\Iterator.cs"
+		"$ScriptRoot\clr\Proviso.Core\Models\Instance.cs"
 		
 		"$ScriptRoot\clr\Proviso.Core\Models\Properties.cs"
 		#"$ScriptRoot\clr\Proviso.Core\Models\Assert.cs"
 		"$ScriptRoot\clr\Proviso.Core\Models\Facet.cs"
-		#"$ScriptRoot\clr\Proviso.Core\Models\Aspect.cs"
 		"$ScriptRoot\clr\Proviso.Core\Models\Surface.cs"
 		#"$ScriptRoot\clr\Proviso.Core\Models\Runbook.cs"
 		

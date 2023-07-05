@@ -32,7 +32,9 @@ function Execute-Pipeline {
 		[bool]$xVerbose = ("Continue" -eq $global:VerbosePreference) -or ($PSBoundParameters["Verbose"] -eq $true);
 		[bool]$xDebug = ("Continue" -eq $global:DebugPreference) -or ($PSBoundParameters["Debug"] -eq $true);
 		
-		Write-Debug "Starting Pipeline Operations.";
+		Reset-PipelineDebugIndents;
+		
+		Write-Debug "$(Get-PipelineDebugIndent -Key "Root")Starting Pipeline Operations.";
 		Write-Verbose "Starting Pipeline Operations.";
 		
 		[bool]$isRunbook = $false;
@@ -68,11 +70,11 @@ function Execute-Pipeline {
 			}
 		}
 		catch {
-			Write-Debug "	Processing Pipeline: Exception During Setup: $($_.Exception.Message) -Stack: $($_.ScriptStackTrace)";
+			Write-Debug "$(Get-PipelineDebugIndent -Key "SetupException")Processing Pipeline: Exception During Setup: $($_.Exception.Message) -Stack: $($_.ScriptStackTrace)";
 			# TODO: implement this throw... stuff
 			throw "Processing Setup Exception: $_";
 		}
-		Write-Debug "	Pipeline Setup Operations Complete.";
+		Write-Debug "$(Get-PipelineDebugIndent -Key "SetupDone")Pipeline Setup Operations Complete.";
 		
 		#endregion
 		
@@ -80,14 +82,12 @@ function Execute-Pipeline {
 		# 2. Runtime Validation 
 		# ====================================================================================================
 		#region Validation 
-		Write-Debug "	Starting Pipeline Validations.";
+		Write-Debug "$(Get-PipelineDebugIndent -Key "Validation")Starting Pipeline Validations.";
 		
-# GEDANKEN: If $currentWhatzit.HasCohorts... then... verify that we've got a legit Enumerate, Add, Remove (for whatever kind of operation we're running now). 
-# 		arguably, some of these validations would have been tackled during registration..
-		
+		Validate-PipelinePatterns;
+		Validate-PipelineCollections;
 		Validate-PropertyDisplayTokens;
 		
-		# NOTE: no need to evaluate the verb for READs - we'll ALWAYS at LEAST do READ (can't Test (Compare) or Invoke (Configure) without READ-ing).
 		TrySet-TargetAsImplicitExtractForNonExplicitExtractProperties -Surfaces $surfaces -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
 		
 		if ($Verb -in ("Test", "Invoke")) {
@@ -104,16 +104,15 @@ function Execute-Pipeline {
 			# 2. Validate -Impact of each property ... vs -PipelineAllowedImpact (or whatever) I'm going to call that. 
 			# 		obviously, if an impact for a single property is 'greater than' what the user has specified/allowed... we'll have to throw here. 
 		}
- 
-		Write-Debug "	  Pipeline Validations Complete.";
+		
+		Write-Debug "$(Get-PipelineDebugIndent -Key "Validation")Pipeline Validations Complete.";
 		#endregion
 		
 		# ====================================================================================================
 		# 3. Processing (i.e., actual pipeline)
 		# ====================================================================================================		
 		#region Processing 
-		
-		Write-Debug "	Starting Pipeline Processing.";
+		Write-Debug "$(Get-PipelineDebugIndent -Key "Processing")Starting Pipeline Processing.";
 		try {
 			if ($isRunbook) {
 				# A. 
@@ -154,73 +153,53 @@ function Execute-Pipeline {
 				}
 				
 				foreach ($facet in $surface.Facets) {
-					
-					# TODO: ... if($facet.IsPattern)... then... get the iterator... 
-					# 			and fore each instance... loop through the pattern's properties.   (i.e., use Extract or Expect)
-					# 			Also. Might make sense to push the logic down below (i.e., the for-each prop) into a func... that'd ... do 'higher-level' stuff
-					# 			per each prop, then either do the prop OR each child prop via calls to Process-Property.
-					
-					# setup facet-level context info/details... 
-					# e.g., $global:PvContext.Facet.xxxx props and such. 
-					# and clear any $PVContext.get/setFacet-LevelStorage/State stuff as well. 
-					
-					
-					Write-Debug "		Iterating Properties...";
-					foreach ($property in $facet.Properties) { 
-						if ($property.IsCollection) {
-							Write-Debug "			Processing Collection.";
-							
-							# TODO: i'm always going to read ... which is the same as processing of Extract. 
-							# 		only... while Extract => List... 
-							# 		do I want to do my 'foreach' down below against ... the List{} or agaisnt the define{}?
-							# 			seems like the DEFINE would make more sense - unless ... the verb is READ. 
-							# 			yeah. it's verb dependent. sigh. 
-							# 			IF the verb is Read ... then I can ONLY enumerate what's there... (er... wait... so confused)
-							# 			but, if the verb is Test/Invoke then ... i need to see the Define... 							
-							$enumerator = $property.Membership.List;
-							
-							try {
-								Write-Debug "				Enumerating Collection Members.";
-								$enumeratorValues = & $enumerator;
-								Write-Debug "				  Enumeration of Collection Members Complete. Found $($enumeratorValues.Count) members.";
+					if ($facet.IsPattern) {
+						Write-Debug "$(Get-PipelineDebugIndent -Key "Instances")Iterating Pattern Instances.";
+						
+						# REFACTOR: Recursion might be a better way to do the following (only, I worry it MIGHT become untenable).
+						switch ($facet.Instances.Count) {
+							0 {
+								throw "some kind of weird validation problem - should've detected this before now... "
 							}
-							catch {
-								Write-Host "I need better error handling... but, this is a failure that happened in ... getting List{} results from Membership: $_ ";
-							}
-							
-							if ($enumeratorValues.Count -le 1) {
-								throw "List failed... didn't get 1 or more results..";
-							}
-							
-							foreach ($currentValue in $enumeratorValues) {
-								Write-Debug "					Setting Context Data for Current Collection Member/Members.";
-								Set-PvContext_CollectionData -Name ($property.Name) -Membership ($property.Membership) -Members $enumeratorValues -CurrentMember $currentValue;
-								
-								foreach ($nestedProperty in $property.Properties) {
+							1 {
+								$members = Get-PatternIterationMembers -Pattern $facet -Verb $Verb;
+								foreach ($m in $members) {
+									Set-PvContext_InstanceData -InstanceName ($facet.Instances[0].Name) -Members $m -CurrentMember $members -DefaultInstanceName ($facet.Instances[0].DefaultInstanceName);
 									
-									# TODO: look at moving this INTO `Process-Property` ... as in, i should be able to tell, inside that func, IF we're dealing with a CollectionProp or not. 
-									# 		i could, obviously, just check for $PVContext.Collection exists or ... not... OR, I could also, potentially, throw in ... an -IsCollectionProp switch or 
-									# 			whatever that'd be set in this path/fork/if to $true and to $false in the else? 
-									# 		the other thing I need to address is ... that I'll want/have-to? do something similar for iterator details too, right?
-									if (-not $nestedProperty.Display) {
-										$defaultEnumeratedPropertyDisplay = "$($nestedProperty.Name)::$($currentValue)"; # vNEXT: use equivalent of string.format ... (i.e., "{0}{1}") and allow a GLOBAL preference here for something like $PvPreferences.DefaultCollectionPropertiesFormatThingy = "{0}.{1}" ... or whatever. 
-										$nestedProperty.SetDisplay($defaultEnumeratedPropertyDisplay);
-									}
-									
-									Process-Property -Verb $Verb -Property $nestedProperty -Results $results `
-															   -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+									Iterate-FacetProperties -FacetOrPattern $facet;
 								}
-								
-								Remove-PvContext_CollectionData;
 							}
-							
+							2 {
+								$parents = Get-PatternIterationMembers -Pattern $facet -Verb $Verb;
+								$parentInstancesName = $facet.Instances[0].Name;
+								$parentInstancesDefaultInstanceName = $facet.Instances[0].DefaultInstanceName;
+								foreach ($parent in $parents) {
+									Set-PvContext_InstanceData -InstanceName $parentInstancesName -Members $parents -CurrentMember $parent -DefaultInstanceName $parentInstancesDefaultInstanceName;
+									
+									$children = Get-PatternIterationMembers -Pattern $facet -Depth 1 -Verb $Verb;
+									$childrenInstancesName = $facet.Instances[1].Name;
+									$childrenInstancesDefaultInstanceName = $facet.Instances[1].DefaultInstanceName;
+									foreach ($child in $children) {
+										Set-PvContext_InstanceData -InstanceName $childrenInstancesName -Members $children -CurrentMember $child -DefaultInstanceName $childrenInstancesDefaultInstanceName;
+										
+										Iterate-FacetProperties -FacetOrPattern $facet;
+									}
+								}
+							}
+							3 {
+								# TODO: implement as above - but with ... grand-children (sheesh)
+								throw "Iteration of Instances for Patterns with 3x (or more?) Instance-Blocks hasn't been completed yet.";
+							}
+							default {
+								throw "only 3x leves supported for now."; # and... honestly, > 3x starts getting pretty complex, no?
+							}
 						}
-						else {
-							Process-Property -Verb $Verb -Property $property -Results $results `
-													   -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
-						}
+						
+						Write-Debug "$(Get-PipelineDebugIndent -Key "Instances")Instance Iteration Complete.";
 					}
-					Write-Debug "		  Property Iteration Complete.";
+					else {
+						Iterate-FacetProperties -FacetOrPattern $facet;
+					}
 				}
 				
 				if ($surface.Cleanup) {
@@ -237,7 +216,7 @@ function Execute-Pipeline {
 		catch {
 			throw "Error in ... Pipeline Processing (step 3): $_ ";
 		}
-		Write-Debug "	  Pipeline Processing Complete.";
+		Write-Debug "$(Get-PipelineDebugIndent -Key "Processing")Pipeline Processing Complete.";
 		#endregion
 		
 		# ====================================================================================================
@@ -251,7 +230,7 @@ function Execute-Pipeline {
 	}
 	
 	end {
-		Write-Debug "Pipeline Operations Complete.";
+		Write-Debug "$(Get-PipelineDebugIndent -Key "Root")Pipeline Operations Complete.";
 		Write-Verbose "Pipeline Operations Complete.";
 		
 		# TODO: if there was an unhandled exception or full-blown problem... DON'T return results?
@@ -277,6 +256,104 @@ function Initialize-ResultsObject {
 	$format = $Block.Format;
 	
 	return New-Object Proviso.Core.FacetReadResult($name, $format);
+}
+
+function Get-PatternIterationMembers {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Models.Facet]$Pattern,
+		[int]$Depth = 0,
+		[string]$Verb
+	);
+	
+	$iteratorBlock = $Pattern.Instances[$Depth].Enumerate;
+	if ("Read" -eq $Verb) {
+		$iteratorBlock = $Pattern.Instances[$Depth].List;
+	}
+	
+	try {
+		$iteratorMembers = & $iteratorBlock;
+	}
+	catch {
+		throw "Exception attempting to iterate over <iterator-name-here>. Exception: $_ ";
+	}
+	
+	if ($iteratorMembers.Count -le 1) {
+		Write-Host "need to look for a default instance name here... and throw if REQUIRED but ..  be DONE if there's nothing... "
+	}
+	
+	return $iteratorMembers;
+}
+
+function Iterate-FacetProperties {
+	[CmdletBinding()]
+	param (
+		[Proviso.Core.Models.Facet]$FacetOrPattern   # facetOrPattern... 
+	);
+	
+	begin {
+		# setup facet-level context info/details... 
+		# e.g., $global:PvContext.Facet.xxxx props and such. 
+		# and clear any $PVContext.get/setFacet-LevelStorage/State stuff as well. 		
+	};
+	
+	process {
+		Write-Debug "$(Get-PipelineDebugIndent -Key "Properties")Iterating Properties...";
+		foreach ($property in $FacetOrPattern.Properties) {
+			if ($property.IsCollection) {
+				Write-Debug "			Processing Collection.";
+				
+				$enumerator = $property.Membership.Enumerate;
+				if ("Read" -eq $Verb) {
+					$enumerator = $property.Membership.List;
+				}
+				
+				try {
+					Write-Debug "				Enumerating Collection Members.";
+					$enumeratorValues = & $enumerator;
+					Write-Debug "				  Enumeration of Collection Members Complete. Found $($enumeratorValues.Count) members.";
+				}
+				catch {
+					Write-Host "I need better error handling... but, this is a failure that happened in ... getting List{} results from Membership: $_ ";
+				}
+				
+				if ($enumeratorValues.Count -le 1) {
+					throw "List failed... didn't get 1 or more results..";
+				}
+				
+				foreach ($currentValue in $enumeratorValues) {
+					Write-Debug "					Setting Context Data for Current Collection Member/Members.";
+					Set-PvContext_CollectionData -Name ($property.Name) -Membership ($property.Membership) -Members $enumeratorValues -CurrentMember $currentValue;
+					
+					foreach ($nestedProperty in $property.Properties) {
+						
+						# TODO: look at moving this INTO `Process-Property` ... as in, i should be able to tell, inside that func, IF we're dealing with a CollectionProp or not. 
+						# 		i could, obviously, just check for $PVContext.Collection exists or ... not... OR, I could also, potentially, throw in ... an -IsCollectionProp switch or 
+						# 			whatever that'd be set in this path/fork/if to $true and to $false in the else? 
+						# 		the other thing I need to address is ... that I'll want/have-to? do something similar for iterator details too, right?
+						if (-not $nestedProperty.Display) {
+							$defaultEnumeratedPropertyDisplay = "$($nestedProperty.Name)::$($currentValue)"; # vNEXT: use equivalent of string.format ... (i.e., "{0}{1}") and allow a GLOBAL preference here for something like $PvPreferences.DefaultCollectionPropertiesFormatThingy = "{0}.{1}" ... or whatever. 
+							$nestedProperty.SetDisplay($defaultEnumeratedPropertyDisplay);
+						}
+						
+						Process-Property -Verb $Verb -Property $nestedProperty -Results $results `
+										 -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+					}
+					
+					Remove-PvContext_CollectionData;
+				}
+			}
+			else {
+				Process-Property -Verb $Verb -Property $property -Results $results `
+								 -Model $Model -Config $Config -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+			}
+		}
+		Write-Debug "$(Get-PipelineDebugIndent -Key "Properties")Property Iteration Complete.";		
+	};
+	
+	end {
+		# clear ... facet-level context stuff? 
+	}
 }
 
 function Process-Property {
@@ -352,17 +429,39 @@ function Process-Property {
 	}
 }
 
+function Validate-PipelinePatterns {
+	# foreach pattern... in the 'pipeline/chain'
+	# 	1. make sure there's at LEAST 1x Iterator. 
+	#	2. Then, for each Iterator: 
+	# 		a. make sure we have the at least `List{}` and... `Enumerate{}` DEPENDING upon the verb. 
+	# 		b. based on strict/naive... is there anything else to address? 
+}
+
+function Validate-PipelineCollections {
+	# foreach collection in the pipeline:
+	# 	1. make sure that there is 1x (only) Membership. 
+	#   2. for the membership: 
+	# 		a. make sure we have a `List{}` - and, based on $Verb, an `Enumerate{}` 
+	# 		b. anything else to do based on strict vs naive?
+	
+}
+
 function Validate-PropertyDisplayTokens {
 	foreach ($surface in $Surfaces) {
 		foreach ($facet in $surface.Facets) {
+			[bool]$isPattern = $false;
+			if ($facet.IsPattern) {
+				$isPattern = $true;
+			}
+			
 			foreach ($prop in $facet.Properties) {
 				if ($prop.IsCollection) {
 					foreach ($nestedProp in $prop.Properties) {
-						Validate-DisplayTokenUse -Display $nestedProp.Display -IsCollection;
+						Validate-DisplayTokenUse -Display $nestedProp.Display -IsCollection -IsInstance:$isPattern;
 					}
 				}
 				else {
-					Validate-DisplayTokenUse -Display $prop.Display;
+					Validate-DisplayTokenUse -Display $prop.Display -IsInstance:$isPattern;
 				}
 			}
 		}
@@ -524,11 +623,47 @@ filter Get-ReturnScript {
 	return [ScriptBlock]::Create($script).GetNewClosure();
 }
 
+function Reset-PipelineDebugIndents {
+	$script:pipelineIndentManager = New-Object Collections.Generic.List[String];
+}
 
+function Get-PipelineDebugIndent {
+	param (
+		[string]$Key
+	);
+	
+	$Key = $Key.ToLower();
+	
+	[string]$pad = "";
+	[int]$count = 0;
+	if ($script:pipelineIndentManager.Contains($Key)) {
+		[int]$count = $script:pipelineIndentManager.Count;
+		$pad = " ";
+		$script:pipelineIndentManager.Remove($Key) | Out-Null;
+	}
+	else {
+		$script:pipelineIndentManager.Add($Key) | Out-Null;
+		[int]$count = $script:pipelineIndentManager.Count;
+	}
+	
+	return "$("`t" * ($count - 1))$pad";
+}
+
+#Reset-PipelineDebugIndents;
+#
+#Write-Host "Anchor";
+#Write-Host "$(Get-PipelineDebugIndent -Key "Tier1")Start Tier 1";
+#Write-Host "$(Get-PipelineDebugIndent -Key "Tier2")Start Tier 2";
+#
+#
+#Write-Host "$(Get-PipelineDebugIndent -Key "TiEr2")End Tier 2";
+#Write-Host "$(Get-PipelineDebugIndent -Key "TiEr1")End Tier 1";
 
 # ------------------------------------------------------------------------------------
 
 # OLD/NUKE...  (after reviewing the big block of comments in the 'start' of the logic of this func....)
+
+<#
 filter Get-RunTimeGeneratedReturnScript {
 	param (
 		[Parameter(Mandatory, Position = 0)]
@@ -537,7 +672,6 @@ filter Get-RunTimeGeneratedReturnScript {
 		[string]$PathType
 	);
 	
-<#
 	
 					$expect = $facet.Expect;
 					$script = "return $expect;";
@@ -570,7 +704,6 @@ filter Get-RunTimeGeneratedReturnScript {
 					
 					$prop.Expect = [ScriptBlock]::Create($script);	
 	
-#>
 	
 	# TODO: this looks pretty dope actually: 
 	# 	https://github.com/iRon7/ConvertTo-Expression
@@ -620,3 +753,4 @@ filter Get-RunTimeGeneratedReturnScript {
 	
 	return [ScriptBlock]::Create($script).GetNewClosure();
 }
+#>
