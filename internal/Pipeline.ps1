@@ -84,10 +84,8 @@ function Execute-Pipeline {
 		#region Validation 
 		Write-Debug "$(Get-PipelineDebugIndent -Key "Validation")Starting Pipeline Validations.";
 		
-		# TODO: 
-		# 	- Pre-Validate Collections. Based on $Verb, do we have the right Expect (Enumerate) or Extract (List)? methods? As well as Add/Remove and such - as might be needed (based on $Verb)?
-		# 	- Pre-Validate Patterns. ~ ditto to the above. 
-		
+		Validate-PipelinePatterns;
+		Validate-PipelineCollections;
 		Validate-PropertyDisplayTokens;
 		
 		TrySet-TargetAsImplicitExtractForNonExplicitExtractProperties -Surfaces $surfaces -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
@@ -114,7 +112,6 @@ function Execute-Pipeline {
 		# 3. Processing (i.e., actual pipeline)
 		# ====================================================================================================		
 		#region Processing 
-		
 		Write-Debug "$(Get-PipelineDebugIndent -Key "Processing")Starting Pipeline Processing.";
 		try {
 			if ($isRunbook) {
@@ -156,14 +153,10 @@ function Execute-Pipeline {
 				}
 				
 				foreach ($facet in $surface.Facets) {
-					
 					if ($facet.IsPattern) {
 						Write-Debug "$(Get-PipelineDebugIndent -Key "Instances")Iterating Pattern Instances.";
 						
-						# TODO: ensure (up within the validations section) that there is at least 1x instance.list|enumerate. 
-						
-						# REFACTOR: this is mega-cheesy. I mean, I MIGHT stick with it ... but some sort of recursive func would make a lot more sense... 
-						# 			er. well. a recursive func... might get SUPER complicated in a hurry. it'd be a bunch of foreach(xxxx) ... in a recursion. I dunno... 
+						# REFACTOR: Recursion might be a better way to do the following (only, I worry it MIGHT become untenable).
 						switch ($facet.Instances.Count) {
 							0 {
 								throw "some kind of weird validation problem - should've detected this before now... "
@@ -171,7 +164,7 @@ function Execute-Pipeline {
 							1 {
 								$members = Get-PatternIterationMembers -Pattern $facet -Verb $Verb;
 								foreach ($m in $members) {
-									# set ... context... 
+									Set-PvContext_InstanceData -InstanceName ($facet.Instances[0].Name) -Members $m -CurrentMember $members -DefaultInstanceName ($facet.Instances[0].DefaultInstanceName);
 									
 									Iterate-FacetProperties -FacetOrPattern $facet;
 								}
@@ -195,56 +188,12 @@ function Execute-Pipeline {
 							}
 							3 {
 								# TODO: implement as above - but with ... grand-children (sheesh)
+								throw "Iteration of Instances for Patterns with 3x (or more?) Instance-Blocks hasn't been completed yet.";
 							}
 							default {
 								throw "only 3x leves supported for now."; # and... honestly, > 3x starts getting pretty complex, no?
 							}
 						}
-						
-#						$parents = Get-PatternIterationMembers -Pattern $facet -Verb $Verb;
-#						foreach ($parentInstance in $parents) {
-#							if ($facet.Instances.Count -gt 1) {
-#								Write-Host "found a sub-group to iterate over..."
-#							}
-#							else {
-#								Write-Host "i'm a the current instance: $parentInstance"
-#							}
-#						}
-						
-						
-						#						$parentIterator = $facet.Instances[0].Enumerate;
-#						if ("Read" -eq $Verb) {
-#							$parentIterator = $facet.Instances[0].List;
-#						}
-#						
-#						Write-Host "got here."
-#						
-#						#region Get-InstanceIteratorStuff
-#						$iterator = $facet.Instances.Enumerate;
-#						if ("Read" -eq $Verb) {
-#							$iterator = $facet.Instances.List;
-#						}
-#						
-#						try {
-#							$iteratorValues = & $iterator;
-#						}
-#						catch {
-#							throw "need better error handling. But there was an exception enumerating ... instances for Pattern. Error: $_";
-#						}
-#						
-#						if ($iteratorValues.Count -le 1) {
-#							if (Has-Value $facet.Instances.DefaultInstanceName) {
-#								$iteratorValues = @(($facet.Instances.DefaultInstanceName));
-#							}
-#							else {
-#								throw "no instances found and no default specified.";
-#							}
-#						}
-#						#endregion
-#						
-#						foreach ($instance in $iteratorValues) {
-#							Iterate-FacetProperties -FacetOrPattern $facet -InstanceName $instance;
-#						}
 						
 						Write-Debug "$(Get-PipelineDebugIndent -Key "Instances")Instance Iteration Complete.";
 					}
@@ -478,6 +427,23 @@ function Process-Property {
 	end {
 		Remove-PvContext_PropertyData;
 	}
+}
+
+function Validate-PipelinePatterns {
+	# foreach pattern... in the 'pipeline/chain'
+	# 	1. make sure there's at LEAST 1x Iterator. 
+	#	2. Then, for each Iterator: 
+	# 		a. make sure we have the at least `List{}` and... `Enumerate{}` DEPENDING upon the verb. 
+	# 		b. based on strict/naive... is there anything else to address? 
+}
+
+function Validate-PipelineCollections {
+	# foreach collection in the pipeline:
+	# 	1. make sure that there is 1x (only) Membership. 
+	#   2. for the membership: 
+	# 		a. make sure we have a `List{}` - and, based on $Verb, an `Enumerate{}` 
+	# 		b. anything else to do based on strict vs naive?
+	
 }
 
 function Validate-PropertyDisplayTokens {
