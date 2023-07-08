@@ -86,8 +86,7 @@ filter UnPublish-PVDisplayToken {
 function Validate-DisplayTokenUse {
 	[CmdletBinding()]
 	param (
-		[Parameter(Mandatory)]
-		[string]$Display,
+		[string]$Display = $null,  # it's a BIT of a pain for SOME callers to determine if $prop.SuchAndSuchDisplay even has a value... so, allowing NULLs. 
 		[Switch]$IsCollection = $false,
 		[Switch]$IsInstance = $false,
 #		[Switch]$IsSurface = $false,
@@ -95,6 +94,10 @@ function Validate-DisplayTokenUse {
 		$Tokens = ($global:PVDisplayTokenizer.Tokens),
 		$Context = ($global:PVContext.Current)
 	);
+	
+	if (Is-Empty $Display) {
+		return;
+	}
 	
 	[string[]]$validationFailures = @();
 	[string[]]$validationWarnings = @();
@@ -176,13 +179,16 @@ filter Get-MatchSubstringKey {
 function Process-DisplayTokenReplacements {
 	[CmdletBinding()]
 	param (
-		[Parameter(Mandatory)]
 		[string]$Display,
 		[Parameter(Mandatory)]
-		[string]$Name,     # used only if/when there's a failure in processing tokens within -Display
+		[string]$Name,
 		$Tokens = ($global:PVDisplayTokenizer.Tokens),  
 		$Context = ($global:PVContext.Current)
 	);
+	
+	if (Is-Empty $Display) {
+		return $Name;
+	}
 	
 	[string]$output = $Display;
 	if ($Display -like '*{*') {

@@ -214,7 +214,7 @@ function Execute-Pipeline {
 			}
 		}
 		catch {
-			throw "Error in ... Pipeline Processing (step 3): $_ ";
+			throw "Error in ... Pipeline Processing (step 3): $_.`t$($_.ScriptStackTrace) ";
 		}
 		Write-Debug "$(Get-PipelineDebugIndent -Key "Processing")Pipeline Processing Complete.";
 		#endregion
