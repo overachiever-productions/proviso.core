@@ -180,6 +180,16 @@ filter Remove-PvContext_InstanceData {
 }
 
 
+filter Get-PvContextOperationName {
+	if (($PVCurrent.Properties -contains "Operation") -or ($null -ne $PVCurrent.Operation)) {
+		return "$($PVCurrent.Operation.Verb)-$($PVCurrent.Operation.Noun)";
+	}
+	
+	return "##ERROR##";
+}
+
+
+
 <#
 
 	Set-PvContext_CollectionData -Members @("one", "two", "four") -CurrentMember 'one';
