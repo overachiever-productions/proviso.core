@@ -34,6 +34,8 @@
 		[Cleanup]
 #>
 
+# REFACTOR: call this ... BuildManager or BlockManager or maybe ... SyntaxManager... 
+
 $global:PvBuildContext = [Proviso.Core.BuildContext]::Current;
 
 function Enter-Block {

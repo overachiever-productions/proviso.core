@@ -86,7 +86,7 @@ filter UnPublish-PVDisplayToken {
 function Validate-DisplayTokenUse {
 	[CmdletBinding()]
 	param (
-		[string]$Display = $null,  # it's a BIT of a pain for SOME callers to determine if $prop.SuchAndSuchDisplay even has a value... so, allowing NULLs. 
+		[string]$Display = $null, 
 		[Switch]$IsCollection = $false,
 		[Switch]$IsInstance = $false,
 #		[Switch]$IsSurface = $false,
