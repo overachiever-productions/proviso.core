@@ -377,10 +377,26 @@ function Process-Property {
 	);
 	
 	begin {
+		if ($Property.Skip) {
+			$skipping = "Skipping Processing against Property: [$($Property.Name)] because it was marked with -Skip.";
+			if (Has-Value ($Property.SkipReason)) {
+				$skipping = $skipping.Replace("-Skip.", "-Ignore '$($Property.SkipReason)'.");
+			}
+			
+			Write-Debug $skipping;
+			Write-Verbose $skipping;
+			
+			return;
+		}
+		
 		Set-PvContext_PropertyData -PropertyName ($Property.Name) -ParentName ($Property.ParentName);
 	}
 	
 	process {
+		if ($Property.Skip) {
+			return;
+		}
+		
 		try {
 			$block = $Property.Extract;
 			[Object]$output = & $block;
@@ -425,6 +441,10 @@ function Process-Property {
 	}
 	
 	end {
+		if ($Property.Skip) {
+			return;
+		}
+		
 		Remove-PvContext_PropertyData;
 	}
 }
@@ -486,7 +506,7 @@ function TrySet-TargetAsImplicitExtractForNonExplicitExtractProperties {
 								throw "`nRuntime Validation Failure: `n  - Cohort Property [$($nestedProp.Name)] does NOT have an explicit - Extract, Extract{}, or -Path defined. `n  -Either Implement Extract or specify -Target for $($global:PvPipelineContext_CurentOperationName). ";
 							}
 							
-							$nestedProp.Extract = Get-RuntimeGeneratedExtractProxy $Target -Path ($nestedProp.TargetPath) -Verbose:$xVerbose -Debug:$xDebug;
+							$nestedProp.Extract = Get-RuntimeGeneratedExtractProxy $Target -Path ($nestedProp.TargetPath) -PropertyName ($nestedProp.Name) -Verbose:$xVerbose -Debug:$xDebug;
 						}
 					}
 				}
@@ -496,7 +516,7 @@ function TrySet-TargetAsImplicitExtractForNonExplicitExtractProperties {
 							throw "`nRuntime Validation Failure: `n  - Property [$($prop.Name)] does NOT have an explicit -Extract, Extract{}, or -Path defined. `n  - Either Implement Extract or specify -Target for $($global:PvPipelineContext_CurentOperationName). ";
 						}
 						
-						$prop.Extract = Get-RuntimeGeneratedExtractProxy $Target -Path ($prop.TargetPath) -Verbose:$xVerbose -Debug:$xDebug;
+						$prop.Extract = Get-RuntimeGeneratedExtractProxy $Target -Path ($prop.TargetPath) -PropertyName ($prop.Name) -Verbose:$xVerbose -Debug:$xDebug;
 					}
 				}
 			}
@@ -547,7 +567,8 @@ function Get-RuntimeGeneratedExtractProxy {
 	param (
 		[Parameter(Mandatory, Position = 0)]
 		[Object]$Target,
-		[string]$Path
+		[string]$Path,
+		[string]$PropertyName
 	);
 	
 	if (Has-Value $Path) {
@@ -559,8 +580,7 @@ function Get-RuntimeGeneratedExtractProxy {
 				return Get-ReturnScript $null; # can't merely return $null, have to return a SCRIPT that'll ... return $null;
 			}
 			
-			# TODO: figure out how to hand in {operationNameHere} - e.g., "Read-Facet" or "Test-Surface".FacetName??? 
-			throw "Explicitly Supplied -Target for [{operationNameHere}] does not have a property that matches the path: [$Path].";
+			throw "Validation Failure.`n`tSupplied -Target object for [$(Get-PvContextOperationName)] operation for [$PropertyName] does not have a property that matches the path: [$Path].";
 		}
 		
 		return Get-ReturnScript $value;
