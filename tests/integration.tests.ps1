@@ -127,6 +127,92 @@ Describe "Build Tests" -Tag "Build" {
 	}
 }
 
+Describe "Block Tests" -Tag "Blocks" {
+	Context "Properties" {
+		It "Executes Very Simple Properties" {
+			Facets {
+				Facet "Very Basic" {
+					Property "Very Basic - Canned" { }
+				}
+			}
+			
+			$outcome = Read-Facet "Very Basic" -Target "Canned Data";
+			$outcome | Should -Not -Be $null;
+			$outcome | Should -BeOfType Proviso.Core.FacetReadResult;
+			
+			$outcome.PropertyReadResults.Count | Should -Be 1;
+			$outcome.PropertyReadResults[0].ExtractionResult.Result | Should -Be "Canned Data";
+		}
+		
+		It "Can Extract -Path Values from Explicit Targets" {
+			Facets {
+				Facet "Basic Pathing" {
+					Property "Uses Path" -Path "Username" { }
+				}
+			}
+			
+			$target = @{
+				UserName = "Bilbo"
+			};
+			
+			$outcome = Read-Facet "Basic Pathing" -Target $target;
+			$outcome | Should -Not -Be $null;
+			$outcome | Should -BeOfType Proviso.Core.FacetReadResult;
+			
+			$outcome.PropertyReadResults.Count | Should -Be 1;
+			$outcome.PropertyReadResults[0].ExtractionResult.Result | Should -Be "Bilbo";
+		}
+		
+		It "Throws When Attempting to Use a Path that -Target does NOT Contain" {
+			{
+				$outcome = Read-Facet "Basic Pathing" -Target "This a scalar string - but the Property itself has a Path expecting 'Username'.";
+			} | Should -Throw "*does not have a property that matches*"
+		}
+		
+		It "Does NOT execute Properties Marked with -Skip" {
+			Facets {
+				Facet "One shoe on, one shoe off" {
+					Property "Shoe On" {}
+					Property "Shoe Off" -Skip {}
+				}
+			}
+			
+			$outcome = Read-Facet "One shoe on, one shoe off" -Target "My son John.";
+			$outcome | Should -Not -Be $null;
+			$outcome | Should -BeOfType Proviso.Core.FacetReadResult;
+			
+			$outcome.PropertyReadResults.Count | Should -Be 1;
+		}
+		
+		It "Treats -Ignore the same as -Skip" {
+			Facets {
+				Facet "Three blind mice" {
+					Property "See how this one runs" {} 
+					Property "This one runs too" {}
+					Property "This one would run, except... " -Ignore "...the butcher's wife got it"	{}
+				}
+			}
+			
+			$outcome = Read-Facet "Three blind mice" -Target "Weird nursery rhyme";
+			
+			$outcome.PropertyReadResults.Count | Should -Be 2;
+		}
+		
+	}
+	
+	Context "Collections" {
+		
+		
+		It "Ignores all Collection Properties for a Collection marked -Skip/-Ignore" {
+			# TODO: Implement this. 
+			#  and make sure there's some similar bit of handling for ... facets or whatever? (can a facet be completely ignored?)
+			# 		and... if it is... does that just mean "write-verbose: skipping this, skipping that, skipping N ... over and over - for each prop in the facet?"
+			# 			or does it mean something different?
+		}
+	}
+}
+
+
 Describe "Functionality Tests" -Tag "Execution" {
 	Context "Implicit Facets" {
 		It "Executes Implicit Facets" {
