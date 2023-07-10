@@ -31,6 +31,38 @@ Describe "Syntax-Validation Tests" -Tag "SyntaxValidation" {
 			}
 		}
 	}
+	
+	Context "Collections and Properties" {
+		It "Allows Collections as Child of Facet" {
+			Facets {
+				Facet "Collection As Child - Test 1" {
+					Collection {
+						Membership {
+							
+						}
+						Members {
+							
+						}
+					}
+				}
+			}
+		}
+		
+		It "Allows Collections as Child of Pattern" {
+			Facets {
+				Pattern "Collection As Child - Test2" {
+					Topology {}
+					Properties {
+						Property "Collection-Child-Test2 - Prop A" {}
+						Collection {
+							Membership {}
+							Members {}
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 Describe "Build Tests" -Tag "Build" {
@@ -120,10 +152,17 @@ Describe "Build Tests" -Tag "Build" {
 				}
 			}
 		}
-		#		
-		#		It "Registers and Returns a Simple Facet with 2x Properties" {
-		#			
-		#		}
+				
+		#It "Registers and Returns a Simple Facet with 2x Explicit Properties" {
+		#	
+		#}
+		
+		# It "Builds a Collection with a -Name"   # think I might remove ability to specify names for collections. Though... actually.. why NOT just LET them be there or not and Proviso simply doesn't DO anything with them - ever?
+		# It "Builds a Collection WITHOUT a -Name"
+		# It "Builds a Collection WITHOUT a -List (but requires a -TargetPath instead)?"
+		# It "Builds a Collection With Explicit -List" (but what happens if there's also a -TargetPath?)
+		# It "Builds a Collection With Explicit -Enumerate (again, what happens if there's a -ModelPath?"
+		# 	etc.
 	}
 }
 

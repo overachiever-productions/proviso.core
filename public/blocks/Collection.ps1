@@ -11,7 +11,7 @@ $global:LocalAdmins = @("Administrator", "BUILTIN\Admins");
 	
 	Facets {
 		Facet "Local Administrators" {
-			Collection "Dingus" -ModelPath "Host\LocalAdministrators" {
+			Collection "Dingus" -ModelPath "Host.LocalAdministrators" {
 				Membership -Strict {
 					List {
 						return $global:LocalAdmins;					
@@ -28,7 +28,9 @@ $global:LocalAdmins = @("Administrator", "BUILTIN\Admins");
 							return $global:LocalUsers -contains $target;
 						}
 					}
-					Property "IsLocalAdmin" -Expect $true -Display "{{{COLLECTION.MEMBER}.{SELF}}}" {
+					
+					# TODO: create a unit test for this: Property "IsLocalAdmin" -Expect $true -Display "{{{COLLECTION.MEMBER}.{SELF}}}" {
+					Property "IsLocalAdmin" -Expect $true -Display "{COLLECTION.MEMBER}.{SELF}" {
 						Extract {
 							$target = $PVCurrent.Collection.CurrentMember;
 							
@@ -96,7 +98,7 @@ function Collection {
 				
 				$currentFacet.AddProperty($currentCollection);
 			}
-			"Pattern" {
+			"Properties" {
 				Write-Debug "$(Get-DebugIndent)	Binding Collection: [$($currentCollection.Name)] to Pattern, named: [$($currentCollection.ParentName)], with grandparent named: [$grandParentName].";
 				
 				$currentPattern.AddProperty($currentCollection);

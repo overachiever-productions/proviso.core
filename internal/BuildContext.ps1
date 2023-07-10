@@ -17,19 +17,25 @@
 			[Assert]
 		[Aspect]
 			Facet | Pattern | [Import] -Pattern|Facet
-				[Iterate] (for Pattern)
-				[Add]	(Pattern)  - Install?
-				[Remove] (Pattern) - Uninstall?
-				Property | Cohort 
-					Enumerate
-					Add
-					Remove
-					Property (of Cohort - and... recurses)
-					[Inclusion] (of Property | Cohort)
-					Expect
-					Extract
-					[Compare]
-					Configure
+				[Topology] (for Pattern)
+					[List]  (Extract)
+					[Enumerate] (Expect)
+					Add	
+					[Remove ]
+				Property | Collection
+					[Membership] - Collection
+						List	
+						[Enumerate]
+						Add
+						[Remove]	
+					[Members]
+						Property
+						[Inclusion]
+					Property 
+						Expect
+						Extract
+						[Compare]
+						Configure
 
 		[Cleanup]
 #>
