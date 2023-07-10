@@ -227,7 +227,7 @@ namespace Proviso.Core
                     NodeName = "Collection",
                     Tracked = true,
                     RequiresName = false,
-                    AllowedParents = new List<string> { "Facet", "Pattern" },
+                    AllowedParents = new List<string> { "Facet", "Properties" },
                     AllowedChildren = new List<string> { "Enumerate", "Property" }
                 }, 
                 new Taxonomy

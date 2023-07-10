@@ -199,6 +199,7 @@ function Process-DisplayTokenReplacements {
 		foreach ($match in $regex.Matches($escaped)) {
 			[string]$matchValue = $match.Value;
 			
+			$key = $null;
 			if ($matchValue -like '*`[*`]*') {
 				$key = Get-MatchSubstringKey -Token ($match.Value);
 				

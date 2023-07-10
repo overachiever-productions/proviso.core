@@ -333,7 +333,7 @@ function Iterate-FacetProperties {
 						# 		the other thing I need to address is ... that I'll want/have-to? do something similar for iterator details too, right?
 						if (-not $nestedProperty.Display) {
 							$defaultEnumeratedPropertyDisplay = "$($nestedProperty.Name)::$($currentValue)"; # vNEXT: use equivalent of string.format ... (i.e., "{0}{1}") and allow a GLOBAL preference here for something like $PvPreferences.DefaultCollectionPropertiesFormatThingy = "{0}.{1}" ... or whatever. 
-							$nestedProperty.SetDisplay($defaultEnumeratedPropertyDisplay);
+							$nestedProperty.Display = $defaultEnumeratedPropertyDisplay;
 						}
 						
 						Process-Property -Verb $Verb -Property $nestedProperty -Results $results `
