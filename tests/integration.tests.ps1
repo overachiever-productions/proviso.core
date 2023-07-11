@@ -153,12 +153,45 @@ Describe "Build Tests" -Tag "Build" {
 			}
 		}
 				
-		#It "Registers and Returns a Simple Facet with 2x Explicit Properties" {
-		#	
-		#}
+		It "Registers and Returns a Simple Facet with 2x Explicit Properties" {
+			$sut = Get-Facet -Name "Simple Facet with 2x Properties";
+			$sut | Should -Not -Be $null;
+			$sut.Properties.Count | Should -Be 2;
+		}
 		
-		# It "Builds a Collection with a -Name"   # think I might remove ability to specify names for collections. Though... actually.. why NOT just LET them be there or not and Proviso simply doesn't DO anything with them - ever?
-		# It "Builds a Collection WITHOUT a -Name"
+		It "Builds a Collection WITHOUT a -Name" {
+			Facets {
+				Facet "Nameless Collection" {
+					Collection {
+						Membership {}
+						Members {
+							Property "Nameless - A" {}
+							Property "Nameless - B" {}
+						}
+					}
+				}
+			}
+		}
+		
+		# REFACTOR: should I REMOVE the ability to have names for Collection Blocks? - as in THROW or not build if they're present?
+		# I honestly can't see ANY reason to technically ALLOW names for Collection blocks. But, there's also no 'harm' in having them. 
+		It "Builds a Collection with a -Name" { 
+			Facets {
+				Facet "Named Collection" {
+					Collection "Named" {
+						Membership {
+						}
+						Members {
+							Property "Namee - A" {
+							}
+							Property "Named - B" {
+							}
+						}
+					}
+				}
+			}
+		}
+		
 		# It "Builds a Collection WITHOUT a -List (but requires a -TargetPath instead)?"
 		# It "Builds a Collection With Explicit -List" (but what happens if there's also a -TargetPath?)
 		# It "Builds a Collection With Explicit -Enumerate (again, what happens if there's a -ModelPath?"
@@ -251,10 +284,9 @@ Describe "Block Tests" -Tag "Blocks" {
 	}
 }
 
-
 Describe "Functionality Tests" -Tag "Execution" {
 	Context "Implicit Facets" {
-		It "Executes Implicit Facets" {
+		It "Reads Implicit Facets" {
 			Facets {
 				Facet "Implicit Facet - Execution A" -Display "35-Test" -Extract 35 {}
 			}
@@ -268,5 +300,42 @@ Describe "Functionality Tests" -Tag "Execution" {
 			
 			$outcome.PropertyReadResults[0].ExtractionResult.Result | Should -Be 35;
 		}
+		
+		# TODO: Test-Facet tests...
+		
+		# TODO: Invoke-Facet tests....
+	}
+	
+	Context "Explicit Facets - With Simple Properties" {
+		It "Reads Simple Facets with Simple Properties" {
+			Facets {
+				Facet "Simple Facet - With Simple Properties" {
+					Property "Simple::Simple:A" {}
+					Property "Simple::Simple:B" {}
+				}
+			}
+			
+			$outcome = Read-Facet "Simple Facet - With Simple Properties" -Target "Simple_Value";
+			$outcome | Should -Not -Be $null;
+			$outcome | Should -BeOfType Proviso.Core.FacetReadResult;
+			
+			$outcome.PropertyReadResults.Count | Should -Be 2;
+			
+			$outcome.PropertyReadResults[0].ExtractionResult.Result | Should -Be "Simple_Value";
+			$outcome.PropertyReadResults[1].ExtractionResult.Result | Should -Be "Simple_Value";
+		}
+		
+		
+		# TODO: Test-Facet tests...
+		
+		# TODO: Invoke-Facet tests....
+	}
+	
+	Context "Explicit Facets - With Collections" {
+		
+	}
+	
+	Context "Explicit Facets - With Collections and Properties" {
+		
 	}
 }
