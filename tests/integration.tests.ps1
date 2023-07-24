@@ -284,11 +284,12 @@ Describe "Block Tests" -Tag "Blocks" {
 	}
 }
 
-Describe "Functionality Tests" -Tag "Execution" {
+Describe "Functionality Tests::Read" -Tag "Execution" {
 	Context "Implicit Facets" {
 		It "Reads Implicit Facets" {
 			Facets {
-				Facet "Implicit Facet - Execution A" -Display "35-Test" -Extract 35 {}
+				Facet "Implicit Facet - Execution A" -Display "35-Test" -Extract 35 {
+				}
 			}
 			
 			$outcome = Read-Facet "Implicit Facet - Execution A";
@@ -310,8 +311,10 @@ Describe "Functionality Tests" -Tag "Execution" {
 		It "Reads Simple Facets with Simple Properties" {
 			Facets {
 				Facet "Simple Facet - With Simple Properties" {
-					Property "Simple::Simple:A" {}
-					Property "Simple::Simple:B" {}
+					Property "Simple::Simple:A" {
+					}
+					Property "Simple::Simple:B" {
+					}
 				}
 			}
 			
@@ -324,18 +327,264 @@ Describe "Functionality Tests" -Tag "Execution" {
 			$outcome.PropertyReadResults[0].ExtractionResult.Result | Should -Be "Simple_Value";
 			$outcome.PropertyReadResults[1].ExtractionResult.Result | Should -Be "Simple_Value";
 		}
-		
-		
-		# TODO: Test-Facet tests...
-		
-		# TODO: Invoke-Facet tests....
 	}
 	
 	Context "Explicit Facets - With Collections" {
+		It "Reads Simple Facets with Simple Collections" {
+			Facets {
+				Facet "Simple Facet - With a Simple Collection" {
+					Collection {
+						Membership {
+							List {
+								return @("A", "B");
+							}
+						}
+						Members {
+							Property "PropName" -Display "{COLLECTION.MEMBER}-{SELF}" {
+							}
+						}
+					}
+				}
+			}
+			
+			$outcome = Read-Facet "Simple Facet - With a Simple Collection" -Target "Collection-A";
+			$outcome | Should -Not -Be $null;
+			$outcome | Should -BeOfType Proviso.Core.FacetReadResult;
+			
+			$outcome.PropertyReadResults.Count | Should -Be 2;
+			
+			$outcome.PropertyReadResults[0].ExtractionResult.Result | Should -Be "Collection-A";
+			$outcome.PropertyReadResults[1].ExtractionResult.Result | Should -Be "Collection-A";
+		}
 		
+		It "Processes -Display Properties for Collection Members" {
+			$outcome = Read-Facet "Simple Facet - With a Simple Collection" -Target "Collection-A";
+			
+			$outcome.PropertyReadResults[0].Display | Should -Be "A-PropName";
+			$outcome.PropertyReadResults[1].Display | Should -Be "B-PropName";
+		}
+		
+		It "Enumerates Collection Items" {
+			$global:LocalUsers = @("Administrator", "Mike");
+			$global:LocalAdmins = @("Administrator", "BUILTIN\Admins");
+			
+			Facets {
+				Facet "Local Admins - Enum Test" {
+					Collection -ModelPath "Host.LocalAdministrators" {
+						Membership -Strict {
+							List {
+								return $global:LocalAdmins;
+							}
+						}
+						Members {
+							Property "Enum-Test: Account Exists" -Expect $true {
+								Extract {
+									$target = $PVCurrent.Collection.CurrentMember;
+									
+									return $global:LocalUsers -contains $target;
+								}
+							}
+							Property "IsLocalAdmin" -Expect $true -Display "{COLLECTION.MEMBER}.{SELF}" {
+								Extract {
+									$target = $PVCurrent.Collection.CurrentMember;
+									
+									return $global:LocalAdmins -contains $target;
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			$outcome = Read-Facet "Local Admins - Enum Test";
+			$outcome | Should -Not -Be $null;
+			$outcome | Should -BeOfType Proviso.Core.FacetReadResult;
+			
+			$outcome.PropertyReadResults.Count | Should -Be 4;
+		}
+		
+		It "Binds -Display Properties to Enumeration Items" {
+			$outcome = Read-Facet "Local Admins - Enum Test";
+			
+			$outcome.PropertyReadResults[1].Display | Should -Be "Administrator.IsLocalAdmin";
+			$outcome.PropertyReadResults[3].Display | Should -Be "BUILTIN\Admins.IsLocalAdmin";
+		}
 	}
 	
 	Context "Explicit Facets - With Collections and Properties" {
 		
 	}
+	
+	Context "Explicit Patterns - With Properties" {
+		It "Iterates Pattern Instances" {
+			$global:PretendActualXeSessions = @{
+				"MSSQLSERVER" = @{
+					"BlockedProcesses" = @{
+						Name	    = "blocked_processes"
+						StartWithOS = $true
+						Enabled	    = $true
+						Definition  = "Pretend SQL Would Go Here"
+						XelFilePath = "D:\Traces\blocked_processes.xel"
+					}
+					
+					"LongRunningOperations" = @{
+						Name	    = "long_running_operations"
+						StartWithOS = $true
+						Enabled	    = $false
+						Definition  = "Pretend SQL def here too"
+						XelFilePath = "G:\Traces\long.xel"
+					}
+				}
+				"X3"		  = @{
+					"BlockedProcesses" = @{
+						Name	    = "BlockedProcesses"
+						StartWithOS = $true
+						Enabled	    = $true
+						Definition  = "Pretend SQL Would Go Here"
+						XelFilePath = "D:\Traces\blocked_processes.xel"
+					}
+				}
+			}
+			
+			# PRETEND FUNCTIONS. (i.e., pretend that these interact with an actual OS and such...)
+			function Get-PrmInstalledSqlInstances {
+				return $global:PretendActualXeSessions.Keys;
+			}
+			
+			function Get-PrmXeSessionNamesBySqlInstance {
+				param (
+					[string]$SqlInstance
+				);
+				return $global:PretendActualXeSessions[$sqlInstance].Keys;
+			}
+			
+			function Get-PrmXeSessionDetailsForSqlInstance {
+				param (
+					[string]$SqlInstance,
+					[string]$XeSessionName
+				);
+				
+				# obviously, the logic for this 'in the real world' would be a bit more complex... 
+				return $global:PretendActualXeSessions.$SqlInstance.$XeSessionName;
+			};
+			
+			Facets {
+				Pattern "Fake XE Sessions By SQL Instance" {
+					Topology {
+						Instance "SQLInstances" -DefaultInstance "MSSQLSERVER" {
+							List {
+								return Get-PrmInstalledSqlInstances;
+							}
+						}
+						
+						Instance "XeSessions" {
+							List {
+								# NOTE: Because this is the SECOND instance defined, it's a CHILD, and requires that we enumerate values from/for the current PARENT instance:
+								$sqlInstance = $PvCurrent.SqlInstances.Name;
+								
+								return Get-PrmXeSessionNamesBySqlInstance -SqlInstance $sqlInstance;
+								# and... note that the above COULD, in theory, be EMPTY. As in, I need to determine how to let 'authors' specify that or not. 								
+							}
+						}
+					}
+					Properties {
+						# TODO: turn this into an inclusion... 
+						Property "Exists" -Display "{INSTANCE[SqlInstances].NAME}.{INSTANCE[XeSessions].NAME}.SessionName" {
+							Extract {
+								$session = Get-PrmXeSessionDetailsForSqlInstance -SqlInstance ($PvCurrent.SqlInstances.Name) -XeSessionName ($PvCurrent.XeSessions.Name);
+								return $session.Name;
+							}
+						}
+						Property "StartsWithOS" -Display "{INSTANCE[SqlInstances].NAME}.{INSTANCE[XeSessions].NAME}.{SELF}" {
+							Extract {
+								$session = Get-PrmXeSessionDetailsForSqlInstance -SqlInstance ($PvCurrent.SqlInstances.Name) -XeSessionName ($PvCurrent.XeSessions.Name);
+								return $session.StartWithOS;
+							}
+						}
+						Property "Enabled" -Display "{INSTANCE[SqlInstances].NAME}.{INSTANCE[XeSessions].NAME}.{SELF}"{
+							Extract {
+								$session = Get-PrmXeSessionDetailsForSqlInstance -SqlInstance ($PvCurrent.SqlInstances.Name) -XeSessionName ($PvCurrent.XeSessions.Name);
+								return $session.Enabled;
+							}
+						}
+#						Collection {
+#						}
+					}
+				}
+			}
+			
+			$outcome = Read-Facet "Fake XE Sessions By SQL Instance";
+			$outcome | Should -Not -Be $null;
+			$outcome | Should -BeOfType Proviso.Core.FacetReadResult;
+			
+			$outcome.PropertyReadResults.Count | Should -Be 9;
+		}
+		
+		It "Uses -DefaultInstance when No Other Instances Present" {
+			Facets {
+				Pattern "Default Instance Test" {
+					Topology {
+						Instance "SQLInstances" -DefaultInstance "MSSQLSERVER" {
+							List {
+								# pretend function to return all SQL Instances... only, there are NONE (currently): 
+								return @();
+							}
+						}
+					}
+					Properties {
+						# we'd expect this to be installed, but... it isn't (yet). 
+						Property "IsInstalled" -Expect $true -Display "{INSTANCE[SqlInstances].NAME}.{SELF}" {
+							Extract {
+								$sqlInstance = $PvCurrent.SqlInstances.Name;
+								
+								# pretend func to return $true/$false for Is-SqlInstanceInstalled -Name $sqlInstance: 
+								return $false;
+							}
+						}
+					}
+				}
+			}
+			
+			$outcome = Read-Facet "Default Instance Test";
+			$outcome | Should -Not -Be $null;
+			$outcome | Should -BeOfType Proviso.Core.FacetReadResult;
+			
+			$outcome.PropertyReadResults.Count | Should -Be 1;
+			
+			$outcome.PropertyReadResults[0].Display | Should -Be "MSSQLSERVER.IsInstalled";
+			$outcome.PropertyReadResults[0].ExtractionResult.Result | Should -Be $false;
+		}
+		
+		It "Throws when No Instances Found and -DefaultInstance is not Specified" {
+			Facets {
+				Pattern "Default Instance Test - Without -DefaultInstance Specified" {
+					Topology {
+						Instance "SQLInstances" {
+							List {
+								# pretend function to return all SQL Instances... only, there are NONE (currently): 
+								return @();
+							}
+						}
+					}
+					Properties {
+						Property "IsInstalled" -Expect $true -Display "{INSTANCE[SqlInstances].NAME}.{SELF}" {
+							Extract {
+								return $false;
+							}
+						}
+					}
+				}
+			}
+			
+			{ Read-Facet "Default Instance Test - Without -DefaultInstance Specified"; } | Should -Throw "*and a -DefaultInstance was not specified*"
+		}
+	}
+	
+	Context "Explicit Patterns - With Collections and Properties" {
+		
+	}
 }
+
+# TODO: Test-Facet tests...
+
+# TODO: Invoke-Facet tests....

@@ -214,7 +214,7 @@ function Execute-Pipeline {
 			}
 		}
 		catch {
-			throw "Error in ... Pipeline Processing (step 3): $_.`t$($_.ScriptStackTrace) ";
+			throw "Error in ... Pipeline Processing (step 3): `n$_.`t$($_.ScriptStackTrace) ";
 		}
 		Write-Debug "$(Get-PipelineDebugIndent -Key "Processing")Pipeline Processing Complete.";
 		#endregion
@@ -266,6 +266,8 @@ function Get-PatternIterationMembers {
 		[string]$Verb
 	);
 	
+	$iteratorName = $Pattern.Instances[$Depth].Name;
+	
 	$iteratorBlock = $Pattern.Instances[$Depth].Enumerate;
 	if ("Read" -eq $Verb) {
 		$iteratorBlock = $Pattern.Instances[$Depth].List;
@@ -275,11 +277,17 @@ function Get-PatternIterationMembers {
 		$iteratorMembers = & $iteratorBlock;
 	}
 	catch {
-		throw "Exception attempting to iterate over <iterator-name-here>. Exception: $_ ";
+		throw "Exception attempting to iterate instances for: [$iteratorName] within Pattern: [$($Pattern.Name)]. `nException: `n`t$_ ";
 	}
 	
 	if ($iteratorMembers.Count -le 1) {
-		Write-Host "need to look for a default instance name here... and throw if REQUIRED but ..  be DONE if there's nothing... "
+		$defaultInstance = $Pattern.Instances[$Depth].DefaultInstanceName;
+		if (Has-Value $defaultInstance) {
+			$iteratorMembers = @($defaultInstance);
+		}
+		else {
+			throw "No Instance Members for [$iteratorName] found within Pattern: [$($Pattern.Name)] - and a -DefaultInstance was NOT specified.";
+		}
 	}
 	
 	return $iteratorMembers;

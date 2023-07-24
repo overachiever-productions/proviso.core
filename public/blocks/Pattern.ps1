@@ -95,8 +95,8 @@ function Get-PrmXeSessionDetailsForSqlInstance {
 						return $session.Enabled;
 					}
 				}
-				Collection {
-				}
+#				Collection {
+#				}
 			}
 		}
 	}
