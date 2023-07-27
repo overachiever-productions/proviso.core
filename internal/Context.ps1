@@ -139,7 +139,6 @@ filter Set-PvContext_InstanceData {
 	Add-Member -InputObject $PVCurrent -MemberType NoteProperty -Name $InstanceName -Value $instance -Force;
 }
 
-
 filter Set-PvContext_PropertyData {
 	param (
 		[string]$PropertyName,
@@ -190,25 +189,3 @@ filter Get-PvContextOperationName {
 
 
 
-<#
-
-	Set-PvContext_CollectionData -Members @("one", "two", "four") -CurrentMember 'one';
-	Write-Host "All: $($PVCurrent.Collection.Members)";
-	Write-Host "	Current: $($PVCurrent.Collection.CurrentMember)";
-
-	Write-Host "------------------------------------------- (long syntax)"
-	Set-PvContext_CollectionData -Members @("one", "two", "four") -CurrentMember 'two';
-	Write-Host "All: $($PVContext.Current.Collection.Members)";
-	Write-Host "	Current: $($PVContext.Current.Collection.CurrentMember)";
-
-	Write-Host "-------------------------------------------"
-	Set-PvContext_CollectionData -Members @("one", "two", "four") -CurrentMember 'four';
-	Write-Host "All: $($PVCurrent.Collection.Members)";
-	Write-Host "	Current: $($PVCurrent.Collection.CurrentMember)";
-
-	Write-Host "-------------------------------------------"
-	Remove-PvContext_CollectionData;
-	Write-Host "All: $($PVCurrent.Collection.Members)";
-	Write-Host "	Current: $($PVCurrent.Collection.CurrentMember)";
-
-#>

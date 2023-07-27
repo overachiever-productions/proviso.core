@@ -2,49 +2,6 @@
 
 <#
 
-	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
-
-	#$global:DebugPreference = "Continue";
-
-$global:LocalUsers = @("Administrator", "Mike");
-$global:LocalAdmins = @("Administrator", "BUILTIN\Admins");
-	
-	Facets {
-		Facet "Local Administrators" {
-			Collection "Dingus" -ModelPath "Host.LocalAdministrators" {
-				Membership -Strict {
-					List {
-						return $global:LocalAdmins;					
-					} 
-#					Add {
-#						# 2 steps. 1) create the user if not-exists... and 2) add to local admins.
-#					}
-				}
-				Members {
-					Property "Account Exists" -Expect $true {
-						Extract {
-							$target = $PVCurrent.Collection.CurrentMember;
-
-							return $global:LocalUsers -contains $target;
-						}
-					}
-					
-					# TODO: create a unit test for this: Property "IsLocalAdmin" -Expect $true -Display "{{{COLLECTION.MEMBER}.{SELF}}}" {
-					Property "IsLocalAdmin" -Expect $true -Display "{COLLECTION.MEMBER}.{SELF}" {
-						Extract {
-							$target = $PVCurrent.Collection.CurrentMember;
-							
-							return $global:LocalAdmins -contains $target;
-						}
-					}
-				}
-			}
-		}
-	}
-
-$global:DebugPreference = "Continue";
-	Read-Facet "Local Administrators";
-
 #>
 
 function Collection {

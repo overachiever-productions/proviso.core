@@ -13,6 +13,8 @@ Add-Member -InputObject $PVDisplayTokenizer -MemberType NoteProperty -Name Token
 #			a) break each of these out into their own <func_name>.ps1 file within the \public\framework\ folder or
 # 			b) add some 'publication' directives/whatever inside of the .psm1 (near the bottom) to add these methods and a few other, similar, 'provider-ish' methods as well. 
 # 				this option seems to almost make the most sense - other than that ... it's ARGUABLE that public methods should be in the ... public folder of the project.
+# 			c) create a /core/ folder and shove stuff like this in it... with private/public methods here/there... and... only add <VERB>-PV<etc> via some sort of filter, or manually just add <Verb>-PVxxx methods in the build.
+# 		honestly, option C makes more sense because it'll allow EASIER testing of the entire 'surface'.
 filter New-PVDisplayToken {
 	param (
 		[Parameter(Mandatory)]
@@ -120,7 +122,7 @@ function Validate-DisplayTokenUse {
 			
 			$token = $Tokens[$matchValue];
 			if ($null -eq $token) {
-				$validationFailures += "Invalid Display Token. Token: [$match] has NOT been defined. Remember to escape { and } with {{ and }} if you want to use curly-brackets in -Name or -Display values for Properties.";
+				$validationFailures += "The -Display value: $match does not match a defined Token. Remember to escape { and } with {{ and }} if you want to use curly-brackets in -Name or -Display values for Properties.";
 			}
 			else {
 				if ($token.RequiresCollection -and -not ($IsCollection)) {
@@ -161,7 +163,7 @@ function Validate-DisplayTokenUse {
 	}
 	
 	if ($validationFailures) {
-		throw "ruh roh... validation errors: $validationFailures ";
+		throw "Validation Error: $validationFailures ";
 	}
 }
 
@@ -264,21 +266,3 @@ Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{INSTANCE.NAME}" -Locati
 
 #Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{INSTANCE.MEMBER}" -Location "Instance.Name" -RequiresInstance); 
 #Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{PARENT.NAME}" -Location "hmmmm" -Requires????  );
-
-<#
-
-	[PSCustomObject]$global:PVCurrent = New-Object -TypeName PSCustomObject;
-	[PSCustomObject]$global:PVContext = New-Object -TypeName PSCustomObject;
-	Add-Member -InputObject $PVContext -MemberType NoteProperty -Name Current -Value $PVCurrent;
-
-	Write-Host "-----------------------"
-	#Validate-DisplayTokenUse -Display "does {{ have curly}} brackets for {SELF}";
-	#Validate-DisplayTokenUse -Display "{COLLECTION.CURRENT.MEMBER}.IsSomething";
-
-	Process-DisplayTokenReplacements -Display "no tokens but {{escaped curly brackets}}";
-
-	Write-Host "-----------------------"
-	Process-DisplayTokenReplacements -Display "{SELF} token AND: {{escaped curly brackets}}";
-
-
-#>

@@ -170,13 +170,13 @@ function Execute-Pipeline {
 								}
 							}
 							2 {
-								$parents = Get-PatternIterationMembers -Pattern $facet -Verb $Verb;
+								$parents = Get-PatternIterationMembers -Pattern $facet -Verb $Verb -Verbose:$xVerbose -Debug:$xDebug;
 								$parentInstancesName = $facet.Instances[0].Name;
 								$parentInstancesDefaultInstanceName = $facet.Instances[0].DefaultInstanceName;
 								foreach ($parent in $parents) {
 									Set-PvContext_InstanceData -InstanceName $parentInstancesName -Members $parents -CurrentMember $parent -DefaultInstanceName $parentInstancesDefaultInstanceName;
 									
-									$children = Get-PatternIterationMembers -Pattern $facet -Depth 1 -Verb $Verb;
+									$children = Get-PatternIterationMembers -Pattern $facet -Depth 1 -Verb $Verb -Verbose:$xVerbose -Debug:$xDebug;
 									$childrenInstancesName = $facet.Instances[1].Name;
 									$childrenInstancesDefaultInstanceName = $facet.Instances[1].DefaultInstanceName;
 									foreach ($child in $children) {
@@ -280,13 +280,16 @@ function Get-PatternIterationMembers {
 		throw "Exception attempting to iterate instances for: [$iteratorName] within Pattern: [$($Pattern.Name)]. `nException: `n`t$_ ";
 	}
 	
-	if ($iteratorMembers.Count -le 1) {
+	if ($iteratorMembers.Count -lt 1) {
 		$defaultInstance = $Pattern.Instances[$Depth].DefaultInstanceName;
 		if (Has-Value $defaultInstance) {
 			$iteratorMembers = @($defaultInstance);
 		}
 		else {
-			throw "No Instance Members for [$iteratorName] found within Pattern: [$($Pattern.Name)] - and a -DefaultInstance was NOT specified.";
+			Write-Debug "				 No Instance Members for [$iteratorName] found within Pattern: [$($Pattern.Name)] - and no -DefaultInstance specified.";
+			# TODO: Should I be throwing an exception here if: a) Iterator = -Strict and b) -Verb in (Test/Invoke)?
+			#  	i'm PRETTY sure that for READs (even IF -Strict)... there's no need???  to throw an exception here? 
+			#throw "No Instance Members for [$iteratorName] found within Pattern: [$($Pattern.Name)] - and a -DefaultInstance was NOT specified.";
 		}
 	}
 	

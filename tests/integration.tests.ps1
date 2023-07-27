@@ -555,7 +555,7 @@ Describe "Functionality Tests::Read" -Tag "Execution" {
 			$outcome.PropertyReadResults[0].ExtractionResult.Result | Should -Be $false;
 		}
 		
-		It "Throws when No Instances Found and -DefaultInstance is not Specified" {
+		It "Does Not Throw for READ Operations when No Instances Found and -DefaultInstance is not Specified" {
 			Facets {
 				Pattern "Default Instance Test - Without -DefaultInstance Specified" {
 					Topology {
@@ -576,7 +576,7 @@ Describe "Functionality Tests::Read" -Tag "Execution" {
 				}
 			}
 			
-			{ Read-Facet "Default Instance Test - Without -DefaultInstance Specified"; } | Should -Throw "*and a -DefaultInstance was not specified*"
+			Read-Facet "Default Instance Test - Without -DefaultInstance Specified"; 
 		}
 	}
 	
