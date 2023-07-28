@@ -2,7 +2,8 @@
 
 <#
 
-
+	MIGHT make more sense to call this a TEMPLATE than a Pattern. 
+		Otherwise, it's effectively a 'multi-use' Facet - or something executed PER iterator node in a Facet... 
 
 #>
 

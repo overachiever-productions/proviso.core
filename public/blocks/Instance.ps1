@@ -14,10 +14,6 @@ function Instance {
 		
 		#[Switch]$Naive = $false,
 
-# PICKUP/NEXT: I THINK that I might want to NOT throw within the pipeline (see Pipeline.ps1 -> Line#289)
-# 	UNLESS the Instance in question is set to -Strict:$true? And... further, IF the -Verb is READ... maybe also not throw (even IF strict)?
-# 	basically, see the note on line #74 within Pattern.ps1... i can/should allow some instances to be NULL/EMPTY ... 
-# 		but... what should that look like and ... do I make it a default (for some verbs?) or ... does it have to be explicit? etc?
 		[Switch]$Strict = $false #,
 		
 		# TODO: this might not even make sense. It's implemented as a STRING for now.

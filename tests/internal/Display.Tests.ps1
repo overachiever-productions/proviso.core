@@ -20,36 +20,9 @@ Describe "$UnitName Tests" -Tag "UnitTests" {
 		}
 	}
 	
-	#	Context "Basic Functionality" {
-#		
-#	}
-	
-#	Context "Curly Bracket Escaping" {
-#		It "Requires Matching Token for Single Curly Brackets" {
-#			
-#		}
-#		
-#		It "Escapes Doubled Curly Brackets" {
-#			
-#		}
-#	}
+	# NOTE: 
+	# 	There are a few other unit tests I 'should' implement here - like confirming that {legit} tokens are replaced as expected. 
+	# 	ONLY: that'd require fakes/mocks and/or importing .Context.ps1 and so on... 
+	# 	ALL of which is more EFFORT than necessary when "integration.Tests.ps1" already TESTS this behavior soup to nuts.
 }
 
-
-<#
-
-	[PSCustomObject]$global:PVCurrent = New-Object -TypeName PSCustomObject;
-	[PSCustomObject]$global:PVContext = New-Object -TypeName PSCustomObject;
-	Add-Member -InputObject $PVContext -MemberType NoteProperty -Name Current -Value $PVCurrent;
-
-	Write-Host "-----------------------"
-	#Validate-DisplayTokenUse -Display "does {{ have curly}} brackets for {SELF}";
-	#Validate-DisplayTokenUse -Display "{COLLECTION.CURRENT.MEMBER}.IsSomething";
-
-	Process-DisplayTokenReplacements -Display "no tokens but {{escaped curly brackets}}";
-
-	Write-Host "-----------------------"
-	Process-DisplayTokenReplacements -Display "{SELF} token AND: {{escaped curly brackets}}";
-
-
-#>

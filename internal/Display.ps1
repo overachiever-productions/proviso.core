@@ -263,6 +263,3 @@ Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{SELF}" -Location "Prope
 Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{COLLECTION.MEMBER}" -Location "Collection.CurrentMember" -RequiresCollection) -Aliases "{CURRENT.MEMBER.NAME}", "{COLLECTION.CURRENT.MEMBER}";
 Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{INSTANCE[*].NAME}" -Location "*.Name" -RequiresInstance);
 Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{INSTANCE.NAME}" -Location "Instances.Name" -RequiresInstance);  # similar to the above - but non-keyed (i.e., for a single, anonymous, instance vs cases where > 1 instance or an instance is explicitly named)
-
-#Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{INSTANCE.MEMBER}" -Location "Instance.Name" -RequiresInstance); 
-#Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{PARENT.NAME}" -Location "hmmmm" -Requires????  );

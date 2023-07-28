@@ -1,26 +1,5 @@
 ﻿Set-StrictMode -Version 1.0;
 
-<#
-
-	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
-	$global:DebugPreference = "Continue";
-	
-	Facets {
-		Facet "Implicit Facet - Execution A" -Display "35-Test" -Extract 35 {}
-	} 
-
-	Read-Facet "Implicit Facet - Execution A";
-
-	write-host "-----------------------------------"
-
-	$facet = Get-Facet -Name "Implicit Facet - Execution A";
-
-	$facet.Display;
-	$facet.Properties[0].Display;
-
-
-#>
-
 <# 
 	PSEUDO SIGNATURES 
 
