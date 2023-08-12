@@ -17,14 +17,15 @@ It's still 'early days' - so this roadmap is a guestimate at this point.
     - 0.4.9 - Display Tokens / Formatting (output).
 - 0.5 - Finalize Core Architecture
     - 0.5.0 - Patterns (Iterators).
-    - 0.5.1 - Additional Contexts + Unit Tests & Refactoring.
+    - 0.5.1 - Unit Tests & Refactoring.
     - 0.5.2 - Remoting / -TargetServers.
-    - 0.5.3 - ??
-    - 0.5.4 - Expect (vs merely extract).
-    - 0.5.5 - Compare (and comparison types)
-    - 0.5.6 - Configure. 
-    - 0.5.7 - Add/Remove vs Configure.
-    - 0.5.8 - Initialize/Finalize. 
+    - 0.5.3 - Object / Input Serialization.
+    - 0.5.4 - Additional Pipeline Validation.
+    - 0.5.5 - Expect (vs merely extract).
+    - 0.5.6 - Compare (and comparison types).
+    - 0.5.7 - Configure. 
+    - 0.5.8 - Add/Remove vs Configure.
+    - 0.5.9 - Initialize/Finalize. 
 - 0.6 - Expansion of Features/Capabilities
     - 0.6.0 - Surfaces.
     - 0.6.1 - Asserts. 
