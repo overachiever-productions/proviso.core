@@ -2,43 +2,6 @@
 
 <#
 
-	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
-
-	$global:DebugPreference = "Continue";
-#	$global:VerbosePreference = "Continue";
-
-	Facets {
-		Facet "Global_Basic" -Id "11_22" -Path "Test.Path" {
-			Property "Test Prop 1" -Path "UserName" {
-				# wow. the logic here is kind of insane/complex. 
-				# if there's a path... the expectation is that Extract = $target.<Target_PATH> ... 
-				# 		and that Expect is the equivalent of $model.<model_path> ... 
-				# 		meaning that ... in some way, both of the above have to be 'promised' or place-holdered until RUN TIME... (can't really be defined NOW or even in discovery). 
-				# 			cuz... i won't know until runtime whether we have a $model or $target - right? 
-				# 					well... i'll know to EXPECT those ... but won't know what they ARE... 
-			}
-			Property "Test Prop 2" -TargetPath "EmailAddress" -ModelPath "email" -Skip {
-			}
-#			Collection "Cohort 1" {
-#			}
-		}
-
-		Facet "Global_Skipped" -Path "Doesn't matter - skipped" -Ignore "Skipped - not ready." { 
-		}
-
-		Facet "Implicit Property Facet" -ThrowOnConfigure "Not Configurable - Yet" {
-		}
-	}
-
-	$facet = Get-Facet -Name "Global_Basic";
-	#$facet = $global:PvBlockStore.GetFacetByName("Global_Basic", "");
-	write-host "Properties Count: $($facet.Properties.Count) "
-	
-	foreach($p in $facet.Properties) {
-		write-host "-------------------------------------";
-		$p | fl;
-	}
-
 
 #>
 

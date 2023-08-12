@@ -1,5 +1,12 @@
 ﻿Set-StrictMode -Version 1.0;
 
+<#
+	List is to Membership AND Topology as Extract is to Property. 
+		i.e., it's a means of grabbing/listing/extracting enums/iterators
+
+#>
+
+
 function List {
 	[CmdletBinding()]
 	param (

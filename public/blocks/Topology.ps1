@@ -3,8 +3,8 @@
 <#
 	
 	'Wrapper' within a Pattern block - to house 1 - N Instance (Iterator) blocks.
-
 	NOTE: this is, effectively, a 'pass-through' block (it doesn't STORE or BIND); it's JUST a wrapper for Instance blocks.
+
 #>
 
 function Topology {

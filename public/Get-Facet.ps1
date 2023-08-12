@@ -23,7 +23,8 @@ function Get-Facet {
 			
 			[Proviso.Core.Models.Facet]$definition = $null;
 			
-			# TODO: ... what about .. by Id? (guess that would be another signature/call into Read-Facet - i.e., it'd pass down the Id ... and then ... I'd pass that around until here? )
+			# TODO: ... what about .. by Id? (guess that would be another signature/call into Read-Facet - i.e., it'd pass down 
+			# 		the Id ... and then ... I'd pass that around until here? )
 			# 		and yeah... it probably makes sense to maybe implement some different signatures (in the block store) for that?
 			$definition = Get-FacetFromBlockStore -Name $Name -ParentName $ParentName -Verbose:$xVerbose -Debug:$xDebug;
 			if ($null -eq $definition) {

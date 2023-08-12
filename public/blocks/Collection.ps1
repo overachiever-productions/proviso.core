@@ -2,47 +2,6 @@
 
 <#
 
-	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
-
-	#$global:DebugPreference = "Continue";
-
-$global:LocalUsers = @("Administrator", "Mike");
-$global:LocalAdmins = @("Administrator", "BUILTIN\Admins");
-	
-	Facets {
-		Facet "Local Administrators" {
-			Collection "Dingus" -ModelPath "Host\LocalAdministrators" {
-				Membership -Strict {
-					List {
-						return $global:LocalAdmins;					
-					} 
-#					Add {
-#						# 2 steps. 1) create the user if not-exists... and 2) add to local admins.
-#					}
-				}
-				Members {
-					Property "Account Exists" -Expect $true {
-						Extract {
-							$target = $PVCurrent.Collection.CurrentMember;
-
-							return $global:LocalUsers -contains $target;
-						}
-					}
-					Property "IsLocalAdmin" -Expect $true -Display "{{{COLLECTION.MEMBER}.{SELF}}}" {
-						Extract {
-							$target = $PVCurrent.Collection.CurrentMember;
-							
-							return $global:LocalAdmins -contains $target;
-						}
-					}
-				}
-			}
-		}
-	}
-
-$global:DebugPreference = "Continue";
-	Read-Facet "Local Administrators";
-
 #>
 
 function Collection {
@@ -96,7 +55,7 @@ function Collection {
 				
 				$currentFacet.AddProperty($currentCollection);
 			}
-			"Pattern" {
+			"Properties" {
 				Write-Debug "$(Get-DebugIndent)	Binding Collection: [$($currentCollection.Name)] to Pattern, named: [$($currentCollection.ParentName)], with grandparent named: [$grandParentName].";
 				
 				$currentPattern.AddProperty($currentCollection);

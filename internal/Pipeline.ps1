@@ -170,13 +170,13 @@ function Execute-Pipeline {
 								}
 							}
 							2 {
-								$parents = Get-PatternIterationMembers -Pattern $facet -Verb $Verb;
+								$parents = Get-PatternIterationMembers -Pattern $facet -Verb $Verb -Verbose:$xVerbose -Debug:$xDebug;
 								$parentInstancesName = $facet.Instances[0].Name;
 								$parentInstancesDefaultInstanceName = $facet.Instances[0].DefaultInstanceName;
 								foreach ($parent in $parents) {
 									Set-PvContext_InstanceData -InstanceName $parentInstancesName -Members $parents -CurrentMember $parent -DefaultInstanceName $parentInstancesDefaultInstanceName;
 									
-									$children = Get-PatternIterationMembers -Pattern $facet -Depth 1 -Verb $Verb;
+									$children = Get-PatternIterationMembers -Pattern $facet -Depth 1 -Verb $Verb -Verbose:$xVerbose -Debug:$xDebug;
 									$childrenInstancesName = $facet.Instances[1].Name;
 									$childrenInstancesDefaultInstanceName = $facet.Instances[1].DefaultInstanceName;
 									foreach ($child in $children) {
@@ -214,7 +214,7 @@ function Execute-Pipeline {
 			}
 		}
 		catch {
-			throw "Error in ... Pipeline Processing (step 3): $_ ";
+			throw "Error in ... Pipeline Processing (step 3): `n$_.`t$($_.ScriptStackTrace) ";
 		}
 		Write-Debug "$(Get-PipelineDebugIndent -Key "Processing")Pipeline Processing Complete.";
 		#endregion
@@ -253,9 +253,9 @@ function Initialize-ResultsObject {
 	# 			cuz... that's 3-4 lines of code, max ... vs 9x switch/case options... 
 	
 	$name = $Block.Name;
-	$format = $Block.Format;
+	$display = $Block.Display;
 	
-	return New-Object Proviso.Core.FacetReadResult($name, $format);
+	return New-Object Proviso.Core.FacetReadResult($name, $display);
 }
 
 function Get-PatternIterationMembers {
@@ -266,6 +266,8 @@ function Get-PatternIterationMembers {
 		[string]$Verb
 	);
 	
+	$iteratorName = $Pattern.Instances[$Depth].Name;
+	
 	$iteratorBlock = $Pattern.Instances[$Depth].Enumerate;
 	if ("Read" -eq $Verb) {
 		$iteratorBlock = $Pattern.Instances[$Depth].List;
@@ -275,11 +277,20 @@ function Get-PatternIterationMembers {
 		$iteratorMembers = & $iteratorBlock;
 	}
 	catch {
-		throw "Exception attempting to iterate over <iterator-name-here>. Exception: $_ ";
+		throw "Exception attempting to iterate instances for: [$iteratorName] within Pattern: [$($Pattern.Name)]. `nException: `n`t$_ ";
 	}
 	
-	if ($iteratorMembers.Count -le 1) {
-		Write-Host "need to look for a default instance name here... and throw if REQUIRED but ..  be DONE if there's nothing... "
+	if ($iteratorMembers.Count -lt 1) {
+		$defaultInstance = $Pattern.Instances[$Depth].DefaultInstanceName;
+		if (Has-Value $defaultInstance) {
+			$iteratorMembers = @($defaultInstance);
+		}
+		else {
+			Write-Debug "				 No Instance Members for [$iteratorName] found within Pattern: [$($Pattern.Name)] - and no -DefaultInstance specified.";
+			# TODO: Should I be throwing an exception here if: a) Iterator = -Strict and b) -Verb in (Test/Invoke)?
+			#  	i'm PRETTY sure that for READs (even IF -Strict)... there's no need???  to throw an exception here? 
+			#throw "No Instance Members for [$iteratorName] found within Pattern: [$($Pattern.Name)] - and a -DefaultInstance was NOT specified.";
+		}
 	}
 	
 	return $iteratorMembers;
@@ -333,7 +344,7 @@ function Iterate-FacetProperties {
 						# 		the other thing I need to address is ... that I'll want/have-to? do something similar for iterator details too, right?
 						if (-not $nestedProperty.Display) {
 							$defaultEnumeratedPropertyDisplay = "$($nestedProperty.Name)::$($currentValue)"; # vNEXT: use equivalent of string.format ... (i.e., "{0}{1}") and allow a GLOBAL preference here for something like $PvPreferences.DefaultCollectionPropertiesFormatThingy = "{0}.{1}" ... or whatever. 
-							$nestedProperty.SetDisplay($defaultEnumeratedPropertyDisplay);
+							$nestedProperty.Display = $defaultEnumeratedPropertyDisplay;
 						}
 						
 						Process-Property -Verb $Verb -Property $nestedProperty -Results $results `
@@ -377,10 +388,26 @@ function Process-Property {
 	);
 	
 	begin {
+		if ($Property.Skip) {
+			$skipping = "Skipping Processing against Property: [$($Property.Name)] because it was marked with -Skip.";
+			if (Has-Value ($Property.SkipReason)) {
+				$skipping = $skipping.Replace("-Skip.", "-Ignore '$($Property.SkipReason)'.");
+			}
+			
+			Write-Debug $skipping;
+			Write-Verbose $skipping;
+			
+			return;
+		}
+		
 		Set-PvContext_PropertyData -PropertyName ($Property.Name) -ParentName ($Property.ParentName);
 	}
 	
 	process {
+		if ($Property.Skip) {
+			return;
+		}
+		
 		try {
 			$block = $Property.Extract;
 			[Object]$output = & $block;
@@ -425,6 +452,10 @@ function Process-Property {
 	}
 	
 	end {
+		if ($Property.Skip) {
+			return;
+		}
+		
 		Remove-PvContext_PropertyData;
 	}
 }
@@ -486,7 +517,7 @@ function TrySet-TargetAsImplicitExtractForNonExplicitExtractProperties {
 								throw "`nRuntime Validation Failure: `n  - Cohort Property [$($nestedProp.Name)] does NOT have an explicit - Extract, Extract{}, or -Path defined. `n  -Either Implement Extract or specify -Target for $($global:PvPipelineContext_CurentOperationName). ";
 							}
 							
-							$nestedProp.Extract = Get-RuntimeGeneratedExtractProxy $Target -Path ($nestedProp.TargetPath) -Verbose:$xVerbose -Debug:$xDebug;
+							$nestedProp.Extract = Get-RuntimeGeneratedExtractProxy $Target -Path ($nestedProp.TargetPath) -PropertyName ($nestedProp.Name) -Verbose:$xVerbose -Debug:$xDebug;
 						}
 					}
 				}
@@ -496,7 +527,7 @@ function TrySet-TargetAsImplicitExtractForNonExplicitExtractProperties {
 							throw "`nRuntime Validation Failure: `n  - Property [$($prop.Name)] does NOT have an explicit -Extract, Extract{}, or -Path defined. `n  - Either Implement Extract or specify -Target for $($global:PvPipelineContext_CurentOperationName). ";
 						}
 						
-						$prop.Extract = Get-RuntimeGeneratedExtractProxy $Target -Path ($prop.TargetPath) -Verbose:$xVerbose -Debug:$xDebug;
+						$prop.Extract = Get-RuntimeGeneratedExtractProxy $Target -Path ($prop.TargetPath) -PropertyName ($prop.Name) -Verbose:$xVerbose -Debug:$xDebug;
 					}
 				}
 			}
@@ -547,7 +578,8 @@ function Get-RuntimeGeneratedExtractProxy {
 	param (
 		[Parameter(Mandatory, Position = 0)]
 		[Object]$Target,
-		[string]$Path
+		[string]$Path,
+		[string]$PropertyName
 	);
 	
 	if (Has-Value $Path) {
@@ -559,8 +591,7 @@ function Get-RuntimeGeneratedExtractProxy {
 				return Get-ReturnScript $null; # can't merely return $null, have to return a SCRIPT that'll ... return $null;
 			}
 			
-			# TODO: figure out how to hand in {operationNameHere} - e.g., "Read-Facet" or "Test-Surface".FacetName??? 
-			throw "Explicitly Supplied -Target for [{operationNameHere}] does not have a property that matches the path: [$Path].";
+			throw "Validation Failure.`n`tSupplied -Target object for [$(Get-PvContextOperationName)] operation for [$PropertyName] does not have a property that matches the path: [$Path].";
 		}
 		
 		return Get-ReturnScript $value;
@@ -648,109 +679,3 @@ function Get-PipelineDebugIndent {
 	
 	return "$("`t" * ($count - 1))$pad";
 }
-
-#Reset-PipelineDebugIndents;
-#
-#Write-Host "Anchor";
-#Write-Host "$(Get-PipelineDebugIndent -Key "Tier1")Start Tier 1";
-#Write-Host "$(Get-PipelineDebugIndent -Key "Tier2")Start Tier 2";
-#
-#
-#Write-Host "$(Get-PipelineDebugIndent -Key "TiEr2")End Tier 2";
-#Write-Host "$(Get-PipelineDebugIndent -Key "TiEr1")End Tier 1";
-
-# ------------------------------------------------------------------------------------
-
-# OLD/NUKE...  (after reviewing the big block of comments in the 'start' of the logic of this func....)
-
-<#
-filter Get-RunTimeGeneratedReturnScript {
-	param (
-		[Parameter(Mandatory, Position = 0)]
-		[Object]$Object,
-		[string]$Path,
-		[string]$PathType
-	);
-	
-	
-					$expect = $facet.Expect;
-					$script = "return $expect;";
-					
-					# NOTE: I was hoping/thinking that whatever I did via the above would let $expect be ... whatever $expect is/was - i.e., let CLR handle the type-safety and just 'forward it on'
-					# 	and such. 
-					# 		that won't be the case - i.e., in the code above, what if $facet.Expect = "I'm a teapot, short and stout."?
-					# 			if it is... the code above will not 'compile' via Script::CREATE() below. 
-					# 		so... i'm stuck with then trying to figure out if $expect is a string or not... and wrapping accordingly. 
-					
-					# there's ANOTHER option. 
-					# 	and it's borderline insane. But, then again, maybe ... not. 
-					# Assume a $global:PvDictionary<Guid, object>. 
-					# 	 at which point, I could do something like: 
-					$key = Add-DicoValue($facet.Expect); # which spits back a GUID... 
-					$script = "return $($global:PvDictionary.GetValueByKey($key)); ";
-					#  	and... bob's your uncle ...as in, the dico returns 10, "10", 'x', "I'm a teapot, short and stout..";
-					# 	etc... 
-					
-					# other than the SEEMING insanity of the above... I can't really think of any reason it... wouldn't work. 
-					#  	er, well... if I add, say, a string into a dictionary<guid, object> ... and fetch it ... 
-					# 			i don't think I get a string back, i get an object (that can, correctly, be cast to a string). 
-					# 	SO. 
-					# 		another option would be: 
-					# 		get the TYPE of the object here... 
-					# 			and... handle the whole $script = "return ($)"; via some sort of helper func. 
-					# 			as in, pass $expect into Get-ReturnWhatzit ... 
-					# 			and... it'll figure out what to do based on the type? 
-					# 	that PROBABLY makes the most sense actually. 
-					
-					$prop.Expect = [ScriptBlock]::Create($script);	
-	
-	
-	# TODO: this looks pretty dope actually: 
-	# 	https://github.com/iRon7/ConvertTo-Expression
-	
-	switch ($Object.GetType().FullName) {
-		"System.String" {
-			$script = "return `"$Object`";";
-		}
-		"System.Object[]" {
-			# TODO: this is a REALLY naive implementation and ... it's also casting @(10, "10") to @(10, 10) (as near as I can tell... )
-			$data = $Object -join ",";
-			$script = "return @(" + $data + "); ";
-		}
-		default {
-			if (Has-Value $Path) {
-				if (Object-HasSpecifiedPropertyByPath $Object -Path $Path) {
-					try {
-						# there are 2 options here: 
-						# 	a. $script = "return $object.$path; "
-						# 	b. $output = $object.$path => $scrip = "return $output";
-						
-						# going to use the first option - initially... 
-						# 		$script = "return $Object.$($Path);";
-						#   except ... that really didn't work... 
-						
-						
-						
-						$output = $Object.$Path;
-						$script = "return `"$output`"";
-						
-			Write-Host "script: $script";
-						
-					}
-					catch {
-						throw "context here about what we're doing ... and ... unexpected error trying to assign: $_ etc... "
-					}
-				}
-				else {
-					throw "some context here for whatever... of -PathType ... does NOT have the property (or a child property) of ... -Path specified... ";
-				}
-			}
-			else {
-				$script = "return $Object;";
-			}
-		}
-	}
-	
-	return [ScriptBlock]::Create($script).GetNewClosure();
-}
-#>

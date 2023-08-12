@@ -233,8 +233,7 @@ filter Override-ThrowOnConfig {
 	
 	if ($Parent -is [Proviso.Core.IPotent]) {
 		if ($Parent.ThrowOnConfig) {
-			$Child.ThrowOnConfig = $true;
-			$Child.MessageToThrow = $Parent.MessageToThrow;
+			$Child.SetThrowOnConfig($Parent.MessageToThrow);
 		}
 	}
 }
