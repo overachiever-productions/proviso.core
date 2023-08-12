@@ -1,4 +1,17 @@
-﻿Set-StrictMode -Version 1.0;
+﻿# Mock/Fake objects... 
+$address = [PSCustomObject]@{
+	Street  = "1212 W South Street"
+	Street2 = $null
+	#Street2 = ''  # note that this works just fine... 
+	Zip	    = "88209"
+	State   = "TU"
+};
+
+$user = [PSCustomObject]@{
+	UserName = "OverAchiever"
+	Email    = "mike@overachiever.net"
+	Address  = $address
+};Set-StrictMode -Version 1.0;
 
 BeforeAll {
 	$UnitName = (Split-Path -Leaf $PSCommandPath).Replace(".tests.ps1", "");
@@ -285,6 +298,12 @@ Describe "Block Tests" -Tag "Blocks" {
 }
 
 Describe "Functionality Tests::Read" -Tag "Execution" {
+	Context "Basic Read Behaviors" {
+		It "Throws When a Non-Extant Facet is Requested for Reads" {
+			{ Read-Facet "This Facet Doesn't Exist"; } | Should -Throw "*was NOT found.*";
+		}
+	}
+	
 	Context "Implicit Facets" {
 		It "Reads Implicit Facets" {
 			Facets {
@@ -327,6 +346,67 @@ Describe "Functionality Tests::Read" -Tag "Execution" {
 			$outcome.PropertyReadResults[0].ExtractionResult.Result | Should -Be "Simple_Value";
 			$outcome.PropertyReadResults[1].ExtractionResult.Result | Should -Be "Simple_Value";
 		}
+		
+		It "Throws When -Target doesn't Support -Path Locations" {
+			Facets {
+				Facet "Explicit Facet with Target Paths" -TargetPath "ObjectName" {	}
+			}
+			
+			{ Read-Facet "Explicit Facet with Target Paths" -Target "I don't support -TargetPath"; } | Should -Throw "*does not have a property that matches the path:*"
+		}
+	}
+	
+	Context "Expicit Facets - Path Extraction" {
+		BeforeAll {
+			Facets {
+				Facet "User Details Facet" {
+					Property "Username" -TargetPath "UserName" -ModelPath "User_Name" {	}
+					Property "Email" -Path "Email" { }
+					Property "ZipCode" -Path "Address.Zip" { }
+					Property "Nullable Street2" -Path "Address.Street2" { }
+				}
+			}
+			
+			# Mock/Fake objects... 
+			$address = [PSCustomObject]@{
+				Street  = "1212 W South Street"
+				Street2 = $null
+				#Street2 = ''  # note that this works just fine... 
+				Zip	    = "88209"
+				State   = "TU"
+			};
+			
+			$user = [PSCustomObject]@{
+				UserName = "OverAchiever"
+				Email    = "mike@overachiever.net"
+				Address  = $address
+			};
+		}
+		
+		It "Extracts Basic Properties by Path" {
+			$outcome = Read-Facet "User Details Facet" -Target $user;
+			$outcome | Should -Not -Be $null;
+			$outcome | Should -BeOfType Proviso.Core.FacetReadResult;
+			
+			$outcome.PropertyReadResults.Count | Should -Be 4;
+			
+			$outcome.PropertyReadResults[0].ExtractionResult.Result | Should -Be "OverAchiever";
+			$outcome.PropertyReadResults[1].ExtractionResult.Result | Should -Be "mike@overachiever.net";
+		}
+		
+		It "Extracts Nested Properties by Path" {
+			$outcome = Read-Facet "User Details Facet" -Target $user;
+			
+			$outcome.PropertyReadResults[2].ExtractionResult.Result | Should -Be "88209";
+		}
+		
+		It "Extracts `$null-able Properties by Path" {
+			$outcome = Read-Facet "User Details Facet" -Target $user;
+			
+			$outcome.PropertyReadResults[3].ExtractionResult.Result | Should -Be $null;
+		}
+		
+		# TODO: setup a test for how things behave if a path is specified that DOESN'T EXIST... 
 	}
 	
 	Context "Explicit Facets - With Collections" {
@@ -582,6 +662,61 @@ Describe "Functionality Tests::Read" -Tag "Execution" {
 	
 	Context "Explicit Patterns - With Collections and Properties" {
 		
+	}
+	
+	Context "Multiple Inputs" {
+		BeforeAll {
+			Facets {
+				Facet "Facet with Target Paths" -TargetPath "ObjectName" {
+				}
+			}
+			
+			# HACK: Pester keeps kvetching about $arrayOfCustomObjects NOT BEING declared in the test
+			# 	below... so, I made it ... global. (AND, it complained BEFORE I moved this into BeforeAll..)
+			$global:arrayOfCustomObjects = @(
+				[PSCustomObject]@{
+					ObjectName = "Object 1"
+				}
+				[PSCustomObject]@{
+					ObjectName = "Object 2"
+				}
+				[PSCustomObject]@{
+					ObjectName = "Object 3"
+				}
+			);
+		}
+		
+		It "Processes Array Values via -Input" {
+			$outcome = Read-Facet "Facet with Target Paths" -Target $global:arrayOfCustomObjects;
+			$outcome | Should -Not -Be $null;
+			$outcome | Should -BeOfType Proviso.Core.FacetReadResult;
+			
+			$outcome.PropertyReadResults.Count | Should -Be 3;
+		}
+		
+		It "Processes Array Values from Pipeline" {
+			$outcome = $global:arrayOfCustomObjects | Read-Facet "Facet with Target Paths";
+			$outcome | Should -Not -Be $null;
+			$outcome | Should -BeOfType Proviso.Core.FacetReadResult;
+			
+			$outcome.PropertyReadResults.Count | Should -Be 3;
+		}
+	}
+	
+	Context "Multiple Servers" {
+		It "Executes Read Operations Per -Server" {
+			Facets {
+				Facet "Server Passthrough" {}
+			}
+			
+			$servers = @("SQL-150-01", "SQL-150-02");
+			
+			$outcome = Read-Facet "Server Passthrough" -Target "Canned Input That Will Be The Same For Each -Server" -Servers $servers;
+			$outcome | Should -Not -Be $null;
+			$outcome | Should -BeOfType Proviso.Core.FacetReadResult;
+			
+			$outcome.PropertyReadResults.Count | Should -Be 2;
+		}
 	}
 }
 

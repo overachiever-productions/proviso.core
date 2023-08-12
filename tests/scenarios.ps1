@@ -12,7 +12,6 @@
 
 #>
 
-
 <#
 
 	SCENARIO: Minimally Viable-ISH Facets 
@@ -39,6 +38,47 @@ $global:DebugPreference = "Continue";
 	$facet.Properties[0].Display;
 
 #>
+
+<# 
+
+	SCENARIO: Simple Pathing Examples
+		VERB: READ
+			- 
+
+---------------------------------------------------------------------------------------------------------------------
+
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+$global:DebugPreference = "Continue";
+
+
+	Facets {
+		Facet "User Details Facet" { 
+			Property "Username" -TargetPath "UserName" -ModelPath "User_Name" { }
+			Property "Email" -Path "Email" { }
+			Property "ZipCode" -Path "Address.Zip" { }
+			Property "Nullable Street2" -Path "Address.Street2" { }
+		}
+	}
+
+# Mock/Fake objects... 
+	$address = [PSCustomObject]@{
+		Street = "1212 W South Street"
+		Street2 = $null
+		#Street2 = ''  # note that this works just fine... 
+		Zip = "88209"
+		State = "TU"
+	};
+
+	$user = [PSCustomObject]@{
+		UserName = "OverAchiever"
+		Email = "mike@overachiever.net"
+		Address = $address
+	};
+
+	Read-Facet "User Details Facet" -Target $user;
+
+#>
+
 
 <#
 
@@ -316,4 +356,70 @@ Write-Host "-------------------------------------------------";
 
 	Read-Facet "Passthrough" -Target "Canned Input" -Servers $servers;
 
-#> 
+#>
+
+<# 
+
+	SCENARIO: Complex Property Interactions
+		VERB: READ
+			- Expectations: 
+				- The first Read-Facet operation should: 
+					- use the Extract logic provided for 6x of the properties (those with explicit -Extract attributes)
+					- use the -Target/input for the 2x properties WITHOUT any explicit -Extract
+					- Note too that the first property has a -Display attribute.
+
+				- The SECOND Read-Facet operation should: 
+					- find the -Facet in the Catalog (i.e., shouldn't have to re-'build' it). 
+					- Behave just like above - 6x 'dynamic' properties, 2x 'canned' props
+						- Note that the "Count of HasLetter 'e' Prop" value will INCREMENT from 2 to 3 (cuz we added another 'e' entry). 
+							- Likewise, the count of elements increases too... 
+						- Note too that the 'canned'/hard-coded text for the last 2x props changed as well (to match -Target).
+			
+---------------------------------------------------------------------------------------------------------------------
+	
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+#$global:DebugPreference = "Continue";
+
+# 'Simulate' a more complex object (but not so complex as to distract from overall capabilites):
+[string[]]$global:fakeTarget = @("a","B", "Cee", "d", "e", "11");
+
+	Facets {
+		Facet "My First Facet" { 
+			Property "Count" -Display "{SELF} of Elements" {
+				Extract {
+					return $global:fakeTarget.Count;
+				}
+			}
+			Property "Contains 'Cee'" -Expect $true { 
+				Extract {
+					return $global:target -contains "Cee";
+				}
+			}
+			Property "Count of HasLetter 'e' Prop" {
+				Extract {
+					$count = 0; 
+					foreach($x in $global:fakeTarget) {
+						if($x -like '*e*') {
+							$count ++;
+						}
+					}
+					return $count;
+				}
+			}
+			Property "Extract 99 Prop" -Expect 10 -Extract 99 {}
+			Property "Extract (string)11 Prop" -Expect "10" -Extract "10" {}
+			Property "Extract Array Prop" -Expect @(10, "10") -Extract @(11, "11") {}
+			Property "Extract IP Prop" -Expect 192.168.11.3 -Extract 10.10.2.198 {}
+			Property "No Explicit Extract Prop" -Expect "something" { }
+			Property "No Explicit Anything Prop" { }
+		}
+	}
+
+	Read-Facet "My First Facet" -Target "FOR: 'No Explicit xxx Prop' Properties";
+
+	# add another entry with 'e' in it to simulate changes to the Target, etc. 
+	$global:fakeTarget += "Another Entry";
+
+	Read-Facet "My First Facet" -Target "Hard-Coded Text";
+
+#>

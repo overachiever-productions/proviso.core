@@ -3,22 +3,22 @@
 <# 
 	PSEUDO SIGNATURES 
 
-#	Surface "Firewall Rules" {
-#		Facet "SQL Server Ports" {
-#			Property "SQL Server" {	}
-#			Property "SQL Server - DAC" {}
-#			Property "SQL Server - Mirroring" { }
-#			Cohort "Test Cohort" {
-#				List {
-#				}
-#			}
-#		}
-#
-#		Import -Facet "Host Ports";
-#	}
-#
-#	Read-Facet "SQL Server Ports";
-#	Read-Facet "Host Ports";
+	Surface "Firewall Rules" {
+		Facet "SQL Server Ports" {
+			Property "SQL Server" {	}
+			Property "SQL Server - DAC" {}
+			Property "SQL Server - Mirroring" { }
+			Cohort "Test Cohort" {
+				List {
+				}
+			}
+		}
+
+		Import -Facet "Host Ports";
+	}
+
+	Read-Facet "SQL Server Ports";
+	Read-Facet "Host Ports";
 
 	Runbook "Firewall Stuff" { 
 		Setup {} 
