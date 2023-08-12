@@ -2,78 +2,6 @@
 
 <#
 
-	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
-
-	$global:DebugPreference = "Continue";
-	#$global:VerbosePreference = "Continue";
-
-
-[string[]]$global:target = @("a","B", "Cee", "d", "e", "11");
-
-	Facets {
-		Facet "My First Facet" { 
-
-			Property "Count" -Display "hmmm" {
-				Extract {
-					return $global:target.Length;
-				}
-#				Configure {
-#					throw "not supported - and this could/should be in a -param.";
-#				}
-			}
-
-#			Collection "Per Member" -Display "should inherit 'down' to each child prop" -Expect $true {
-##				Enumerate {
-##					return $global:target;
-##				}
-##				Add {
-##					#$global:target += uhhhhh. ... guess there could/should be some sort of context data here? 
-##				}
-##				Remove {
-##					# yeah... remove what? 
-##				}
-#
-#				# Inclusion goes here, right? 
-#				# 			might even make sense to call Inclusion something like Membership { } 
-#
-#
-#				Property "Is Upper Case" {
-#					Extract {
-#						# couple of ways to determin 'isUpperCase'. I don't REALLY care about that.
-#						# 	I care about ... iterating over $context.enumerator.Current or whatever... 
-#					}
-#				}
-#
-#				Property "Is Vowel" {
-#					Extract {
-#						# return $context.whatever.current.EnumValue -in a,e,i,o,u (case insensitive)
-#					}
-#				}
-#
-#				Property "Should be Skipped" -Skip {
-#					# add some code here... 
-#				}
-#			}
-
-			Property "Contains 'Cee'" -Expect $true { 
-				Extract {
-					return $global:target -contains "Cee";
-				}
-			}
-
-			Property "Has Numerics" -Expect $true {
-				Extract {
-					
-				}
-			}
-		}
-	}
-
-write-host "--------------------------------------------------"
-
-	Read-Facet "My First Facet";
-
-
 
 #>
 
@@ -176,6 +104,7 @@ function Register-Facet {
 			# INHERITANCE:
 			Inherit -Parent $facet -Child $prop -Property "Expect";
 			Inherit -Parent $facet -Child $prop -Property "Extract";
+			Inherit -Parent $facet -Child $prop -Property "Display";
 			Inherit -Parent $facet -Child $prop -Property "TargetPath";
 			Inherit -Parent $facet -Child $prop -Property "ModelPath";
 			

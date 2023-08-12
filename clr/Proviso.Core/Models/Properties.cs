@@ -5,12 +5,16 @@ using Proviso.Core;
 
 namespace Proviso.Core.Models
 {
-    public class Property : DeclarableBase, IProperty, IBuildValidated
+    public class Property : DeclarableBase, IProperty, IPotent, IBuildValidated
     {
         public PropertyParentType ParentType { get; }
         public PropertyType PropertyType { get; private set; }
         public bool IsCollection { get; }
         public bool IsVirtual { get; }
+
+        public Impact Impact { get; set; }
+        public bool ThrowOnConfig { get; private set; }
+        public string MessageToThrow { get; private set; }
 
         public ScriptBlock Compare { get; set; }
         public ScriptBlock Configure { get; set; }
@@ -34,9 +38,20 @@ namespace Proviso.Core.Models
         {
             return (Property)this.MemberwiseClone();
         }
+        
+        public void SetImpact(Impact impact)
+        {
+            this.Impact = impact;
+        }
+
+        public void SetThrowOnConfig(string message)
+        {
+            this.ThrowOnConfig = true;
+            this.MessageToThrow = message;
+        }
     }
 
-    public class Collection : DeclarableBase, IProperty, IBuildValidated
+    public class Collection : DeclarableBase, IProperty, IPotent, IBuildValidated
     {
         private List<IProperty> _properties = new List<IProperty>();
 
@@ -44,6 +59,10 @@ namespace Proviso.Core.Models
         public PropertyType PropertyType { get; }
         public bool IsCollection { get; }
         public bool IsVirtual { get; }
+
+        public Impact Impact { get; set; }
+        public bool ThrowOnConfig { get; private set; }
+        public string MessageToThrow { get; private set; }
 
         public Membership Membership { get; private set; }
         public List<IProperty> Properties => this._properties;
@@ -102,6 +121,17 @@ namespace Proviso.Core.Models
             return output;
         }
 
+        public void SetImpact(Impact impact)
+        {
+            this.Impact = impact;
+        }
+
+        public void SetThrowOnConfig(string message)
+        {
+            this.ThrowOnConfig = true;
+            this.MessageToThrow = message;
+        }
+
         private void ClearProperties()
         {
             this._properties = new List<IProperty>();
@@ -113,12 +143,16 @@ namespace Proviso.Core.Models
 
     //}
 
-    public class AnonymousProperty : DeclarableBase, IProperty
+    public class AnonymousProperty : DeclarableBase, IProperty, IPotent
     {
         public PropertyParentType ParentType { get; }
         public PropertyType PropertyType { get; }
         public bool IsCollection { get; }
         public bool IsVirtual { get; }
+
+        public Impact Impact { get; set; }
+        public bool ThrowOnConfig { get; private set; }
+        public string MessageToThrow { get; private set; }
 
         // TODO: possibly add public ScriptBlock Compare ... 
         //  but... i don't that having a ScriptBlock for Configure will ever make sense, right? 
@@ -135,6 +169,17 @@ namespace Proviso.Core.Models
         public IProperty GetInstance()
         {
             return (AnonymousProperty)this.MemberwiseClone();
+        }
+
+        public void SetImpact(Impact impact)
+        {
+            this.Impact = impact;
+        }
+
+        public void SetThrowOnConfig(string message)
+        {
+            this.ThrowOnConfig = true;
+            this.MessageToThrow = message;
         }
     }
 

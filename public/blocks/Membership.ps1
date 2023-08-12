@@ -2,9 +2,7 @@
 
 <# 
 	
-	MIGHT still end up calling this a toplogy instead. 
-
-	Otherwise, it's the wrapper around enumerator/add/etc... 
+	Wrapper for Collection membership details (list/enumerate and add/remove, etc.)
 
 #>
 

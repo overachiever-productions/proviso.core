@@ -13,7 +13,7 @@ function Instance {
 		[string]$DefaultInstance,
 		
 		#[Switch]$Naive = $false,
-		
+
 		[Switch]$Strict = $false #,
 		
 		# TODO: this might not even make sense. It's implemented as a STRING for now.

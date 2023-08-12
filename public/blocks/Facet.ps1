@@ -1,60 +1,24 @@
 ﻿Set-StrictMode -Version 1.0;
 
-<#
+<# 
+	PSEUDO SIGNATURES 
 
-	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
-
-	$global:DebugPreference = "Continue";
-#	$global:VerbosePreference = "Continue";
-
-	Facets {
-		Facet "Global_Basic" -Id "11_22" -Path "Test.Path" -NoConfig -Impact "High" {
+	Surface "Firewall Rules" {
+		Facet "SQL Server Ports" {
+			Property "SQL Server" {	}
+			Property "SQL Server - DAC" {}
+			Property "SQL Server - Mirroring" { }
+			Cohort "Test Cohort" {
+				List {
+				}
+			}
 		}
 
-		Facet "Global_Skipped" -Path "Doesn't matter - skipped" -Ignore "Skipped - not ready." { 
-		}
+		Import -Facet "Host Ports";
 	}
 
-	$facet = $global:PvBlockStore.GetFacetByName("Global_Basic", "");
-	$facet | fl;
-
-	write-host "-----------------";
-	$facet = $global:PvBlockStore.GetFacetByName("Global_Skipped", "");
-	$facet | fl;
-
-#>
-
-<#
-#	Surface "Bigly" {
-#		Facet "Child" {}
-#	}
-
-#	Facet "Host Ports" {
-#		Property "ICMP" {
-#		}
-#		Property "RDP" {
-#		}
-#	}
-#
-#	Surface "Firewall Rules" {
-#		Facet "SQL Server Ports" {
-#			Property "SQL Server" {
-#			}
-#			Property "SQL Server - DAC" {
-#			}
-#			Property "SQL Server - Mirroring" { 
-#			}
-#			Cohort "Test Cohort" {
-#				Enumerate {
-#				}
-#			}
-#		}
-#
-#		Import -Facet "Host Ports";
-#	}
-#
-#	Read-Facet "SQL Server Ports";
-#	Read-Facet "Host Ports";
+	Read-Facet "SQL Server Ports";
+	Read-Facet "Host Ports";
 
 	Runbook "Firewall Stuff" { 
 		Setup {} 
@@ -70,7 +34,6 @@
 
 		Cleanup { }
 	}
-
 #>
 
 function Facet {

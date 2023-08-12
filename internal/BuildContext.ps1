@@ -17,22 +17,30 @@
 			[Assert]
 		[Aspect]
 			Facet | Pattern | [Import] -Pattern|Facet
-				[Iterate] (for Pattern)
-				[Add]	(Pattern)  - Install?
-				[Remove] (Pattern) - Uninstall?
-				Property | Cohort 
-					Enumerate
-					Add
-					Remove
-					Property (of Cohort - and... recurses)
-					[Inclusion] (of Property | Cohort)
-					Expect
-					Extract
-					[Compare]
-					Configure
+				[Topology] (for Pattern)
+					[List]  (Extract)
+					[Enumerate] (Expect)
+					Add	
+					[Remove ]
+				Property | Collection
+					[Membership] - Collection
+						List	
+						[Enumerate]
+						Add
+						[Remove]	
+					[Members]
+						Property
+						[Inclusion]
+					Property 
+						Expect
+						Extract
+						[Compare]
+						Configure
 
 		[Cleanup]
 #>
+
+# REFACTOR: call this ... BuildManager or BlockManager or maybe ... SyntaxManager... 
 
 $global:PvBuildContext = [Proviso.Core.BuildContext]::Current;
 
@@ -133,7 +141,7 @@ function Set-Declarations {
 	}
 	
 	if ((Throws-OnConfig $BlockType -Name $Name -NoConfig:$NoConfig -ThrowOnConfigure $ThrowOnConfigure -Verbose:$xVerbose -Debug:$xDebug)) {
-		# NOTE: the code below is ... nuts/crazy. IDeclarable doesn't expose the methods being called - but the OBJECT being passed in does... 
+		# NOTE: the code below is ... nuts/crazy. IDeclarable doesn't expose the .SetThrowOnConfig - but the OBJECT being passed in does... 
 		$iDeclarable.SetThrowOnConfig($ThrowOnConfigure);
 	}
 	
@@ -150,7 +158,7 @@ function Set-Declarations {
 	}
 	
 	if ($Display) {
-		$iDeclarable.SetDisplay($Display);
+		$iDeclarable.Display = $Display;
 	}
 	
 	if ($Expect) {
@@ -160,7 +168,6 @@ function Set-Declarations {
 	if ($Extract) {
 		$iDeclarable.Extract = (Get-ReturnScript $Extract);
 	}
-	
 
 	#$stack = ((Get-PSCallStack).Command -join ",") -replace "Enter-Block,"
 	
