@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Proviso.Core.Models
 {
@@ -76,7 +77,17 @@ namespace Proviso.Core.Models
         {
             this._properties = new List<IProperty>();
         }
-    }
+
+        public string Serialize()
+        {
+	        JsonSerializerOptions options = new()
+	        {
+		        WriteIndented = true
+	        };
+
+	        return JsonSerializer.Serialize<object>(this, options);
+        }
+	}
 
     public class Pattern : Facet
     {

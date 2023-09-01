@@ -260,6 +260,7 @@ function Process-DisplayTokenReplacements {
 
 # Core Display Tokens: 
 Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{SELF}" -Location "Property.Name");
+# TODO: create a new token called "{EXTRACTION.VALUE}" - which is the EXTRACT value... 
 Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{COLLECTION.MEMBER}" -Location "Collection.CurrentMember" -RequiresCollection) -Aliases "{CURRENT.MEMBER.NAME}", "{COLLECTION.CURRENT.MEMBER}";
 Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{INSTANCE[*].NAME}" -Location "*.Name" -RequiresInstance);
 Publish-PVDisplayToken -Token (New-PVDisplayToken -Key "{INSTANCE.NAME}" -Location "Instances.Name" -RequiresInstance);  # similar to the above - but non-keyed (i.e., for a single, anonymous, instance vs cases where > 1 instance or an instance is explicitly named)

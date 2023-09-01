@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Management.Automation;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Proviso.Core;
 
 namespace Proviso.Core.Models
@@ -12,7 +14,7 @@ namespace Proviso.Core.Models
         public bool IsCollection { get; }
         public bool IsVirtual { get; }
 
-        public Impact Impact { get; set; }
+		public Impact Impact { get; set; }
         public bool ThrowOnConfig { get; private set; }
         public string MessageToThrow { get; private set; }
 
