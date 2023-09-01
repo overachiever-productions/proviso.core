@@ -235,6 +235,8 @@ function Execute-Pipeline {
 		
 		# TODO: if there was an unhandled exception or full-blown problem... DON'T return results?
 		# 		or ... do, but load it with exception info? e.g., this is EASY to TEST (just throw somewhere early in the pipeline (in the Process block) - or ... put a RETURN in the process block somewhere... 
+		
+		$results.PipelineEnd = Get-Date;
 		return $results;
 	}
 }

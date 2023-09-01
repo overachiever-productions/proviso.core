@@ -93,7 +93,12 @@ function Read-Facet {
 		[Parameter(ParameterSetName = 'Default')]
 		[Parameter(ParameterSetName = 'Targets')]
 		[Parameter(ParameterSetName = 'Servers')]
-		[switch]$AsPSON = $false,
+		[switch]$AsPson = $false,
+		
+		[Parameter(ParameterSetName = 'Default')]
+		[Parameter(ParameterSetName = 'Targets')]
+		[Parameter(ParameterSetName = 'Servers')]
+		[switch]$AsJson = $false,
 		
 		[Parameter(ParameterSetName = 'Default')]
 		[Parameter(ParameterSetName = 'Targets')]
@@ -122,7 +127,11 @@ function Read-Facet {
 		
 		if ($null -eq $facet) {
 			throw "Processing Error. Facet: [$Name] NOT found.";
-		}		
+		}
+		
+		if ($AsPson -and $AsJson) {
+			throw "Invalid Arguments. Specify either -AsPson or -AsXml - but not both.";
+		}
 		
 		$results = @();  # MUST be declared here to be able to be in scope for all pipeline'd operations... 
 	};
@@ -154,9 +163,13 @@ function Read-Facet {
 	};
 	
 	end {
-		if ($AsPSON) {
-			
-			throw "-AsPSON is not yet implemented.";
+		if ($AsPson) {
+			return $results | ConvertTo-Expression;
+		}
+		
+		if ($AsJson) {
+			#return $results | ConvertTo-Xml -Depth 16 -As Stream;
+			return $results.Serialize();
 		}
 		
 		return $results;  # TODO: might need to declare this (early on/initially) as an array of ... FacetProcessingResults of whatever ... 
@@ -177,19 +190,102 @@ function Process-ReadFacet {
 	begin {
 		
 		if (Has-Value $ServerName) {
-			# NOTE: attempt to use Creds if/as supplied? 
-#Write-Host "need to validate server: $ServerName";
-			# as in, make sure that a) we can connect to it (resolve it), b) it has same version of Proviso.Core on it. 
-			# also, it MIGHT make sense to look into caching whether a server is accessible or not? 
+			$connection = Register-RemoteSession -ServerName $ServerName -Credential $Credential;
+			
+			if (-not ($connection.Connected)) {
+				throw "Failed to Connect to Remote Server: [$ServerName]. Error: $($connection.ErrorText)";
+			}
 		}
 	};
 	
 	process {
-		$instance = [Proviso.Core.Models.Facet]::GetInstance($Facet);
-		
-		Set-PvContext_OperationData -Verb Read -Noun Facet -BlockName ($instance.Name) -TargetServer $ServerName -Target $Target;
-		
-		$result = Execute-Pipeline -Verb "Read" -OperationType Facet -Block $instance -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+		if (Has-Value $ServerName) {
+			if ($connection.Connected) {
+				$facetName = $Facet.Name;
+				$remoteFacet = Invoke-Command -Session ($connection.Session) -ScriptBlock { Get-Facet -Name $using:facetName; }
+				
+				if (-not $remoteFacet) {
+					
+					# HACK / This is just for a proof of concept: 
+					$importSQLBlock = {
+						Install-Module -Name "proviso.sql" -Repository "Proviso Repo" -Force;
+						Import-Module -Name "proviso.sql" -Force;
+					};
+					
+					Invoke-Command -Session ($connection.Session) -ScriptBlock $importSQLBlock;
+					Write-Host "Executed Install + Import on Remote Server... "; # TODO: long-term, going to have to check to see if version of .sql or whatever is already installed. 
+					
+					$remoteFacet = Invoke-Command -Session ($connection.Session) -ScriptBlock { Get-Facet -Name $using:facetName; }
+					
+					if (-not $remoteFacet) {
+						
+						throw "Facet: [$facetName] was NOT found on [$ServerName]. Serialization of Facets from local to REMOTE hosts is not YET supported.";
+						
+						# TODO: 
+						# 	Resources/Fodder for Serialization and Deserialization of Facets (which derive from DeclarableBase)
+						# 		- https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-7-0 
+						# 		- possibly this: https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/converters-how-to?pivots=dotnet-7-0 
+						# 		- https://code-maze.com/csharp-polymorphic-serialization-and-deserialization/
+						
+						Write-Host "At this point... would ahve to TRY and serialize the facet here (locally), and send over the wire to rehydrate.";
+						# pseudo-code for the above would be something like: 
+						# 		$payload = $Facet.Serialize();
+						# 		Invoke-Command -Session ($connection.Session) -ScriptBlock { LoadOrReadOrWhatever-Facet -JsonDefinition $using:payload; }
+						# 		$remoteFacet = Invoke-Command -Session ($connection.Session) -ScriptBlock { Get-Facet -Name $using:facetName; }
+						#  	if still null, throw... 
+						# 		or... dump some info into the so-called $result object to let us know what happened here (tried to transfer over the wire, but failed?)
+					}
+					else {
+						Write-Host "This is still just a test, but ... it looks like we got the facet from the remote server."
+					}
+				}
+				
+				if ($Target) {
+					# nothing much here... because I'm going to make the 'architectural decision' that ... TARGETs can't be that complex when 
+					# 	being passed around from one host to the next - i.e., the entire purpose of the -Target as an input is PRIMARILY to 
+					# 		do some light-weight testing on facets/properties and the likes AND for ... code-gen or whatever might make sense for
+					# 		facets/properties OUTSIDE of IAC. 
+					# 	Or, stated differently: 
+					# 		IF we're trying to run a FACET against a remote machine, we don't care about CANNED input into the Facet (e.g., a -Target)
+					# 			Instead, we're expecting to extract values via the CODE in the Facet itself. 
+					
+					# The ABOVE, however, will be different for MODELs. 
+					# 		it's just that Read-XXX doesn't REQUIRE (or allow/care-about) a MODEL. Test and Invoke ... will. 
+					# 		in which case, I'm going to need to allow for the OPTION to have .Config 'classes'/objects that 
+					# 		can/will support a .Deserialize() method/func/behavior along with a .FromJson(stringInput) method
+					# 		and if/when those are present ... then... i'll 'beam' the model/config over the wire. rehydrate there... 
+					# 			and then shove THAT (rehydrated object - on the remote server) into a command... 
+					# 			get the results back ... serialize (there) and then rehydrate here.
+				}
+				
+				if ($Model) {
+					# DOES NOT APPLY to READ operations. 
+					# this is just a place-holder for when I come back in here to copy/paste/tweak for Test|Invoke methods. 
+					# 	and.. when I do: see the notes above about -Target and -Model... 
+				}
+				
+				if ($remoteFacet) {
+					$readBlock = {
+						Read-Facet -Name $using:facetName -Target $using:Target -AsJson;
+					};
+					
+					$remoteResult = Invoke-Command -Session $($connection.Session) -ScriptBlock $readBlock;
+					
+					$result = [Proviso.Core.FacetReadResult]::FromJson($serialized);
+				}
+				# TODO: 
+				# 	is there an ELSE block here? that says: "had a connection to remote ... tried to serialize the facet or whatever... but couldn't..??"
+			}
+			# TODO: 
+			# is there an ELSE block here - where I spin up a fake/place-holder FacetReadResult with an error about not being able to connect?
+		}
+		else {
+			$instance = [Proviso.Core.Models.Facet]::GetInstance($Facet);
+			
+			Set-PvContext_OperationData -Verb Read -Noun Facet -BlockName ($instance.Name) -TargetServer $ServerName -Target $Target;
+			
+			$result = Execute-Pipeline -Verb "Read" -OperationType Facet -Block $instance -Target $Target -Verbose:$xVerbose -Debug:$xDebug;
+		}
 	};
 	
 	end {

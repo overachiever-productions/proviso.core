@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Management.Automation;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Proviso.Core
 {
@@ -36,6 +38,8 @@ namespace Proviso.Core
             this.Result = result;
             this.Error = error;
         }
+
+        public ExtractResult() { }
 
         public Object GetResultForConsoleDisplay()
         {
@@ -89,6 +93,8 @@ namespace Proviso.Core
 
         public ExtractResult ExtractionResult { get; set; }
 
+        public PropertyReadResult() { }
+
         public PropertyReadResult(string name, string display, ExtractResult result)
         {
             this.PropertyName = name;
@@ -137,28 +143,45 @@ namespace Proviso.Core
 
     public class FacetReadResult
     {
-        public DateTime PipelineStart { get; private set; }
+        public DateTime PipelineStart { get; set; }
         public DateTime PipelineEnd { get; set; }
         public string FacetName { get; set; }
         public string DisplayFormat { get; set; }
-        public List<PropertyReadResult> PropertyReadResults = new List<PropertyReadResult>();
+		public List<PropertyReadResult> PropertyReadResults { get; set; }
 
-        public FacetReadResult(string name, string format)
+
+		public FacetReadResult() { }
+
+		public FacetReadResult(string name, string format)
         {
             this.FacetName = name;
             this.DisplayFormat = format;
 
             this.PipelineStart = DateTime.Now;
+            this.PropertyReadResults = new List<PropertyReadResult>();
         }
 
-        // NOT the result of each Facet.Read in a Surface (or surfaces in a runbook)
-        //  but the outcome of a Facet-Read result
-        //      i.e., it's more streamlined and less 'complex' than surface/runbook operations... 
-        public string GetFacetName()
+		public string GetFacetName()
         {
             // TODO: implement .Display functionality if/when present. 
             return this.FacetName;
         }
+
+		public string Serialize()
+		{
+			JsonSerializerOptions options = new()
+			{
+				WriteIndented = true
+			};
+
+            return JsonSerializer.Serialize<FacetReadResult>(this, options);
+		}
+
+		public static FacetReadResult FromJson(string serialized)
+		{
+            // TODO: Add some basic error handling here... 
+			return JsonSerializer.Deserialize<FacetReadResult>(serialized);
+		}
     }
 
     public class FacetTestResult

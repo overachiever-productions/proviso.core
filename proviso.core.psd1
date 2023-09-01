@@ -4,7 +4,7 @@
 	RootModule = 'proviso.core.psm1'
 	
 	# Version number of this module.
-	ModuleVersion = '0.4.5.0'
+	ModuleVersion = '0.5.2.0'
 	
 	# ID used to uniquely identify this module
 	GUID = 'f73d741a-68d2-4c72-aa36-e5d6a2e37dea'

@@ -9,9 +9,20 @@ foreach ($file in (@(Get-ChildItem -Path (Join-Path -Path $PSScriptRoot -ChildPa
 		. $file.FullName;
 	}
 	catch {
-		throw "Unable to dot source proviso.core file: [$($file.FullName)]`rEXCEPTION: $_  `r$($_.ScriptStackTrace) ";
+		throw "Unable to dot source INTERNAL proviso.core file: [$($file.FullName)]`rEXCEPTION: $_  `r$($_.ScriptStackTrace) ";
 	}
 }
+
+# Import External Funcs: 
+foreach ($file in (@(Get-ChildItem -Path (Join-Path -Path $PSScriptRoot -ChildPath 'external/*.ps1') -Recurse -ErrorAction Stop))) {
+	try {
+		. $file.FullName;
+	}
+	catch {
+		throw "Unable to dot source EXTERNAL proviso.core file: [$($file.FullName)]`rEXCEPTION: $_  `r$($_.ScriptStackTrace) ";
+	}
+}
+
 
 # Import Public Funcs: 
 [string[]]$publicFuncs = @();
@@ -36,4 +47,10 @@ foreach ($file in (@(Get-ChildItem -Path (Join-Path -Path $PSScriptRoot -ChildPa
 }
 
 # Export Funcs, Aliases, and Variables:
+
+# temporary testing hacks:
+$publicFuncs += "Register-RemoteSession";
+
 Export-ModuleMember -Function $publicFuncs;
+#
+#Update-ModuleManifest -Path "$PSScriptRoot\proviso.core.psd1" -FunctionsToExport $publicFuncs;

@@ -30,13 +30,34 @@ $global:DebugPreference = "Continue";
 
 	Read-Facet "Implicit Facet - Execution A";
 
-	write-host "-----------------------------------"
+	write-host "-----------------------------------";
 
 	$facet = Get-Facet -Name "Implicit Facet - Execution A";
 
 	$facet.Display;
 	$facet.Properties[0].Display;
 
+#>
+
+<#
+
+	SCENARIO: Slight Tweak to Minimally Viable(ish) Facet - to serialize and rehydrate. 
+		VERB: READ
+			- Export results as Pson or Xml. 
+
+---------------------------------------------------------------------------------------------------------------------
+	
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+	
+	Facets {
+		Facet "Implicit Facet - Execution A" -Display "35-Test" -Extract 35 {}
+	} 
+
+	$result = Read-Facet "Implicit Facet - Execution A"; 
+	$serialized = $result.Serialize();
+
+	$rehydrated = [Proviso.Core.FacetReadResult]::FromJson($serialized);
+	$rehydrated;
 #>
 
 <# 
@@ -78,7 +99,6 @@ $global:DebugPreference = "Continue";
 	Read-Facet "User Details Facet" -Target $user;
 
 #>
-
 
 <#
 
@@ -415,11 +435,60 @@ Write-Host "-------------------------------------------------";
 		}
 	}
 
+$facet = Get-Facet -Name "My First Facet";
+$facet.Serialize();
+
+
+
 	Read-Facet "My First Facet" -Target "FOR: 'No Explicit xxx Prop' Properties";
 
 	# add another entry with 'e' in it to simulate changes to the Target, etc. 
 	$global:fakeTarget += "Another Entry";
 
 	Read-Facet "My First Facet" -Target "Hard-Coded Text";
+
+#>
+
+<# 
+
+	SCENARIO: Simple Remoting
+		VERB: READ
+			CAVEATS / EXPECTATIONS (about environment/etc.) 
+				- Pre-supposes WinRM configuration and all 'plumbing' done as necessary. 
+				- code below assumes you'll be logging in to LOCAL authority using Administrator creds. 
+
+
+---------------------------------------------------------------------------------------------------------------------
+
+	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
+
+$creds = Get-Credential ("Administrator"); 
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# push a facet over the wire: (with real proviso, we're going to expect that facets are already defined on the remote box/etc.)
+$payloadBlock = { Facets { Facet "Implicit Facet - Execution A" -Display "35-Test" -Extract 35 {} } }
+Invoke-Command -Session $session -ScriptBlock $payloadBlock;
+
+# verify that it's there: 	
+Invoke-Command -Session $session -ScriptBlock { Get-Facet -Name "Implicit Facet - Execution A"; }
+
+# execute read-facet to get results and ... pull them back over the wire: 
+$results = Invoke-Command -Session $session -ScriptBlock { Read-Facet "Implicit Facet - Execution A"; };
+$results;
 
 #>
