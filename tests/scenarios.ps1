@@ -43,7 +43,7 @@ $global:DebugPreference = "Continue";
 
 	SCENARIO: Slight Tweak to Minimally Viable(ish) Facet - to serialize and rehydrate. 
 		VERB: READ
-			- Export results as Pson or Xml. 
+			- Export results as PSON, then re-hydrate back into object + display.
 
 ---------------------------------------------------------------------------------------------------------------------
 	
@@ -58,6 +58,7 @@ $global:DebugPreference = "Continue";
 
 	$rehydrated = [Proviso.Core.FacetReadResult]::FromJson($serialized);
 	$rehydrated;
+
 #>
 
 <# 
@@ -368,13 +369,14 @@ Write-Host "-------------------------------------------------";
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
 #$global:DebugPreference = "Continue";
 
-	$servers = @("SQL-150-01", "SQL-150-02");
+	$servers = @("SQL-150-01.sqlserver.id", "SQL-160-01.sqlserver.id");
+	$credential = Get-Credential("Administrator");	
 
 	Facets {
 		Facet "Passthrough" { } 
 	}
 
-	Read-Facet "Passthrough" -Target "Canned Input" -Servers $servers;
+	Read-Facet "Passthrough" -Target "Canned Input" -Servers $servers -Credential $credential;
 
 #>
 
@@ -435,10 +437,8 @@ Write-Host "-------------------------------------------------";
 		}
 	}
 
-$facet = Get-Facet -Name "My First Facet";
-$facet.Serialize();
-
-
+#$facet = Get-Facet -Name "My First Facet";
+#$facet.Serialize();
 
 	Read-Facet "My First Facet" -Target "FOR: 'No Explicit xxx Prop' Properties";
 
@@ -461,24 +461,10 @@ $facet.Serialize();
 ---------------------------------------------------------------------------------------------------------------------
 
 	Import-Module -Name "D:\Dropbox\Repositories\proviso.core" -Force;
-
 $creds = Get-Credential ("Administrator"); 
-	
-	
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+# NOTE: the 'stuff' below isn't legit and/or won't work - it was just me testing out REMOTE-ish stuff... 
 
 # push a facet over the wire: (with real proviso, we're going to expect that facets are already defined on the remote box/etc.)
 $payloadBlock = { Facets { Facet "Implicit Facet - Execution A" -Display "35-Test" -Extract 35 {} } }
