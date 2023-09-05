@@ -20,7 +20,7 @@ It's still 'early days' - so this roadmap is a guestimate at this point.
     - 0.5.1 - Unit Tests & Refactoring.
     - 0.5.2 - Remoting / -TargetServers.
     - 0.5.3 - Object / Input Serialization (via ConvertTo-Expression).
-    - 0.5.4 - Additional Pipeline Validation.
+    - 0.5.4 - Additional Pipeline (Pre) Validation.
     - 0.5.5 - Expect (vs merely extract).
     - 0.5.6 - Compare (and comparison types).
     - 0.5.7 - Configure. 
