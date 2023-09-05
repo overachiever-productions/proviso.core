@@ -131,9 +131,10 @@ Describe "Build Tests" -Tag "Build" {
 		
 		It "Sets -Expect Values for Implicit Properties" {
 			$sut = Get-Facet -Name "Implicit Property Test - C";
-			$sut.Expect | Should -Be "return `"elevensies`";";
 			
-			$sut.Properties[0].Expect | Should -Be "return `"elevensies`";";
+			$sut.Expect | Should -BeLike "*return 'elevensies';*";
+			
+			$sut.Properties[0].Expect | Should -BeLike "*return 'elevensies';*";
 		}
 		
 		It "Sets -Extract Values for Implicit Properties" {
@@ -703,15 +704,17 @@ Describe "Functionality Tests::Read" -Tag "Execution" {
 		}
 	}
 	
-	Context "Multiple Servers" {
+	Context "Multiple Servers" -Tag "Remote" {
 		It "Executes Read Operations Per -Server" {
 			Facets {
 				Facet "Server Passthrough" {}
 			}
 			
-			$servers = @("SQL-150-01", "SQL-150-02");
+			$servers = @("SQL-150-01.sqlserver.id", "SQL-160-01.sqlserver.id");
+			$password = ConvertTo-SecureString "Pass@word1" -AsPlainText -Force;
+			$creds = New-Object System.Management.Automation.PSCredential("Administrator", $password);
 			
-			$outcome = Read-Facet "Server Passthrough" -Target "Canned Input That Will Be The Same For Each -Server" -Servers $servers;
+			$outcome = Read-Facet "Server Passthrough" -Target "Canned Input That Will Be The Same For Each -Server" -Servers $servers -Credential $creds;
 			$outcome | Should -Not -Be $null;
 			$outcome | Should -BeOfType Proviso.Core.FacetReadResult;
 			

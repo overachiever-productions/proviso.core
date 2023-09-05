@@ -630,29 +630,30 @@ filter Get-ReturnScript {
 		[Object]$Output
 	);
 	
-	# NOTE: This is a fairly naive implementation - probably needs some additional complexity/options to better handle outputs. 
-	
-	# TODO: This MIGHT be a much better option: 
-	# 	https://github.com/iRon7/ConvertTo-Expression 
-	
 	if ($null -eq $Output) {
 		$script = "return `$null; ";
 	}
 	else {
-		switch ($Output.GetType().FullName) {
-			"System.String" {
-				$script = "return `"$Output`";";
-			}
-			"System.Object[]" {
-				# TODO: this is a REALLY naive implementation and ... it's also casting @(10, "10") to @(10, 10) (as near as I can tell... )
-				$data = $Output -join ",";
-				$script = "return @(" + $data + "); ";
-			}
-			default {
-				$script = "return $Output;";
-			}
-		}
+		
+		$script = " return $(ConvertTo-Expression -Object $Output); ";
+		
+		
+#		switch ($Output.GetType().FullName) {
+#			"System.String" {
+#				$script = "return `"$Output`";";
+#			}
+#			"System.Object[]" {
+#				# TODO: this is a REALLY naive implementation and ... it's also casting @(10, "10") to @(10, 10) (as near as I can tell... )
+#				$data = $Output -join ",";
+#				$script = "return @(" + $data + "); ";
+#			}
+#			default {
+#				$script = "return $Output;";
+#			}
+#		}
 	}
+	
+	
 	return [ScriptBlock]::Create($script).GetNewClosure();
 }
 
