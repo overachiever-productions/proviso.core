@@ -178,7 +178,6 @@ filter Remove-PvContext_InstanceData {
 	$PVCurrent.PSObject.Properties.Remove($InstancesName);
 }
 
-
 filter Get-PvContextOperationName {
 	if (($PVCurrent.Properties -contains "Operation") -or ($null -ne $PVCurrent.Operation)) {
 		return "$($PVCurrent.Operation.Verb)-$($PVCurrent.Operation.Noun)";
